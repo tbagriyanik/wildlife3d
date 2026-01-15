@@ -1,0 +1,69 @@
+export const TRANSLATIONS = {
+    en: {
+        title: "WILD LANDS",
+        time: "Time",
+        day: "Day",
+        health: "SAĞLIK",
+        hunger: "AÇLIK",
+        thirst: "SUSUZLUK",
+        temp: "SICAKLIK",
+        temperature: "SICAKLIK",
+
+        inventory: "Inventory",
+        crafting: "Crafting",
+        empty_inventory: "Inventory is empty",
+        press_c: "Press [C] for Inventory • [E] to Gather",
+        gather_wood: "Gathered Wood",
+        gather_stone: "Gathered Stone",
+        gather_apple: "Gathered Apple",
+        meat: "Meat",
+        water: "Canteen",
+        empty_canteen: "Empty Canteen",
+        craft: "Craft",
+        eat: "Eat",
+        recipes: {
+            water: { name: "Canteen", desc: "Used to store and drink water." },
+            campfire: { name: "Campfire", desc: "Provides warmth and allows cooking." },
+            torch: { name: "Torch", desc: "Light source for night time." },
+            bow: { name: "Bow", desc: "Basic ranged weapon." },
+            arrow: { name: "Arrow", desc: "Ammunition for the bow." }
+        },
+        cooked_meat: "Cooked Meat",
+        baked_apple: "Baked Apple",
+        arrow: "Arrow"
+    },
+    tr: {
+        title: "VAHŞİ TOPRAKLAR",
+        time: "Zaman",
+        day: "GÜN",
+        health: "SAĞLIK",
+        hunger: "AÇLIK",
+        thirst: "SUSUZLUK",
+        temp: "SICAKLIK",
+        temperature: "SICAKLIK",
+
+        inventory: "Envanter",
+        crafting: "Zanaat",
+        empty_inventory: "Envanter boş",
+        press_c: "[C] Envanter • [E] Toplamak",
+        gather_wood: "Odun Toplandı",
+        gather_stone: "Taş Toplandı",
+        gather_apple: "Elma Toplandı",
+        meat: "Et",
+        water: "Su Matarası",
+        empty_canteen: "Boş Matara",
+        craft: "Zanaat",
+        eat: "Ye",
+        recipes: {
+            water: { name: "Su Matarası", desc: "Su depolamak ve içmek için kullanılır." },
+            campfire: { name: "Kamp Ateşi", desc: "Sıcaklık sağlar ve yemek pişirmeye yarar." },
+            torch: { name: "Meşale", desc: "Gece için ışık kaynağı." },
+            bow: { name: "Yay", desc: "Temel menzilli silah." },
+            arrow: { name: "Ok", desc: "Yay için mühimmat." }
+        },
+        cooked_meat: "Pişmiş Et",
+        baked_apple: "Pişmiş Elma",
+        arrow: "Ok"
+    }
+};
+
