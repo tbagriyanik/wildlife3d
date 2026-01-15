@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/tbagriyanik/wildLands3D/blob/main/Ekran%20g%C3%B6r%C3%BCnt%C3%BCs%C3%BC%202026-01-14%20172253.png" />
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/tbagriyanik/wildlife3d/blob/main/Ekran%20g%C3%B6r%C3%BCnt%C3%BCs%C3%BC%202026-01-15%20225440.png" />
 </div>
 
 # React + TypeScript + Vite
