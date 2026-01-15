@@ -44,6 +44,9 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
                 className="bg-stone-900/90 border border-white/10 p-6 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden"
             >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />

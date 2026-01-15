@@ -251,9 +251,9 @@ export const Player = () => {
         setBearing(degrees);
 
         // Joystick + Keyboard movement
-
-        const moveZ = (Number(moveBackward) - Number(moveForward)) || -joystick.y;
-        const moveX = (Number(moveRight) - Number(moveLeft)) || joystick.x;
+        // DISABLE MOVEMENT IF MENU IS OPEN
+        const moveZ = isAnyMenuOpen ? 0 : ((Number(moveBackward) - Number(moveForward)) || -joystick.y);
+        const moveX = isAnyMenuOpen ? 0 : ((Number(moveRight) - Number(moveLeft)) || joystick.x);
 
         // Get camera direction vectors (XZ plane only)
         const forward = new THREE.Vector3();
@@ -276,7 +276,7 @@ export const Player = () => {
 
         // --- JUMP LOGIC ---
         // Only jump if space is pressed and we are likely on the ground (low Y-velocity)
-        if (jump && Math.abs(velocity.current[1]) < 0.05) {
+        if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.05) {
             api.velocity.set(velocity.current[0], 5, velocity.current[2]);
         }
 

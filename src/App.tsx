@@ -167,22 +167,25 @@ function App() {
 
 
       {/* TOP-LEFT HUD - Compact & Large Text */}
-      <div className="absolute top-6 left-6 z-50">
-        <div className="glass bg-black/40 backdrop-blur-xl px-6 py-4 rounded-[24px] border border-white/10 shadow-2xl">
-          <div className="flex flex-col gap-0 mb-3">
-            <h2 className="text-3xl font-black text-white tracking-tighter uppercase tabular-nums leading-tight">
-              {t.day || 'GÜN'} {day}
+      <div className="absolute top-6 left-6 z-50 w-64">
+        <div className="glass bg-black/60 backdrop-blur-xl px-5 py-5 rounded-[24px] border border-white/10 shadow-2xl flex flex-col gap-5">
+          {/* Header Section */}
+          <div>
+            <h2 className="text-3xl font-black text-white tracking-tighter uppercase tabular-nums leading-none mb-2">
+              {t.day} {day}
             </h2>
-            <div className="flex items-center justify-between gap-4">
-              <div className="text-[10px] font-bold tracking-widest text-white/40 uppercase">
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] font-bold tracking-widest text-white/60 uppercase">
                 {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
               </div>
               <FpsDisplay />
             </div>
-
           </div>
 
-          <div className="space-y-3">
+          <div className="h-px w-full bg-white/10" />
+
+          {/* Vitals Section */}
+          <div className="space-y-4">
             <VitalRow label={t.health} value={health} color="bg-rose-500" />
             <VitalRow label={t.hunger} value={hunger} color="bg-amber-500" />
             <VitalRow label={t.thirst} value={thirst} color="bg-blue-500" />
@@ -190,7 +193,6 @@ function App() {
           </div>
         </div>
       </div>
-
 
       {/* TOP-RIGHT CONTROLS */}
       <div className="absolute top-6 right-6 z-50 flex items-center gap-4">
@@ -212,7 +214,7 @@ function App() {
 
       {/* RESOURCE SUMMARY (Right Side) - Compact */}
       <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-50">
-        <ResourceCard icon={<Target size={16} className="text-rose-400" />} count={inventory.bow || 0} />
+        <ResourceCard icon={<Target size={16} className="text-rose-400" />} count={inventory.arrow || 0} />
         <ResourceCard icon={<Flame size={16} className="text-orange-400" />} count={inventory.torch || 0} />
         <ResourceCard icon={<Axe size={16} className="text-stone-400" />} count={inventory.wood || 0} />
         <ResourceCard icon={<Mountain size={16} className="text-slate-200" />} count={inventory.stone || 0} />
@@ -231,7 +233,7 @@ function App() {
         ))}
       </div>
 
-    </div>
+    </div >
   );
 }
 

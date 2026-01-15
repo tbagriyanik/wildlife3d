@@ -107,6 +107,7 @@ export interface GameState {
     cookItem: (rawId: string) => void;
     placeItem: (type: 'campfire' | 'torch_stick', position: [number, number, number]) => void;
     updateCampfires: (delta: number) => void;
+    respawnDaily: () => void;
 
 
     removeWildlife: (id: string) => void;
