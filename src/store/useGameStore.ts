@@ -6,7 +6,7 @@ export interface Resource {
     id: string;
     position: [number, number, number];
     durability: number; // 0 to 100
-    type?: 'normal' | 'pine';
+    type?: 'normal' | 'pine' | 'deer' | 'rabbit' | 'bird';
     variation?: {
         height?: number;
         leafSize?: number;
@@ -40,12 +40,18 @@ export interface Projectile {
 
 
 export interface PlacedItem {
-
     id: string;
     type: 'campfire' | 'torch_stick';
     position: [number, number, number];
     active: boolean;
+    fuel: number; // 0 to 100
+    maxFuel: number;
 }
+
+// ... inside GameState interface ...
+
+// ... inside store implementation ...
+
 
 export interface GameState {
     health: number;
@@ -100,6 +106,7 @@ export interface GameState {
     fillWater: () => void;
     cookItem: (rawId: string) => void;
     placeItem: (type: 'campfire' | 'torch_stick', position: [number, number, number]) => void;
+    updateCampfires: (delta: number) => void;
 
 
     removeWildlife: (id: string) => void;
@@ -195,6 +202,10 @@ export const useGameStore = create<GameState>()(
             setGameTime: (time) => set((state) => {
                 const nextTime = time % 2400;
                 const daysToAdd = Math.floor(time / 2400);
+                if (daysToAdd > 0) {
+                    // New Day Logic
+                    useGameStore.getState().respawnDaily();
+                }
                 return {
                     gameTime: nextTime,
                     day: state.day + daysToAdd
@@ -317,8 +328,82 @@ export const useGameStore = create<GameState>()(
 
 
             placeItem: (type, position) => set((state) => ({
-                placedItems: [...state.placedItems, { id: Math.random().toString(36).substring(7), type, position, active: true }]
+                placedItems: [...state.placedItems, {
+                    id: Math.random().toString(36).substring(7),
+                    type,
+                    position,
+                    active: true,
+                    fuel: 100,
+                    maxFuel: 100
+                }]
             })),
+
+            updateCampfires: (delta) => set((state) => ({
+                placedItems: state.placedItems.map(item => {
+                    if (item.type === 'campfire' && item.active) {
+                        // Burn rate: 100 fuel / 200 sec = 0.5 per sec
+                        const newFuel = item.fuel - (delta * 0.5);
+                        return { ...item, fuel: Math.max(0, newFuel), active: newFuel > 0 };
+                    }
+                    return item;
+                })
+            })),
+
+            respawnDaily: () => set((state) => {
+                const newResources = { ...state.worldResources };
+
+                // Respawn Trees & Rocks if low
+                if (newResources.trees.length < 40) {
+                    for (let i = 0; i < 10; i++) {
+                        newResources.trees.push({
+                            id: `tree-respawn-${state.day}-${i}`,
+                            type: Math.random() > 0.4 ? 'pine' : 'normal',
+                            position: [(Math.random() - 0.5) * 180, 0, (Math.random() - 0.5) * 180],
+                            durability: 100,
+                            variation: { height: 3 + Math.random() * 4, leafSize: 1.5 + Math.random() * 1.5 }
+                        });
+                    }
+                }
+
+                if (newResources.rocks.length < 30) {
+                    for (let i = 0; i < 5; i++) {
+                        newResources.rocks.push({
+                            id: `rock-respawn-${state.day}-${i}`,
+                            position: [(Math.random() - 0.5) * 150, 0, (Math.random() - 0.5) * 150],
+                            durability: 100,
+                            variation: { scale: 0.4 + Math.random() * 0.6, rotation: Math.random() * Math.PI * 2 }
+                        });
+                    }
+                }
+
+                // Respawn Wildlife (Deer, Rabbit, Bird)
+                const newWildlife = [...state.wildlife];
+
+                // Ensure at least 3 Deers
+                const deerCount = newWildlife.filter(w => w.id.includes('deer')).length;
+                if (deerCount < 3) {
+                    newWildlife.push({ id: `deer-respawn-${state.day}`, type: 'deer', position: [(Math.random() - 0.5) * 100, 0, (Math.random() - 0.5) * 100], durability: 100 });
+                }
+
+                // Ensure at least 4 Birds (Circling overhead)
+                const birdCount = newWildlife.filter(w => w.id.includes('bird')).length;
+                if (birdCount < 4) {
+                    for (let i = 0; i < (4 - birdCount); i++) {
+                        // Birds spawn high up (y=15-25)
+                        newWildlife.push({
+                            id: `bird-respawn-${state.day}-${i}`,
+                            type: 'bird',
+                            position: [(Math.random() - 0.5) * 100, 15 + Math.random() * 10, (Math.random() - 0.5) * 100],
+                            durability: 100
+                        });
+                    }
+                }
+
+                return {
+                    worldResources: newResources,
+                    wildlife: newWildlife
+                };
+            }),
 
             removeWildlife: (id) => set((state) => ({
                 wildlife: state.wildlife.filter(w => w.id !== id)

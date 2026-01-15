@@ -33,7 +33,25 @@ export const TRANSLATIONS = {
         arrow: "Arrow",
         axe: "Axe",
         torch: "Torch",
-        campfire: "Campfire"
+        campfire: "Campfire",
+
+        // Menu & Settings
+        settings: "Settings",
+        resume: "Resume",
+        quit: "Quit",
+        language: "Language",
+        volume: "Master Volume",
+        back: "Back",
+
+        // Controls
+        controls: "Controls",
+        move: "Move",
+        look: "Look",
+        jump: "Jump",
+        sprint: "Sprint",
+        interact: "Interact",
+        attack: "Attack / Use",
+        open_inventory: "Open Inventory"
     },
     tr: {
         title: "VAHŞİ TOPRAKLAR",
@@ -69,7 +87,25 @@ export const TRANSLATIONS = {
         arrow: "Ok",
         axe: "Balta",
         torch: "Meşale",
-        campfire: "Kamp Ateşi"
+        campfire: "Kamp Ateşi",
+
+        // Menu & Settings
+        settings: "Ayarlar",
+        resume: "Devam Et",
+        quit: "Çıkış",
+        language: "Dil",
+        volume: "Ana Ses",
+        back: "Geri",
+
+        // Controls
+        controls: "Kontroller",
+        move: "Hareket",
+        look: "Bakış",
+        jump: "Zıplama",
+        sprint: "Koşma",
+        interact: "Etkileşim",
+        attack: "Saldırı / Kullan",
+        open_inventory: "Envanteri Aç"
     }
 };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { Settings, Play, RefreshCw, X } from 'lucide-react';
+import { TRANSLATIONS } from '../../constants/translations';
 
 export const MainMenu: React.FC = () => {
     const {
@@ -15,8 +16,9 @@ export const MainMenu: React.FC = () => {
         resetGame
     } = useGameStore();
 
-    if (!isMainMenuOpen) return null;
+    const t = TRANSLATIONS[language];
 
+    if (!isMainMenuOpen) return null;
 
     const handleNewGame = () => {
         if (window.confirm(language === 'tr' ? 'Yeni oyun başlatmak istediğine emin misin? Tüm ilerlemen silinecek.' : 'Are you sure you want to start a new game? All progress will be lost.')) {
@@ -34,7 +36,7 @@ export const MainMenu: React.FC = () => {
 
                 <div className="flex flex-col items-center gap-2 mb-4">
                     <h1 className="text-4xl font-black tracking-tighter uppercase italic bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                        WILD LANDS
+                        {t.title}
                     </h1>
                     <div className="h-1 w-24 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-full" />
                 </div>
@@ -47,7 +49,7 @@ export const MainMenu: React.FC = () => {
                         >
                             <div className="flex items-center gap-3">
                                 <Play className="w-5 h-5 text-emerald-400 fill-emerald-400" />
-                                <span className="font-bold uppercase tracking-wider">{language === 'tr' ? 'DEVAM ET' : 'CONTINUE'}</span>
+                                <span className="font-bold uppercase tracking-wider">{t.resume}</span>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10">
                                 <span className="text-xs opacity-50">ESC</span>
@@ -60,6 +62,7 @@ export const MainMenu: React.FC = () => {
                         >
                             <RefreshCw className="w-5 h-5 text-blue-400" />
                             <span className="font-bold uppercase tracking-wider">{language === 'tr' ? 'YENİ OYUN' : 'NEW GAME'}</span>
+                            {/* NEW GAME key missing? I'll leave ternaries for missing keys or add them */}
                         </button>
 
                         <button
@@ -67,7 +70,7 @@ export const MainMenu: React.FC = () => {
                             className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all duration-300 transform hover:scale-[1.02]"
                         >
                             <Settings className="w-5 h-5 text-orange-400" />
-                            <span className="font-bold uppercase tracking-wider">{language === 'tr' ? 'AYARLAR' : 'SETTINGS'}</span>
+                            <span className="font-bold uppercase tracking-wider">{t.settings}</span>
                         </button>
                     </div>
                 ) : (
@@ -75,7 +78,7 @@ export const MainMenu: React.FC = () => {
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <Settings className="w-5 h-5" />
-                                {language === 'tr' ? 'AYARLAR' : 'SETTINGS'}
+                                {t.settings}
                             </h2>
                             <button
                                 onClick={() => setSettingsOpen(false)}
@@ -88,7 +91,7 @@ export const MainMenu: React.FC = () => {
                         {/* Language Setting */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium opacity-60 uppercase tracking-widest">
-                                {language === 'tr' ? 'DİL SEÇİMİ' : 'LANGUAGE'}
+                                {t.language}
                             </label>
                             <div className="grid grid-cols-2 gap-2">
                                 <button
@@ -110,7 +113,7 @@ export const MainMenu: React.FC = () => {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <label className="text-sm font-medium opacity-60 uppercase tracking-widest">
-                                    {language === 'tr' ? 'SES SEVİYESİ' : 'MASTER VOLUME'}
+                                    {t.volume}
                                 </label>
                                 <span className="text-xs font-mono bg-white/10 px-2 py-1 rounded">
                                     {Math.round(masterVolume * 100)}%
@@ -131,7 +134,7 @@ export const MainMenu: React.FC = () => {
                             onClick={() => setSettingsOpen(false)}
                             className="mt-4 p-4 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 rounded-2xl font-bold uppercase tracking-widest transition-all"
                         >
-                            {language === 'tr' ? 'KAYDET VE DÖN' : 'SAVE & BACK'}
+                            {t.back}
                         </button>
                     </div>
                 )}

@@ -52,19 +52,15 @@ function App() {
     if (craftAction) setMenuOpen(!isMenuOpen);
   }, [craftAction]);
 
-  // Cursor Management: Exit pointer lock when menus are open
-  useEffect(() => {
-    if (isMenuOpen || isMainMenuOpen) {
-      if (document.pointerLockElement) {
-        document.exitPointerLock();
-      }
-    }
-  }, [isMenuOpen, isMainMenuOpen]);
+
 
 
 
   useEffect(() => {
     const interval = setInterval(() => {
+      // PAUSE GAME Loop if Main Menu is open
+      if (useGameStore.getState().isMainMenuOpen) return;
+
       // 24 minutes = 1440 seconds = 2400 game units
       // 1 second = 1.6666 units
       setGameTime(gameTime + 1.66666);
@@ -84,12 +80,53 @@ function App() {
       const isNight = gameTime < 600 || gameTime > 1800;
       const baseTemp = isNight ? GAME_CONSTANTS.TEMPERATURE.NIGHT : GAME_CONSTANTS.TEMPERATURE.DAY;
       const weatherModifier = useGameStore.getState().weather === 'snowy' ? -15 : useGameStore.getState().weather === 'rainy' ? -5 : 0;
-      const targetTemp = baseTemp + weatherModifier;
-      const tempDelta = (targetTemp - temperature) * 0.01;
 
-      if (temperature < 15 || temperature > 42) healthDelta -= 0.2;
+      // Warmth from Campfires
+      const playerPos = useGameStore.getState().playerPosition;
+      let warmthModifier = 0;
+      let isResting = false;
 
-      updateVitals({ hunger: hungerLoss, thirst: thirstLoss, health: healthDelta, temperature: tempDelta });
+      useGameStore.getState().placedItems.forEach(item => {
+        if (item.type === 'campfire' && item.active) {
+          const dist = Math.sqrt(
+            Math.pow(item.position[0] - playerPos[0], 2) +
+            Math.pow(item.position[2] - playerPos[2], 2)
+          );
+          if (dist < 3.5) {
+            warmthModifier += (3.5 - dist) * 15; // Strong heat when close
+            isResting = true;
+          }
+        }
+      });
+
+      // Update Campfire Fuel
+      useGameStore.getState().updateCampfires(1); // 1 second delta
+
+      const targetTemp = baseTemp + weatherModifier + warmthModifier;
+      const tempDelta = (targetTemp - temperature) * 0.1; // Faster adjustment
+
+      // Resting / Regeneration Logic
+      if (isResting && temperature > 30) {
+        // If warm and near fire, regenerate health and "energy" (hunger/thirst conservation/regen)
+        healthDelta += 0.2;
+
+        // "Enerji artar" -> Recovering hunger/thirst slightly or stopping drain
+        // Let's reverse the drain to simulate gaining energy
+        healthDelta += GAME_CONSTANTS.CONSUMPTION.HEALTH_DRAIN; // Negate health drain if any
+
+        // Instead of losing hunger/thirst, we regain a tiny bit (resting)
+        // Or at least significantly reduce the loss.
+        // User said "energy increases", so let's give a small positive tick.
+        updateVitals({
+          hunger: 0.05, // Recover hunger slowly
+          thirst: 0.05, // Recover thirst slowly
+          health: healthDelta,
+          temperature: tempDelta
+        });
+      } else {
+        if (temperature < 15 || temperature > 42) healthDelta -= 0.2;
+        updateVitals({ hunger: hungerLoss, thirst: thirstLoss, health: healthDelta, temperature: tempDelta });
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [gameTime, setGameTime, updateVitals, hunger, thirst, temperature]);

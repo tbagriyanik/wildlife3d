@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../store/useGameStore';
 import { useAudio } from '../../hooks/useAudio';
+import { Fire } from './Fire';
 
 
 import { ArrowManager } from './Arrow';
@@ -63,17 +64,10 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
                     <meshStandardMaterial color="#4e342e" depthTest={false} depthWrite={false} transparent opacity={1} />
                 </mesh>
                 {/* Flame area */}
-                <mesh ref={flameRef1 as any} position={[0, 0.4, 0]} renderOrder={1000}>
-                    <sphereGeometry args={[0.09, 8, 8]} />
-                    <meshStandardMaterial color="#ff6600" emissive="#ff4400" emissiveIntensity={2} depthTest={false} depthWrite={false} transparent opacity={0.8} />
+                <group position={[0, 0.5, 0]}>
+                    <Fire scale={0.4} />
                     <pointLight ref={lightRef as any} intensity={2} distance={35} color="#ffaa44" castShadow />
-
-                </mesh>
-                {/* Inner Flame Core */}
-                <mesh ref={flameRef2 as any} position={[0, 0.4, 0]} renderOrder={1000}>
-                    <sphereGeometry args={[0.05, 8, 8]} />
-                    <meshStandardMaterial color="#fff000" emissive="#ffff00" emissiveIntensity={3} depthTest={false} depthWrite={false} transparent opacity={0.9} />
-                </mesh>
+                </group>
             </group>
 
         );
@@ -127,7 +121,7 @@ export const Player = () => {
     const torchFuel = useGameStore((state) => state.torchFuel);
     const setTorchFuel = useGameStore((state) => state.setTorchFuel);
 
-    const slotItems = ['bow', 'torch', 'water', 'meat', 'apple', 'campfire'];
+    const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple', 'campfire'];
 
     const currentItem = slotItems[activeSlot];
 
@@ -135,10 +129,11 @@ export const Player = () => {
     const isHoldable = ['bow', 'torch'].includes(currentItem);
 
     // Physics Sphere
+    const savedPos = useGameStore.getState().playerPosition; // Get saved pos
     const [ref, api] = useSphere(() => ({
         mass: 1,
         type: 'Dynamic',
-        position: [0, 2, 0],
+        position: savedPos || [0, 2, 0], // Use saved position or default
         args: [0.5], // Reduced Radius to avoid snagging
         fixedRotation: true,
         linearDamping: 0.4, // Snappier movement
@@ -152,24 +147,22 @@ export const Player = () => {
     const pos = useRef([0, 0, 0]);
     useEffect(() => api.position.subscribe((p) => (pos.current = p)), [api.position]);
 
-    // Handle Placement
+    // Handle Placement (Auto-place when selected)
     useEffect(() => {
-        const handleContextMenu = (e: MouseEvent) => {
-            e.preventDefault();
-            if (currentItem === 'campfire' && (inventory['campfire'] || 0) > 0) {
-                const placementPos: [number, number, number] = [
-                    pos.current[0] + Math.sin(useGameStore.getState().bearing * (Math.PI / 180)) * 2,
-                    0.1, // Ground level
-                    pos.current[2] + Math.cos(useGameStore.getState().bearing * (Math.PI / 180)) * 2
-                ];
-                placeItemAction('campfire', placementPos);
-                removeItem('campfire', 1);
-                addNotification(useGameStore.getState().language === 'tr' ? 'KAMP ATEŞİ YAKILDI' : 'CAMPFIRE PLACED', 'success');
-            }
-        };
-        window.addEventListener('contextmenu', handleContextMenu);
-        return () => window.removeEventListener('contextmenu', handleContextMenu);
-    }, [currentItem, inventory]);
+        if (currentItem === 'campfire' && (inventory['campfire'] || 0) > 0) {
+            const placementPos: [number, number, number] = [
+                pos.current[0] + Math.sin(useGameStore.getState().bearing * (Math.PI / 180)) * 2,
+                0.1, // Ground level
+                pos.current[2] + Math.cos(useGameStore.getState().bearing * (Math.PI / 180)) * 2
+            ];
+            placeItemAction('campfire', placementPos);
+            removeItem('campfire', 1);
+            addNotification(useGameStore.getState().language === 'tr' ? 'KAMP ATEŞİ YAKILDI' : 'CAMPFIRE PLACED', 'success');
+
+            // Switch back to empty slot or first slot to prevent rapid-fire placement if they have multiple
+            useGameStore.getState().setActiveSlot(0);
+        }
+    }, [currentItem, inventory, activeSlot]); // Added activeSlot dependency to ensure it triggers on switch
 
 
     // Basic mobile check
@@ -309,9 +302,30 @@ export const Player = () => {
 
     const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen);
 
+    const controlsRef = useRef<any>(null); // Ref for PointerLockControls
+
+    useEffect(() => {
+        if (!controlsRef.current) return;
+
+        if (isAnyMenuOpen) {
+            controlsRef.current.unlock();
+        } else {
+            // Try to lock if not mobile, but only if we have focus/click
+            if (!isMobile) controlsRef.current.lock();
+        }
+    }, [isAnyMenuOpen, isMobile]);
+
     return (
         <>
-            {!isMobile && !isAnyMenuOpen && <PointerLockControls />}
+            {!isMobile && (
+                <PointerLockControls
+                    ref={controlsRef}
+                    selector="#root" // Lock on canvas click
+                    onUnlock={() => {
+                        // Optional: Handle unlock
+                    }}
+                />
+            )}
             <mesh ref={ref as any} name="player">
 
                 <sphereGeometry args={[0.1]} />

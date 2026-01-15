@@ -13,7 +13,9 @@ export const Hotbar = () => {
         { id: 'torch', icon: '🔦', color: 'bg-amber-500/50' },
         { id: 'water', icon: (inventory['water'] || 0) > 0 ? '💧' : '🫙', color: 'bg-blue-500/50' },
         { id: 'meat', icon: '🍖', color: 'bg-rose-500/50' },
+        { id: 'cooked_meat', icon: '🍗', color: 'bg-orange-500/50' },
         { id: 'apple', icon: '🍏', color: 'bg-emerald-500/50' },
+        { id: 'baked_apple', icon: '🍎', color: 'bg-red-500/50' },
         { id: 'campfire', icon: '🔥', color: 'bg-orange-600/50' },
     ];
 
@@ -26,7 +28,7 @@ export const Hotbar = () => {
                     <div
                         key={i}
                         onClick={() => {
-                            const consumables = ['water', 'meat', 'apple'];
+                            const consumables = ['water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
                             if (consumables.includes(slot.id)) {
 
                                 if (inventory[slot.id] > 0) {

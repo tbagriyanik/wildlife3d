@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { TRANSLATIONS } from '../../constants/translations';
-import { X, Hammer, Pizza, Flame } from 'lucide-react';
+import { X, Hammer, Flame } from 'lucide-react';
 import { useAudio } from '../../hooks/useAudio';
 
 export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
@@ -18,11 +18,10 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
     }
 
     const recipes: Recipe[] = [
-        { id: 'axe', name: t.axe || 'AXE', cost: { wood: 3, stone: 2 }, icon: <Hammer size={20} /> },
+        { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
         { id: 'torch', name: t.torch || 'TORCH', cost: { wood: 2 }, icon: <Flame size={20} /> },
         { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 4 }, icon: <Flame size={20} /> },
         { id: 'arrow', name: t.arrow || 'ARROW (5x)', cost: { wood: 1, stone: 1 }, output: 5, icon: <Hammer size={20} /> },
-        { id: 'cooked_meat', name: t.meat || 'COOK MEAT', cost: { meat: 1, wood: 1 }, icon: <Pizza size={20} /> },
     ];
 
     const canCraft = (cost: Record<string, number>) => {

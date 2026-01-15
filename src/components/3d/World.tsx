@@ -12,7 +12,8 @@ import { Water } from './Water';
 
 
 
-import { Deer, Rabbit } from './Wildlife';
+import { Deer, Rabbit, Bird } from './Wildlife';
+import { Fire } from './Fire';
 import * as THREE from 'three';
 
 
@@ -134,7 +135,7 @@ export const World = () => {
 
             <mesh ref={planeRef as any} receiveShadow>
                 <planeGeometry args={[1000, 1000]} />
-                <meshStandardMaterial map={grassTexture} color="#2e3b23" roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
+                <meshStandardMaterial map={grassTexture} color="#2e3b23" roughness={0.9} metalness={0.95} envMapIntensity={0.5} />
             </mesh>
 
 
@@ -168,7 +169,9 @@ export const World = () => {
 
                 {useGameStore.getState().wildlife.map((animal) => (
                     <group key={animal.id} position={animal.position} name="animal" userData={{ id: animal.id }}>
-                        {animal.id.includes('deer') ? <Deer position={[0, 0, 0]} /> : <Rabbit position={[0, 0, 0]} />}
+                        {animal.type === 'bird' || animal.id.includes('bird') ? <Bird position={[0, 0, 0]} /> :
+                            animal.id.includes('deer') || animal.type === 'deer' ? <Deer position={[0, 0, 0]} /> :
+                                <Rabbit position={[0, 0, 0]} />}
                     </group>
                 ))}
 
@@ -197,12 +200,8 @@ export const World = () => {
                                 </mesh>
                                 {/* Fire effect */}
                                 {item.active && (
-                                    <group position={[0, 0.3, 0]}>
-                                        <mesh>
-                                            <sphereGeometry args={[0.2, 8, 8]} />
-                                            <meshStandardMaterial color="#ff4400" emissive="#ff2200" emissiveIntensity={2} />
-                                        </mesh>
-                                        <pointLight intensity={2} distance={8} color="#ffaa44" castShadow />
+                                    <group position={[0, 0, 0]}>
+                                        <Fire scale={1.2} />
                                     </group>
                                 )}
                             </group>

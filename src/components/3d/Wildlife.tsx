@@ -65,3 +65,68 @@ export const Rabbit = ({ position }: { position: [number, number, number] }) => 
         </mesh>
     </AnimalAI>
 );
+
+
+export const Bird = ({ position }: { position: [number, number, number] }) => {
+    const groupRef = useRef<THREE.Group>(null);
+    const startPos = useRef(new THREE.Vector3(...position));
+    // Random circling parameters
+    const [params] = useState({
+        radius: 10 + Math.random() * 15,
+        speed: 0.5 + Math.random() * 0.5,
+        offset: Math.random() * Math.PI * 2,
+        heightVar: Math.random() * 2
+    });
+
+    useFrame((state) => {
+        if (!groupRef.current) return;
+
+        const time = state.clock.elapsedTime;
+        // Circular motion
+        const x = startPos.current.x + Math.cos(time * params.speed + params.offset) * params.radius;
+        const z = startPos.current.z + Math.sin(time * params.speed + params.offset) * params.radius;
+        const y = startPos.current.y + Math.sin(time * params.speed * 2) * params.heightVar;
+
+        groupRef.current.position.set(x, y, z);
+
+        // Face direction of movement
+        const tangentX = -Math.sin(time * params.speed + params.offset);
+        const tangentZ = Math.cos(time * params.speed + params.offset);
+        const lookTarget = new THREE.Vector3(x + tangentX, y, z + tangentZ);
+        groupRef.current.lookAt(lookTarget);
+    });
+
+    return (
+        <group ref={groupRef}>
+            {/* Simple Bird Model */}
+            <group rotation={[0, -Math.PI / 2, 0]}>
+                {/* Body */}
+                <mesh castShadow>
+                    <coneGeometry args={[0.2, 0.8, 8]} />
+                    <meshStandardMaterial color="#333" />
+                </mesh>
+                {/* Wings - flapping */}
+                <Wing side={1} />
+                <Wing side={-1} />
+            </group>
+        </group>
+    );
+};
+
+const Wing = ({ side }: { side: number }) => {
+    const ref = useRef<THREE.Mesh>(null);
+    useFrame(({ clock }) => {
+        if (ref.current) {
+            ref.current.rotation.z = Math.sin(clock.elapsedTime * 10) * 0.5 * side;
+        }
+    });
+    return (
+        <mesh ref={ref} position={[0, 0.1, 0]} rotation={[0, 0, side * 0.2]}>
+            <boxGeometry args={[0.6, 0.05, 0.3]} />
+            <meshStandardMaterial color="#444" />
+            <group position={[side * 0.3, 0, 0]}>
+                {/* Wing tip */}
+            </group>
+        </mesh>
+    );
+}

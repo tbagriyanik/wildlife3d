@@ -32,20 +32,28 @@ export const useKeyboard = () => {
             if (e.code === 'KeyE') setActions((prev) => ({ ...prev, interact: true }));
             if (e.code === 'KeyC') setActions((prev) => ({ ...prev, craft: true }));
 
-            // Numeric keys for slots with action-based logic
+            // Numeric keys for slots
             if (e.code.startsWith('Digit')) {
                 const digit = parseInt(e.code.replace('Digit', ''));
 
-                // 1, 2, 6: Select slot (Bow, Torch, Campfire)
-                if (digit === 1 || digit === 2 || digit === 6) {
-                    useGameStore.getState().setActiveSlot(digit - 1);
+                // 1(Bow), 2(Torch), 8(Campfire): Select slot or Toggle off
+                if (digit === 1 || digit === 2 || digit === 8) {
+                    const targetSlot = digit - 1;
+                    const currentSlot = useGameStore.getState().activeSlot;
+                    if (currentSlot === targetSlot) {
+                        useGameStore.getState().setActiveSlot(-1); // Toggle off (Empty hands)
+                    } else {
+                        useGameStore.getState().setActiveSlot(targetSlot);
+                    }
                 }
-                // 3, 4, 5: Consume items (Water, Meat, Apple)
-                else if (digit === 3 || digit === 4 || digit === 5) {
+                // 3(Water), 4(Meat), 5(Cooked Meat), 6(Apple), 7(Baked Apple): Consume
+                else if (digit >= 3 && digit <= 7) {
                     const consumableMap: Record<number, string> = {
                         3: 'water',
                         4: 'meat',
-                        5: 'apple'
+                        5: 'cooked_meat',
+                        6: 'apple',
+                        7: 'baked_apple'
                     };
                     const itemId = consumableMap[digit];
                     const state = useGameStore.getState();
