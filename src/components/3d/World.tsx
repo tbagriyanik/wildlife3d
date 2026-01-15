@@ -9,7 +9,7 @@ import { Tree, PineTree, Rock, Bush } from './Resources';
 import { InteractionSystem } from './InteractionSystem';
 import { Weather } from './Weather';
 import { Water } from './Water';
-import { Arrow } from './Arrow';
+
 
 
 import { Deer, Rabbit } from './Wildlife';
@@ -161,16 +161,7 @@ export const World = () => {
                     <Water position={[-40, 0.01, -20]} size={[15, 0.5, 15]} />
                 </group>
 
-                {/* Projectiles */}
-                {useGameStore.getState().projectiles.map((p) => (
-                    <Arrow
-                        key={p.id}
-                        position={p.position}
-                        velocity={p.velocity}
-                        rotation={p.rotation}
-                        onHit={() => useGameStore.getState().removeProjectile(p.id)}
-                    />
-                ))}
+
 
 
 

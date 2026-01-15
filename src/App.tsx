@@ -6,6 +6,7 @@ import { Player } from './components/3d/Player';
 import { CraftingMenu } from './components/ui/CraftingMenu';
 import { MainMenu } from './components/ui/MainMenu';
 import { Hotbar } from './components/ui/Hotbar';
+import { FpsDisplay } from './components/ui/FpsDisplay';
 import { useGameStore } from './store/useGameStore';
 import { GAME_CONSTANTS } from './constants/gameConstants';
 import { TRANSLATIONS } from './constants/translations';
@@ -135,8 +136,11 @@ function App() {
             <h2 className="text-3xl font-black text-white tracking-tighter uppercase tabular-nums leading-tight">
               {t.day || 'GÜN'} {day}
             </h2>
-            <div className="text-[10px] font-bold tracking-widest text-white/40 uppercase">
-              {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-[10px] font-bold tracking-widest text-white/40 uppercase">
+                {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
+              </div>
+              <FpsDisplay />
             </div>
 
           </div>
@@ -153,12 +157,12 @@ function App() {
 
       {/* TOP-RIGHT CONTROLS */}
       <div className="absolute top-6 right-6 z-50 flex items-center gap-4">
-        <div className="glass bg-black/30 rounded-[32px] px-6 py-3 flex items-center gap-4 border-white/5 shadow-xl">
-          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300">{dirLeft}</span>
+        <div className="glass bg-black/30 rounded-[32px] px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-xl w-40">
+          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
           <div className="w-[1px] h-4 bg-white/10" />
-          <span className="text-sm font-black text-white tabular-nums uppercase transition-all duration-300 scale-110">{dirCenter}</span>
+          <span className="text-sm font-black text-white tabular-nums uppercase transition-all duration-300 scale-110 w-6 text-center">{dirCenter}</span>
           <div className="w-[1px] h-4 bg-white/10" />
-          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300">{dirRight}</span>
+          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
         </div>
 
         <button onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')} className="glass bg-black/30 w-14 h-14 rounded-[20px] flex items-center justify-center text-[10px] font-black text-white shadow-xl hover:bg-white/10 transition-all active:scale-90 border-white/5 uppercase">

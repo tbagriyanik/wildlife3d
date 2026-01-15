@@ -30,7 +30,10 @@ export const TRANSLATIONS = {
         },
         cooked_meat: "Cooked Meat",
         baked_apple: "Baked Apple",
-        arrow: "Arrow"
+        arrow: "Arrow",
+        axe: "Axe",
+        torch: "Torch",
+        campfire: "Campfire"
     },
     tr: {
         title: "VAHŞİ TOPRAKLAR",
@@ -63,7 +66,10 @@ export const TRANSLATIONS = {
         },
         cooked_meat: "Pişmiş Et",
         baked_apple: "Pişmiş Elma",
-        arrow: "Ok"
+        arrow: "Ok",
+        axe: "Balta",
+        torch: "Meşale",
+        campfire: "Kamp Ateşi"
     }
 };
 

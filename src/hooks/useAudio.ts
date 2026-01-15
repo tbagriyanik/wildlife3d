@@ -2,12 +2,44 @@ import { useCallback, useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import type { GameState } from '../store/useGameStore';
 
+// Shared AudioContext for sound effects - created lazily and resumed on user gesture
+let sharedAudioContext: AudioContext | null = null;
+let audioContextInitialized = false;
+
+const getAudioContext = (): AudioContext | null => {
+    if (!sharedAudioContext) {
+        sharedAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+
+    // Resume if suspended (browser autoplay policy)
+    if (sharedAudioContext.state === 'suspended') {
+        sharedAudioContext.resume();
+    }
+
+    return sharedAudioContext;
+};
+
+// Initialize audio context on first user gesture
+if (typeof window !== 'undefined' && !audioContextInitialized) {
+    const initAudio = () => {
+        getAudioContext();
+        audioContextInitialized = true;
+        window.removeEventListener('click', initAudio);
+        window.removeEventListener('keydown', initAudio);
+        window.removeEventListener('touchstart', initAudio);
+    };
+    window.addEventListener('click', initAudio);
+    window.addEventListener('keydown', initAudio);
+    window.addEventListener('touchstart', initAudio);
+}
+
 export const useAudio = () => {
     const playSound = useCallback((type: 'gather' | 'craft' | 'eat' | 'walk' | 'wood' | 'stone' | 'water') => {
         const masterVolume = useGameStore.getState().masterVolume;
         if (masterVolume <= 0) return;
 
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioCtx = getAudioContext();
+        if (!audioCtx || audioCtx.state === 'suspended') return;
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
 

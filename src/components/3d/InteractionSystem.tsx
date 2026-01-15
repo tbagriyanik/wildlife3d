@@ -28,7 +28,7 @@ export const InteractionSystem = () => {
             // Filter out player mesh and find first valid target
             for (const intersect of intersects) {
                 const distance = intersect.distance;
-                if (distance < 5) {
+                if (distance < 7) {
                     const object = intersect.object;
 
                     // Skip player mesh
@@ -70,9 +70,7 @@ export const InteractionSystem = () => {
             useGameStore.getState().setHovering(currentHover);
         }
 
-        const activeSlot = useGameStore.getState().activeSlot;
-        const isTriggered = (interact && !interactBuffer.current) || (leftClick && !mouseBuffer.current && activeSlot !== 0);
-
+        const isTriggered = (interact && !interactBuffer.current) || (leftClick && !mouseBuffer.current);
 
 
         if (isTriggered && targetObject) {

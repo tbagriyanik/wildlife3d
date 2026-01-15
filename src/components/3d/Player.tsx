@@ -8,6 +8,9 @@ import { useGameStore } from '../../store/useGameStore';
 import { useAudio } from '../../hooks/useAudio';
 
 
+import { ArrowManager } from './Arrow';
+
+
 const HeldItem = ({ type, count }: { type: string; count: number }) => {
     const torchFuel = useGameStore((state) => state.torchFuel);
     const lightRef = useRef<THREE.PointLight>(null);
@@ -295,11 +298,13 @@ export const Player = () => {
             itemGroupRef.current.position.copy(camera.position);
             itemGroupRef.current.rotation.copy(camera.rotation);
 
-            // Subtle sway based on velocity
             const swayX = Math.sin(state.clock.elapsedTime * 4) * 0.01;
             const swayY = Math.cos(state.clock.elapsedTime * 4) * 0.01;
             itemGroupRef.current.position.add(new THREE.Vector3(swayX, swayY, 0).applyQuaternion(camera.quaternion));
         }
+
+        // Sync Player Position to Store for Interactions (throttled check would be better but this works for now)
+        useGameStore.getState().setPlayerPosition(pos.current as [number, number, number]);
     });
 
     const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen);
@@ -317,8 +322,8 @@ export const Player = () => {
                 {isHoldable && <HeldItem type={currentItem} count={inventory[currentItem] || 0} />}
             </group>
 
+            {/* Projectiles */}
+            <ArrowManager />
         </>
     );
 };
-
-

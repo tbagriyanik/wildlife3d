@@ -33,7 +33,11 @@ export interface Projectile {
     position: [number, number, number];
     velocity: [number, number, number];
     rotation: [number, number, number];
+    stuck?: boolean;
+    stuckAt?: number;
+    spawnTime: number;
 }
+
 
 export interface PlacedItem {
 
@@ -100,6 +104,7 @@ export interface GameState {
 
     removeWildlife: (id: string) => void;
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
+    stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number]) => void;
     removeProjectile: (id: string) => void;
     resetGame: () => void;
 
@@ -324,20 +329,23 @@ export const useGameStore = create<GameState>()(
                 if ((state.inventory['arrow'] || 0) > 0) {
                     const id = Math.random().toString(36).substring(7);
                     set((state) => ({
-                        projectiles: [...state.projectiles, { id, type: 'arrow', position, velocity, rotation }],
+                        projectiles: [...state.projectiles, { id, type: 'arrow', position, velocity, rotation, spawnTime: Date.now() }],
                         inventory: { ...state.inventory, arrow: state.inventory['arrow'] - 1 }
                     }));
-
-                    // Auto-cleanup after 10s
-                    setTimeout(() => {
-                        useGameStore.getState().removeProjectile(id);
-                    }, 10000);
                 } else {
                     const lang = state.language;
                     const msg = lang === 'tr' ? 'OKUNUZ BİTTİ' : 'OUT OF ARROWS';
                     state.addNotification(msg, 'warning');
                 }
             },
+
+            stickArrow: (id, position, rotation) => set((state) => ({
+                projectiles: state.projectiles.map(p =>
+                    p.id === id
+                        ? { ...p, stuck: true, stuckAt: Date.now(), position, rotation, velocity: [0, 0, 0] }
+                        : p
+                )
+            })),
 
             removeProjectile: (id) => set((state) => ({
                 projectiles: state.projectiles.filter(p => p.id !== id)
