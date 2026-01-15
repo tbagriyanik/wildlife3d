@@ -10,6 +10,7 @@ import { Fire } from './Fire';
 
 
 import { ArrowManager } from './Arrow';
+import { TRANSLATIONS } from '../../constants/translations';
 
 
 const HeldItem = ({ type, count }: { type: string; count: number }) => {
@@ -157,7 +158,8 @@ export const Player = () => {
             ];
             placeItemAction('campfire', placementPos);
             removeItem('campfire', 1);
-            addNotification(useGameStore.getState().language === 'tr' ? 'KAMP ATEŞİ YAKILDI' : 'CAMPFIRE PLACED', 'success');
+            const lang = useGameStore.getState().language;
+            addNotification(TRANSLATIONS[lang].campfire_placed_msg, 'success');
 
             // Switch back to empty slot or first slot to prevent rapid-fire placement if they have multiple
             useGameStore.getState().setActiveSlot(0);
@@ -192,7 +194,8 @@ export const Player = () => {
             if (nextFuel <= 0 && inventory['torch'] > 0) {
                 removeItem('torch', 1);
                 setTorchFuel(1.0);
-                addNotification(useGameStore.getState().language === 'tr' ? 'YENİ MEŞALE YAKILDI' : 'NEW TORCH LIT', 'info');
+                const lang = useGameStore.getState().language;
+                addNotification(TRANSLATIONS[lang].new_torch_msg, 'info');
             }
         }
 

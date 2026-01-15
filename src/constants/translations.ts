@@ -20,7 +20,18 @@ export const TRANSLATIONS = {
         water: "Canteen",
         empty_canteen: "Empty Canteen",
         craft: "Craft",
+
         eat: "Eat",
+        // Notification Messages
+        collected_msg: "COLLECTED",
+        consumed_msg: "CONSUMED",
+        cooked_msg: "COOKED",
+        thirst_full_msg: "THIRST IS ALREADY 100%",
+        canteen_filled_msg: "CANTEENS FILLED",
+        no_empty_canteen_msg: "NO EMPTY CANTEENS",
+        out_of_arrows_msg: "OUT OF ARROWS",
+        campfire_placed_msg: "CAMPFIRE PLACED",
+        new_torch_msg: "NEW TORCH LIT",
         recipes: {
             water: { name: "Canteen", desc: "Used to store and drink water." },
             campfire: { name: "Campfire", desc: "Provides warmth and allows cooking." },
@@ -51,7 +62,12 @@ export const TRANSLATIONS = {
         sprint: "Sprint",
         interact: "Interact",
         attack: "Attack / Use",
-        open_inventory: "Open Inventory"
+        open_inventory: "Open Inventory",
+        new_game: "New Game",
+        confirm_new_game: "Are you sure you want to start a new game? All progress will be lost.",
+        english: "ENGLISH",
+        turkish: "TURKISH",
+        version: "Wild Lands v0.1.0 • Built with Three.js"
     },
     tr: {
         title: "VAHŞİ TOPRAKLAR",
@@ -74,7 +90,18 @@ export const TRANSLATIONS = {
         water: "Su Matarası",
         empty_canteen: "Boş Matara",
         craft: "Zanaat",
+
         eat: "Ye",
+        // Notification Messages
+        collected_msg: "TOPLANDI",
+        consumed_msg: "TÜKETİLDİ",
+        cooked_msg: "PİŞİRİLDİ",
+        thirst_full_msg: "SUSUZLUK ZATEN %100",
+        canteen_filled_msg: "MATARALAR DOLDURULDU",
+        no_empty_canteen_msg: "BOŞ MATARA YOK",
+        out_of_arrows_msg: "OKUNUZ BİTTİ",
+        campfire_placed_msg: "KAMP ATEŞİ YAKILDI",
+        new_torch_msg: "YENİ MEŞALE YAKILDI",
         recipes: {
             water: { name: "Su Matarası", desc: "Su depolamak ve içmek için kullanılır." },
             campfire: { name: "Kamp Ateşi", desc: "Sıcaklık sağlar ve yemek pişirmeye yarar." },
@@ -105,7 +132,12 @@ export const TRANSLATIONS = {
         sprint: "Koşma",
         interact: "Etkileşim",
         attack: "Saldırı / Kullan",
-        open_inventory: "Envanteri Aç"
+        open_inventory: "Envanteri Aç",
+        new_game: "YENİ OYUN",
+        confirm_new_game: "Yeni oyun başlatmak istediğine emin misin? Tüm ilerlemen silinecek.",
+        english: "İNGİLİZCE",
+        turkish: "TÜRKÇE",
+        version: "Wild Lands v0.1.0 • Üç.js ile yapılmıştır"
     }
 };
 

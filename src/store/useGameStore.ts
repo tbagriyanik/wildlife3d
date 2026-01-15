@@ -247,7 +247,8 @@ export const useGameStore = create<GameState>()(
                 const lang = useGameStore.getState().language;
                 const t = TRANSLATIONS[lang];
                 const itemName = (t as any)[id] || id.toUpperCase();
-                const msg = lang === 'tr' ? `${itemName} TOPLANDI` : `${itemName} COLLECTED`;
+                // "ITEMNAME COLLECTED"
+                const msg = `${itemName} ${t.collected_msg}`;
                 useGameStore.getState().addNotification(msg, 'success');
             },
 
@@ -275,8 +276,8 @@ export const useGameStore = create<GameState>()(
                 if (stats && (state.inventory[id] || 0) > 0) {
                     if (id === 'water' && state.thirst >= 100) {
                         const lang = state.language;
-                        const msg = lang === 'tr' ? 'SUSUZLUK ZATEN %100' : 'THIRST IS ALREADY 100%';
-                        state.addNotification(msg, 'warning');
+                        const t = TRANSLATIONS[lang];
+                        state.addNotification(t.thirst_full_msg, 'warning');
                         return;
                     }
 
@@ -288,7 +289,8 @@ export const useGameStore = create<GameState>()(
                     }
 
                     const lang = state.language;
-                    const msg = lang === 'tr' ? `${id.toUpperCase()} TÜKETİLDİ` : `${id.toUpperCase()} CONSUMED`;
+                    const t = TRANSLATIONS[lang];
+                    const msg = `${id.toUpperCase()} ${t.consumed_msg}`;
                     state.addNotification(msg, 'info');
                 }
             },
@@ -300,12 +302,12 @@ export const useGameStore = create<GameState>()(
                     state.removeItem('waterEmpty', emptyCount);
                     state.addItem('water', emptyCount);
                     const lang = state.language;
-                    const msg = lang === 'tr' ? 'MATARALAR DOLDURULDU' : 'CANTEENS FILLED';
-                    state.addNotification(msg, 'success');
+                    const t = TRANSLATIONS[lang];
+                    state.addNotification(t.canteen_filled_msg, 'success');
                 } else {
                     const lang = state.language;
-                    const msg = lang === 'tr' ? 'BOŞ MATARA YOK' : 'NO EMPTY CANTEENS';
-                    state.addNotification(msg, 'info');
+                    const t = TRANSLATIONS[lang];
+                    state.addNotification(t.no_empty_canteen_msg, 'info');
                 }
             },
 
@@ -321,7 +323,8 @@ export const useGameStore = create<GameState>()(
                     state.removeItem(rawId, 1);
                     state.addItem(cookedId, 1);
                     const lang = state.language;
-                    const msg = lang === 'tr' ? `${rawId.toUpperCase()} PİŞİRİLDİ` : `${rawId.toUpperCase()} COOKED`;
+                    const t = TRANSLATIONS[lang];
+                    const msg = `${rawId.toUpperCase()} ${t.cooked_msg}`;
                     state.addNotification(msg, 'success');
                 }
             },
@@ -420,8 +423,8 @@ export const useGameStore = create<GameState>()(
                     }));
                 } else {
                     const lang = state.language;
-                    const msg = lang === 'tr' ? 'OKUNUZ BİTTİ' : 'OUT OF ARROWS';
-                    state.addNotification(msg, 'warning');
+                    const t = TRANSLATIONS[lang];
+                    state.addNotification(t.out_of_arrows_msg, 'warning');
                 }
             },
 

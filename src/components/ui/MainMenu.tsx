@@ -21,7 +21,7 @@ export const MainMenu: React.FC = () => {
     if (!isMainMenuOpen) return null;
 
     const handleNewGame = () => {
-        if (window.confirm(language === 'tr' ? 'Yeni oyun başlatmak istediğine emin misin? Tüm ilerlemen silinecek.' : 'Are you sure you want to start a new game? All progress will be lost.')) {
+        if (window.confirm(t.confirm_new_game)) {
             resetGame();
             setMainMenuOpen(false);
         }
@@ -65,8 +65,7 @@ export const MainMenu: React.FC = () => {
                             className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all duration-300 transform hover:scale-[1.02]"
                         >
                             <RefreshCw className="w-5 h-5 text-blue-400" />
-                            <span className="font-bold uppercase tracking-wider">{language === 'tr' ? 'YENİ OYUN' : 'NEW GAME'}</span>
-                            {/* NEW GAME key missing? I'll leave ternaries for missing keys or add them */}
+                            <span className="font-bold uppercase tracking-wider">{t.new_game}</span>
                         </button>
 
                         <button
@@ -102,13 +101,13 @@ export const MainMenu: React.FC = () => {
                                     onClick={() => setLanguage('tr')}
                                     className={`p-3 rounded-xl border transition-all ${language === 'tr' ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                                 >
-                                    TÜRKÇE
+                                    {t.turkish || 'TÜRKÇE'}
                                 </button>
                                 <button
                                     onClick={() => setLanguage('en')}
                                     className={`p-3 rounded-xl border transition-all ${language === 'en' ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                                 >
-                                    ENGLISH
+                                    {t.english || 'ENGLISH'}
                                 </button>
                             </div>
                         </div>
@@ -145,7 +144,7 @@ export const MainMenu: React.FC = () => {
 
                 <div className="mt-4 text-center">
                     <p className="text-[10px] opacity-30 uppercase tracking-[0.2em]">
-                        Wild Lands v0.1.0 • Built with Three.js
+                        {t.version}
                     </p>
                 </div>
             </div>
