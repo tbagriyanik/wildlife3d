@@ -12,7 +12,7 @@ import { Water } from './Water';
 
 
 
-import { Deer, Rabbit, Bird } from './Wildlife';
+import { Deer, Rabbit, Bird, Partridge } from './Wildlife';
 import { Fire } from './Fire';
 import { Shelter } from './Shelter';
 import * as THREE from 'three';
@@ -174,13 +174,14 @@ export const World = () => {
                     <Water position={[-40, 0.01, -20]} size={[15, 0.5, 15]} />
                 </group>
 
-                {/* Shelter */}
-                {useGameStore.getState().shelterPosition && (
+                {/* Multi-Shelters */}
+                {useGameStore.getState().shelters.map((s) => (
                     <Shelter
-                        level={useGameStore.getState().shelterLevel}
-                        position={useGameStore.getState().shelterPosition!}
+                        key={s.id}
+                        level={s.level}
+                        position={s.position}
                     />
-                )}
+                ))}
 
 
 
@@ -191,7 +192,8 @@ export const World = () => {
                     <group key={animal.id} position={animal.position} name="animal" userData={{ id: animal.id }}>
                         {animal.type === 'bird' || animal.id.includes('bird') ? <Bird position={[0, 0, 0]} /> :
                             animal.id.includes('deer') || animal.type === 'deer' ? <Deer position={[0, 0, 0]} /> :
-                                <Rabbit position={[0, 0, 0]} />}
+                                animal.id.includes('partridge') || animal.type === 'partridge' ? <Partridge position={[0, 0, 0]} /> :
+                                    <Rabbit position={[0, 0, 0]} />}
                     </group>
                 ))}
 

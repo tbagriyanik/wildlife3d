@@ -105,8 +105,8 @@ function App() {
       }
 
       // Warmth from Shelter
-      if (useGameStore.getState().shelterLevel > 0 && useGameStore.getState().shelterPosition) {
-        const sPos = useGameStore.getState().shelterPosition!;
+      useGameStore.getState().shelters.forEach(shelter => {
+        const sPos = shelter.position;
         const distToShelter = Math.sqrt(
           Math.pow(sPos[0] - playerPos[0], 2) +
           Math.pow(sPos[2] - playerPos[2], 2)
@@ -115,7 +115,7 @@ function App() {
           warmthModifier += 15; // Shelter is warm
           isResting = true; // Resting in shelter
         }
-      }
+      });
 
       // Update Campfire Fuel
       useGameStore.getState().updateCampfires(1); // 1 second delta
@@ -193,22 +193,22 @@ function App() {
       )}
 
 
-      {/* TOP-LEFT HUD */}
-      <div className="absolute top-8 left-8 z-50">
-        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-6 rounded-[32px] shadow-2xl min-w-[320px] border border-white/5">
-          <div className="flex justify-between items-end mb-6">
+      {/* TOP-LEFT HUD - Smaller (50%) */}
+      <div className="absolute top-8 left-8 z-50 scale-50 origin-top-left">
+        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-5 rounded-[28px] shadow-2xl min-w-[300px] border border-white/5">
+          <div className="flex justify-between items-end mb-4">
             <div>
-              <div className="text-[12px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">DAY</div>
-              <div className="text-6xl font-black text-emerald-400 italic leading-none tracking-tighter">
+              <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">DAY</div>
+              <div className="text-5xl font-black text-emerald-400 italic leading-none tracking-tighter">
                 {day}
               </div>
             </div>
-            <div className="text-4xl font-black text-white tabular-nums tracking-tighter opacity-80 mb-1">
+            <div className="text-3xl font-black text-white tabular-nums tracking-tighter opacity-80 mb-0.5">
               {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <VitalCard label="HEALTH" value={health} color="bg-rose-500/20" icon="❤️" />
             <VitalCard label="HUNGER" value={hunger} color="bg-amber-500/20" icon="🍞" />
             <VitalCard label="THIRST" value={thirst} color="bg-cyan-500/20" icon="💧" />
@@ -217,14 +217,14 @@ function App() {
         </div>
       </div>
 
-      {/* TOP-RIGHT CONTROLS */}
+      {/* TOP-RIGHT CONTROLS - Smaller Compass (25% reduction) */}
       <div className="absolute top-8 right-8 z-50 flex items-center gap-4">
-        <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-8 py-4 flex items-center justify-center gap-6 border-white/5 shadow-2xl">
-          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-8 text-center">{dirLeft}</span>
-          <div className="w-[1px] h-6 bg-white/10" />
-          <span className="text-sm font-black text-white tabular-nums uppercase transition-all scale-125 w-8 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
-          <div className="w-[1px] h-6 bg-white/10" />
-          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-8 text-center">{dirRight}</span>
+        <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-2xl scale-[0.75]">
+          <span className="text-[10px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
+          <div className="w-[1px] h-5 bg-white/10" />
+          <span className="text-xs font-black text-white tabular-nums uppercase transition-all scale-125 w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
+          <div className="w-[1px] h-5 bg-white/10" />
+          <span className="text-[10px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
         </div>
 
         <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">

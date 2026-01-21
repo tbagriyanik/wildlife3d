@@ -6,7 +6,7 @@ export interface Resource {
     id: string;
     position: [number, number, number];
     durability: number; // 0 to 100
-    type?: 'normal' | 'pine' | 'deer' | 'rabbit' | 'bird';
+    type?: 'normal' | 'pine' | 'deer' | 'rabbit' | 'bird' | 'partridge';
     variation?: {
         height?: number;
         leafSize?: number;
@@ -111,8 +111,7 @@ export interface GameState {
     respawnDaily: () => void;
 
 
-    shelterLevel: number; // 0: none, 1: tent, 2: hut, 3: house
-    shelterPosition: [number, number, number] | null;
+    shelters: { id: string; level: number; position: [number, number, number] }[];
 
     isSleeping: boolean;
     sleep: () => void;
@@ -121,7 +120,7 @@ export interface GameState {
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
     stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number], stuckToId?: string) => void;
     removeProjectile: (id: string) => void;
-    upgradeShelter: (position: [number, number, number]) => void;
+    addShelter: (level: number, position: [number, number, number]) => void;
     resetGame: () => void;
 
 
@@ -198,8 +197,7 @@ export const useGameStore = create<GameState>()(
             ],
             projectiles: [],
             placedItems: [],
-            shelterLevel: 0,
-            shelterPosition: null,
+            shelters: [],
             isSleeping: false,
 
 
@@ -214,10 +212,15 @@ export const useGameStore = create<GameState>()(
             setGameTime: (time) => set((state) => {
                 const nextTime = time % 2400;
                 const daysToAdd = Math.floor(time / 2400);
-                if (daysToAdd > 0) {
-                    // New Day Logic
+
+                // Respawn logic every 6 hours (600 units)
+                const lastRespawn = Math.floor(state.gameTime / 600);
+                const currentRespawn = Math.floor(nextTime / 600);
+
+                if (daysToAdd > 0 || currentRespawn !== lastRespawn) {
                     useGameStore.getState().respawnDaily();
                 }
+
                 return {
                     gameTime: nextTime,
                     day: state.day + daysToAdd
@@ -401,14 +404,26 @@ export const useGameStore = create<GameState>()(
                 }
 
                 // Ensure at least 4 Birds (Circling overhead)
-                const birdCount = newWildlife.filter(w => w.id.includes('bird')).length;
+                const birdCount = newWildlife.filter(w => w.id.includes('bird') || w.type === 'bird').length;
                 if (birdCount < 4) {
                     for (let i = 0; i < (4 - birdCount); i++) {
-                        // Birds spawn high up (y=15-25)
                         newWildlife.push({
                             id: `bird-respawn-${state.day}-${i}`,
                             type: 'bird',
                             position: [(Math.random() - 0.5) * 100, 15 + Math.random() * 10, (Math.random() - 0.5) * 100],
+                            durability: 100
+                        });
+                    }
+                }
+
+                // Ensure at least 3 Partridges (Keklik)
+                const partridgeCount = newWildlife.filter(w => w.id.includes('partridge') || w.type === 'partridge').length;
+                if (partridgeCount < 3) {
+                    for (let i = 0; i < (3 - partridgeCount); i++) {
+                        newWildlife.push({
+                            id: `partridge-respawn-${state.day}-${i}`,
+                            type: 'partridge',
+                            position: [(Math.random() - 0.5) * 100, 0, (Math.random() - 0.5) * 100],
                             durability: 100
                         });
                     }
@@ -451,9 +466,8 @@ export const useGameStore = create<GameState>()(
                 projectiles: state.projectiles.filter(p => p.id !== id)
             })),
 
-            upgradeShelter: (position) => set((state) => ({
-                shelterLevel: Math.min(3, state.shelterLevel + 1),
-                shelterPosition: state.shelterPosition || position
+            addShelter: (level, position) => set((state) => ({
+                shelters: [...state.shelters, { id: Math.random().toString(36).substring(7), level, position }]
             })),
 
             sleep: () => {
@@ -477,8 +491,7 @@ export const useGameStore = create<GameState>()(
                 placedItems: [],
                 projectiles: [],
                 playerPosition: [0, 2, 0],
-                shelterLevel: 0,
-                shelterPosition: null
+                shelters: []
             })
 
         }),
@@ -499,8 +512,7 @@ export const useGameStore = create<GameState>()(
                 placedItems: state.placedItems,
                 wildlife: state.wildlife,
                 torchFuel: state.torchFuel,
-                shelterLevel: state.shelterLevel,
-                shelterPosition: state.shelterPosition
+                shelters: state.shelters
             })
 
 

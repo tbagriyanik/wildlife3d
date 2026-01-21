@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../store/useGameStore';
 import { TRANSLATIONS } from '../../constants/translations';
-import { X, Hammer, Flame } from 'lucide-react';
+import { X, Hammer, Flame, Home, Tent, Landmark } from 'lucide-react';
 import { useAudio } from '../../hooks/useAudio';
 
 export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
-    const { inventory, addItem, removeItem, language, shelterLevel, upgradeShelter } = useGameStore();
+    const { inventory, addItem, removeItem, language, addShelter } = useGameStore();
     const t = TRANSLATIONS[language];
     const { playSound } = useAudio();
 
@@ -16,44 +16,32 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
         output?: number;
         icon: React.ReactNode;
         isShelter?: boolean;
+        level?: number;
     }
-
-    const shelterNames = [t.tent || 'TENT', t.hut || 'HUT', t.house || 'HOUSE'];
-    const shelterCosts = [
-        { wood: 10, stone: 5 },
-        { wood: 20, stone: 15 },
-        { wood: 40, stone: 30 }
-    ];
 
     const recipes: Recipe[] = [
         { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
         { id: 'torch', name: t.torch || 'TORCH', cost: { wood: 2 }, icon: <Flame size={20} /> },
         { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 4 }, icon: <Flame size={20} /> },
         { id: 'arrow', name: t.arrow || 'ARROW (5x)', cost: { wood: 1, stone: 1 }, output: 5, icon: <Hammer size={20} /> },
-    ];
 
-    // Add shelter upgrade if not max level
-    if (shelterLevel < 3) {
-        recipes.push({
-            id: 'shelter',
-            name: `${t.upgrade || 'UPGRADE'}: ${shelterNames[shelterLevel]}`,
-            cost: shelterCosts[shelterLevel],
-            icon: <Hammer size={20} />,
-            isShelter: true
-        });
-    }
+        // Shelters
+        { id: 'tent', name: t.tent || 'TENT', cost: { wood: 10, stone: 5 }, icon: <Tent size={20} />, isShelter: true, level: 1 },
+        { id: 'hut', name: t.hut || 'HUT', cost: { wood: 20, stone: 15 }, icon: <Home size={20} />, isShelter: true, level: 2 },
+        { id: 'house', name: t.house || 'HOUSE', cost: { wood: 40, stone: 30 }, icon: <Landmark size={20} />, isShelter: true, level: 3 },
+    ];
 
     const canCraft = (cost: Record<string, number>) => {
         return Object.entries(cost).every(([item, amount]) => (inventory[item] || 0) >= amount);
     };
 
-    const handleCraft = (recipe: any) => {
+    const handleCraft = (recipe: Recipe) => {
         if (canCraft(recipe.cost)) {
             Object.entries(recipe.cost).forEach(([item, amount]) => {
                 removeItem(item, amount as number);
             });
 
-            if (recipe.isShelter) {
+            if (recipe.isShelter && recipe.level !== undefined) {
                 const playerPos = useGameStore.getState().playerPosition;
                 const bearing = useGameStore.getState().bearing * (Math.PI / 180);
                 const spawnPos: [number, number, number] = [
@@ -61,7 +49,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                     0,
                     playerPos[2] + Math.cos(bearing) * 4
                 ];
-                upgradeShelter(spawnPos);
+                addShelter(recipe.level, spawnPos);
             } else {
                 addItem(recipe.id === 'cooked_meat' ? 'cooked_meat' : recipe.id, recipe.output || 1);
             }
