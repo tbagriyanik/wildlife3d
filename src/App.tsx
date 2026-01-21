@@ -24,24 +24,27 @@ const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; 
     <motion.div
       animate={isCritical ? { scale: [1, 1.02, 1] } : {}}
       transition={isCritical ? { repeat: Infinity, duration: 1 } : {}}
-      className={`relative overflow-hidden bg-stone-900/80 rounded-[20px] p-3 border-2 transition-all duration-500 ${isCritical ? 'border-rose-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-white/5'}`}
+      className={`relative overflow-hidden bg-stone-900/90 rounded-2xl p-3 border-2 transition-all duration-500 ${isCritical ? 'border-rose-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'border-white/10'}`}
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className={`text-base ${isCritical ? 'animate-bounce' : ''}`}>{icon}</span>
-          <span className="text-[11px] font-black text-white/40 uppercase tracking-[0.1em]">{label}</span>
+          <span className={`text-xl ${isCritical ? 'animate-bounce' : ''}`}>{icon}</span>
+          <span className="text-[12px] font-black text-white/50 uppercase tracking-wide">{label}</span>
         </div>
-        <span className={`text-[12px] font-black tabular-nums ${isCritical ? 'text-rose-400' : 'text-white/80'}`}>
-          {actualValue || `${Math.round(value)}%`}
-        </span>
       </div>
-      <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden p-[2px]">
+      <div className="flex items-baseline gap-1 mb-2">
+        <span className={`text-2xl font-black tabular-nums ${isCritical ? 'text-rose-400' : 'text-white'}`}>
+          {actualValue ? actualValue.split('°')[0] : Math.round(value)}
+        </span>
+        <span className="text-sm font-bold text-white/40">{actualValue ? '°C' : '%'}</span>
+      </div>
+      <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.max(2, Math.min(100, value))}%` }}
-          className={`h-full ${color} rounded-full relative`}
+          className={`h-full ${color} rounded-full relative shadow-lg`}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent" />
         </motion.div>
       </div>
     </motion.div>
@@ -271,22 +274,22 @@ function App() {
       )}
 
 
-      {/* TOP-LEFT HUD - Direct Pixel Sizes */}
-      <div className="absolute top-8 left-8 z-50">
-        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-4 rounded-[20px] shadow-2xl w-[240px] border border-white/5">
-          <div className="flex justify-between items-end mb-3">
+      {/* TOP-LEFT HUD - Larger & More Readable */}
+      <div className="absolute top-6 left-6 z-50">
+        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-5 rounded-[24px] shadow-2xl w-[280px] border border-white/10">
+          <div className="flex justify-between items-end mb-4">
             <div>
-              <div className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">{t.day}</div>
-              <div className="text-3xl font-black text-emerald-400 italic leading-none tracking-tighter">
+              <div className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">{t.day}</div>
+              <div className="text-4xl font-black text-emerald-400 italic leading-none tracking-tighter">
                 {day}
               </div>
             </div>
-            <div className="text-xl font-black text-white tabular-nums tracking-tighter opacity-80 mb-0.5">
+            <div className="text-2xl font-black text-white tabular-nums tracking-tighter opacity-90">
               {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             <VitalCard label={t.health} value={health} color="bg-rose-500/20" icon="❤️" />
             <VitalCard label={t.hunger} value={hunger} color="bg-amber-500/20" icon="🍞" />
             <VitalCard label={t.thirst} value={thirst} color="bg-cyan-500/20" icon="💧" />
