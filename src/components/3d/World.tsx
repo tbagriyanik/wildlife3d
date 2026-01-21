@@ -75,7 +75,7 @@ export const World = () => {
             />
 
             {/* Sun Model */}
-            {!isNight && (
+            {!isNight && sunY > 5 && (
                 <mesh position={sunPosition}>
                     <sphereGeometry args={[4, 32, 32]} />
                     <meshBasicMaterial color={sunColor} />
@@ -83,7 +83,7 @@ export const World = () => {
             )}
 
             {/* Moon Model */}
-            {isNight && (
+            {isNight && moonPosition[1] > 5 && (
                 <group>
                     <Stars
                         radius={100}
@@ -135,7 +135,7 @@ export const World = () => {
 
             <mesh ref={planeRef as any} receiveShadow>
                 <planeGeometry args={[1000, 1000]} />
-                <meshStandardMaterial map={grassTexture} color="#2e3b23" roughness={0.9} metalness={0.95} envMapIntensity={0.5} />
+                <meshStandardMaterial map={grassTexture} color="#5e7a46" roughness={1} metalness={0} envMapIntensity={0.5} />
             </mesh>
 
 

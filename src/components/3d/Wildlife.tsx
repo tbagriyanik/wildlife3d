@@ -31,7 +31,7 @@ const AnimalAI = ({ children, position, fleeDistance, speed }: { children: React
             ));
         }
 
-        currentPos.current.lerp(targetPos, delta * speed);
+        currentPos.current.lerp(targetPos, delta * speed * 0.5);
         groupRef.current.position.copy(currentPos.current);
 
         const lookAtTarget = targetPos.clone();
@@ -45,7 +45,7 @@ const AnimalAI = ({ children, position, fleeDistance, speed }: { children: React
 };
 
 export const Deer = ({ position }: { position: [number, number, number] }) => (
-    <AnimalAI position={position} fleeDistance={15} speed={0.8}>
+    <AnimalAI position={position} fleeDistance={15} speed={0.4}>
         <mesh castShadow position={[0, 0.6, 0]}>
             <boxGeometry args={[0.4, 0.8, 1.2]} />
             <meshStandardMaterial color="#8d6e63" roughness={1} metalness={0} envMapIntensity={0} />
@@ -58,7 +58,7 @@ export const Deer = ({ position }: { position: [number, number, number] }) => (
 );
 
 export const Rabbit = ({ position }: { position: [number, number, number] }) => (
-    <AnimalAI position={position} fleeDistance={10} speed={2}>
+    <AnimalAI position={position} fleeDistance={10} speed={1.2}>
         <mesh castShadow position={[0, 0.2, 0]}>
             <sphereGeometry args={[0.3]} />
             <meshStandardMaterial color="#eeeeee" roughness={1} metalness={0} envMapIntensity={0} />
@@ -73,7 +73,7 @@ export const Bird = ({ position }: { position: [number, number, number] }) => {
     // Random circling parameters
     const [params] = useState({
         radius: 10 + Math.random() * 15,
-        speed: 0.5 + Math.random() * 0.5,
+        speed: 0.2 + Math.random() * 0.3,
         offset: Math.random() * Math.PI * 2,
         heightVar: Math.random() * 2
     });
