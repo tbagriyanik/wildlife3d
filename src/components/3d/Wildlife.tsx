@@ -1,13 +1,22 @@
 import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useSphere } from '@react-three/cannon';
 import * as THREE from 'three';
 import { useGameStore } from '../../store/useGameStore';
 
-const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal" }: { children: React.ReactNode, position: [number, number, number], fleeDistance: number, speed: number, name?: string }) => {
+const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id }: { children: React.ReactNode, position: [number, number, number], fleeDistance: number, speed: number, name?: string, id: string }) => {
     const groupRef = useRef<THREE.Group>(null);
     const playerPos = useGameStore((state) => state.playerPosition);
     const [targetPos, setTargetPos] = useState(new THREE.Vector3(...position));
     const currentPos = useRef(new THREE.Vector3(...position));
+
+    // Kinematic physics body for arrow collisions
+    const [physicsRef, api] = useSphere(() => ({
+        type: 'Kinematic',
+        args: [name === 'deer' ? 1 : 0.6], // Larger radius for deer
+        position: [...position],
+        userData: { id }
+    }));
 
     useFrame((_, delta) => {
         if (!groupRef.current) return;
@@ -33,6 +42,9 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal" }: 
         currentPos.current.lerp(targetPos, delta * speed * 0.5);
         groupRef.current.position.copy(currentPos.current);
 
+        // Sync physics body to AI position
+        api.position.set(currentPos.current.x, currentPos.current.y + (name === 'deer' ? 0.7 : 0.3), currentPos.current.z);
+
         const lookAtTarget = targetPos.clone();
         lookAtTarget.y = groupRef.current.position.y;
         if (groupRef.current.position.distanceTo(lookAtTarget) > 0.1) {
@@ -40,11 +52,20 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal" }: 
         }
     });
 
-    return <group ref={groupRef} name={name}>{children}</group>;
+    return (
+        <group ref={groupRef} name={name}>
+            {/* Physics target */}
+            <mesh ref={physicsRef as any}>
+                <sphereGeometry args={[name === 'deer' ? 1 : 0.6]} />
+                <meshStandardMaterial transparent opacity={0} />
+            </mesh>
+            {children}
+        </group>
+    );
 };
 
-export const Deer = ({ position }: { position: [number, number, number] }) => (
-    <AnimalAI position={position} fleeDistance={15} speed={0.4}>
+export const Deer = ({ position, id }: { position: [number, number, number], id: string }) => (
+    <AnimalAI position={position} fleeDistance={15} speed={0.4} id={id} name="deer">
         {/* Body */}
         <mesh castShadow position={[0, 0.7, 0]}>
             <boxGeometry args={[0.5, 0.8, 1.4]} />
@@ -84,8 +105,8 @@ export const Deer = ({ position }: { position: [number, number, number] }) => (
     </AnimalAI>
 );
 
-export const Rabbit = ({ position }: { position: [number, number, number] }) => (
-    <AnimalAI position={position} fleeDistance={10} speed={1.2}>
+export const Rabbit = ({ position, id }: { position: [number, number, number], id: string }) => (
+    <AnimalAI position={position} fleeDistance={10} speed={1.2} id={id} name="rabbit">
         <group scale={1.2}>
             {/* Body */}
             <mesh castShadow position={[0, 0.2, 0]}>
@@ -115,8 +136,8 @@ export const Rabbit = ({ position }: { position: [number, number, number] }) => 
     </AnimalAI>
 );
 
-export const Partridge = ({ position }: { position: [number, number, number] }) => (
-    <AnimalAI position={position} fleeDistance={8} speed={0.8}>
+export const Partridge = ({ position, id }: { position: [number, number, number], id: string }) => (
+    <AnimalAI position={position} fleeDistance={8} speed={0.8} id={id} name="partridge">
         <group scale={1.5}>
             {/* Body - Rounder */}
             <mesh castShadow position={[0, 0.25, 0]}>
@@ -146,7 +167,7 @@ export const Partridge = ({ position }: { position: [number, number, number] }) 
     </AnimalAI>
 );
 
-export const Bird = ({ position }: { position: [number, number, number] }) => {
+export const Bird = ({ position, id }: { position: [number, number, number], id: string }) => {
     const groupRef = useRef<THREE.Group>(null);
     const startPos = useRef(new THREE.Vector3(...position));
     const [params] = useState({
@@ -156,6 +177,14 @@ export const Bird = ({ position }: { position: [number, number, number] }) => {
         heightVar: 1 + Math.random() * 2
     });
 
+    // Bird physics body for arrow collisions
+    const [physicsRef, api] = useSphere(() => ({
+        type: 'Kinematic',
+        args: [1.5], // Large hitbox
+        position,
+        userData: { id }
+    }));
+
     useFrame((state) => {
         if (!groupRef.current) return;
         const time = state.clock.elapsedTime;
@@ -164,6 +193,9 @@ export const Bird = ({ position }: { position: [number, number, number] }) => {
         const y = startPos.current.y + Math.sin(time * params.speed * 2) * params.heightVar;
 
         groupRef.current.position.set(x, y, z);
+        // Sync physics body
+        api.position.set(x, y, z);
+
         const tangentX = -Math.sin(time * params.speed + params.offset);
         const tangentZ = Math.cos(time * params.speed + params.offset);
         groupRef.current.lookAt(new THREE.Vector3(x + tangentX, y, z + tangentZ));
@@ -171,10 +203,10 @@ export const Bird = ({ position }: { position: [number, number, number] }) => {
 
     return (
         <group ref={groupRef} name="animal">
-            {/* Bird Hunting Ease: Invisible large hitbox sphere */}
-            <mesh>
-                <sphereGeometry args={[1.5, 8, 8]} />
-                <meshBasicMaterial transparent opacity={0} />
+            {/* Physics target */}
+            <mesh ref={physicsRef as any}>
+                <sphereGeometry args={[1.5]} />
+                <meshStandardMaterial transparent opacity={0} />
             </mesh>
 
             <group rotation={[0, -Math.PI / 2, 0]} scale={1.8}>

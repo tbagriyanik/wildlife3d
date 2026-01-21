@@ -16,7 +16,13 @@ export const InteractionSystem = () => {
     const interactBuffer = useRef(false);
     const mouseBuffer = useRef(false);
 
+    const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen);
+
     useFrame(() => {
+        if (isAnyMenuOpen) {
+            if (useGameStore.getState().isHovering) useGameStore.getState().setHovering(false);
+            return;
+        }
         // Run raycaster every frame for hover detection
         raycaster.current.setFromCamera(new THREE.Vector2(0, 0), camera);
         const intersects = raycaster.current.intersectObjects(scene.children, true);
@@ -88,6 +94,14 @@ export const InteractionSystem = () => {
                     useGameStore.getState().updateResourceDurability('rocks', id, 25);
                     addItem('stone', 1);
                     playSound('stone');
+
+                    // 10% chance for flint stone
+                    if (Math.random() < 0.1) {
+                        addItem('flint_stone', 1);
+                        const state = useGameStore.getState();
+                        const t = TRANSLATIONS[state.language];
+                        state.addNotification(t.gather_flint, 'success');
+                    }
                 }
             } else if (name.includes('bush')) {
                 if (id) {

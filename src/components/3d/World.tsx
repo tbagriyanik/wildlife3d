@@ -189,11 +189,11 @@ export const World = () => {
 
 
                 {useGameStore.getState().wildlife.map((animal) => (
-                    <group key={animal.id} position={animal.position} name="animal" userData={{ id: animal.id }}>
-                        {animal.type === 'bird' || animal.id.includes('bird') ? <Bird position={[0, 0, 0]} /> :
-                            animal.id.includes('deer') || animal.type === 'deer' ? <Deer position={[0, 0, 0]} /> :
-                                animal.id.includes('partridge') || animal.type === 'partridge' ? <Partridge position={[0, 0, 0]} /> :
-                                    <Rabbit position={[0, 0, 0]} />}
+                    <group key={animal.id} position={animal.position} name="animal">
+                        {animal.type === 'bird' || animal.id.includes('bird') ? <Bird position={[0, 0, 0]} id={animal.id} /> :
+                            animal.id.includes('deer') || animal.type === 'deer' ? <Deer position={[0, 0, 0]} id={animal.id} /> :
+                                animal.id.includes('partridge') || animal.type === 'partridge' ? <Partridge position={[0, 0, 0]} id={animal.id} /> :
+                                    <Rabbit position={[0, 0, 0]} id={animal.id} />}
                     </group>
                 ))}
 

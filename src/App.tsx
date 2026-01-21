@@ -12,15 +12,44 @@ import { TRANSLATIONS } from './constants/translations';
 import { useKeyboard } from './hooks/useKeyboard';
 import { useMusic } from './hooks/useAudio';
 
-import { Maximize, Flame, Axe, Mountain, Target } from 'lucide-react';
+import { Maximize, Flame, Axe, Mountain, Target, Zap, Droplets } from 'lucide-react';
 import { Environment } from '@react-three/drei';
 import { motion } from 'framer-motion';
 
 
 
+const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => (
+  <div className="relative overflow-hidden bg-white/5 rounded-2xl p-2.5 border border-white/5 group transition-all duration-300 hover:bg-white/10">
+    <div className="flex items-center justify-between mb-1.5 px-1">
+      <div className="flex items-center gap-1.5">
+        <span className="text-sm filter drop-shadow-[#fff_0_0_2px]">{icon}</span>
+        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">{label}</span>
+      </div>
+      <span className="text-[10px] font-black text-white/80 tabular-nums">{actualValue || `${Math.round(value)}%`}</span>
+    </div>
+    <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        className={`h-full ${color} rounded-full relative shadow-[0_0_10px_rgba(255,255,255,0.1)]`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+      </motion.div>
+    </div>
+  </div>
+);
+
+const ResourceCard = ({ icon, count }: { icon: React.ReactNode; count: number }) => (
+  <div className="p-3.5 flex items-center justify-between group hover:bg-white/5 transition-colors">
+    <div className="opacity-60 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">{icon}</div>
+    <span className="text-sm font-black text-white/80 tabular-nums">{count}</span>
+  </div>
+);
+
 function App() {
   const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
 
+  const isAnyMenuOpen = isMenuOpen || isMainMenuOpen;
   const { craft: craftAction } = useKeyboard();
   const t = TRANSLATIONS[language];
 
@@ -160,7 +189,7 @@ function App() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-stone-950 overflow-hidden select-none">
+    <div className={`fixed inset-0 w-full h-full bg-stone-950 overflow-hidden select-none ${isAnyMenuOpen ? 'cursor-auto' : ''}`}>
       <div className="relative w-full h-full">
         <Canvas shadows camera={{ fov: 75, near: 0.1, far: 1000 }} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
           <Suspense fallback={null}>
@@ -265,34 +294,5 @@ function App() {
     </div >
   );
 }
-
-const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => (
-  <div className={`relative px-4 py-8 rounded-[24px] ${color} border border-white/5 flex flex-col items-center justify-center group transition-all hover:scale-[1.02] overflow-hidden`}>
-    <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        className="h-full bg-white/20"
-      />
-    </div>
-    <span className="text-4xl filter drop-shadow-md mb-3">{icon}</span>
-    <div className="flex items-baseline gap-1">
-      <span className="text-3xl font-black text-white tabular-nums tracking-tighter">
-        {actualValue ? actualValue.split('°')[0] : Math.round(value)}
-      </span>
-      <span className="text-[12px] font-black opacity-30 text-white italic">{actualValue ? '°C' : '%'}</span>
-    </div>
-    <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-40 text-white mt-1">{label}</span>
-  </div>
-);
-
-const ResourceCard = ({ icon, count }: { icon: any; count: number }) => (
-  <div className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-white/5 transition-all group">
-    <div className="bg-white/5 p-2 rounded-xl group-hover:bg-white/10 transition-colors">
-      {icon}
-    </div>
-    <span className="text-xl font-black text-white tabular-nums tracking-tighter">{count}</span>
-  </div>
-);
 
 export default App;
