@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameStore } from '../../store/useGameStore';
 import { useAudio } from '../../hooks/useAudio';
+import { TRANSLATIONS } from '../../constants/translations';
 
 export const InteractionSystem = () => {
     const { camera, scene } = useThree();
@@ -116,25 +117,24 @@ export const InteractionSystem = () => {
                     state.cookItem('apple');
                     playSound('gather');
                 } else {
+                    const t = TRANSLATIONS[state.language];
                     playSound('gather');
-                    useGameStore.getState().addNotification(
-                        useGameStore.getState().language === 'tr' ? 'PİŞİRECEK BİR ŞEY YOK' : 'NOTHING TO COOK',
-                        'info'
-                    );
+                    state.addNotification(t.nothing_to_cook, 'info');
                 }
             } else if (name.includes('shelter')) {
                 const state = useGameStore.getState();
                 const inv = state.inventory;
+                const t = TRANSLATIONS[state.language];
 
                 // Priority cooking: Meat then Apple
                 if (inv['meat'] > 0) {
                     state.cookItem('meat');
                     playSound('gather');
-                    state.addNotification(state.language === 'tr' ? 'BİFTEK PİŞİRİLDİ' : 'MEAT COOKED', 'success');
+                    state.addNotification(t.meat_cooked, 'success');
                 } else if (inv['apple'] > 0) {
                     state.cookItem('apple');
                     playSound('gather');
-                    state.addNotification(state.language === 'tr' ? 'ELMA PİŞİRİLDİ' : 'APPLE COOKED', 'success');
+                    state.addNotification(t.apple_cooked, 'success');
                 } else {
                     // If nothing to cook, perform sleep action
                     state.sleep();

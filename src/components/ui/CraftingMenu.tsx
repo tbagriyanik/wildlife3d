@@ -106,7 +106,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                                         <div className="text-xs font-semibold text-white/40 flex gap-2 mt-1">
                                             {Object.entries(recipe.cost).map(([item, amount]) => (
                                                 <span key={item} className="flex items-center gap-1 bg-black/30 px-2 py-0.5 rounded-full">
-                                                    {item.toUpperCase()} <span className="text-amber-500">{amount as number}</span>
+                                                    {(t as any)[item] || item.toUpperCase()} <span className="text-amber-500">{amount as number}</span>
                                                 </span>
                                             ))}
                                         </div>

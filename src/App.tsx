@@ -8,6 +8,7 @@ import { MainMenu } from './components/ui/MainMenu';
 import { Hotbar } from './components/ui/Hotbar';
 import { useGameStore } from './store/useGameStore';
 import { GAME_CONSTANTS } from './constants/gameConstants';
+import { TRANSLATIONS } from './constants/translations';
 import { useKeyboard } from './hooks/useKeyboard';
 import { useMusic } from './hooks/useAudio';
 
@@ -21,6 +22,7 @@ function App() {
   const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
 
   const { craft: craftAction } = useKeyboard();
+  const t = TRANSLATIONS[language];
 
   // Compass Logic - 3-way display
   const getDisplayDirections = (deg: number) => {
@@ -183,10 +185,15 @@ function App() {
           }`} />
       </div>
 
+      {/* CRITICAL CONDITION WARNING */}
+      {(health < 20 || hunger < 20 || thirst < 20) && (
+        <div className="fixed inset-0 z-[100] pointer-events-none shadow-[inset_0_0_150px_rgba(239,68,68,0.5)] animate-pulse border-[12px] border-rose-500/20" />
+      )}
+
       {/* SLEEP OVERLAY */}
       {isSleeping && (
-        <div className="fixed inset-0 bg-black z-[200] animate-in fade-in duration-500 flex items-center justify-center">
-          <div className="text-white font-black text-4xl tracking-tighter animate-pulse uppercase">
+        <div className="fixed inset-0 bg-black z-[1000] animate-in fade-in duration-1000 flex items-center justify-center">
+          <div className="text-white font-black text-5xl tracking-[0.5em] animate-pulse">
             {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
           </div>
         </div>
@@ -198,7 +205,7 @@ function App() {
         <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-5 rounded-[28px] shadow-2xl min-w-[300px] border border-white/5">
           <div className="flex justify-between items-end mb-4">
             <div>
-              <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">DAY</div>
+              <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">{t.day}</div>
               <div className="text-5xl font-black text-emerald-400 italic leading-none tracking-tighter">
                 {day}
               </div>
@@ -209,10 +216,10 @@ function App() {
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            <VitalCard label="HEALTH" value={health} color="bg-rose-500/20" icon="❤️" />
-            <VitalCard label="HUNGER" value={hunger} color="bg-amber-500/20" icon="🍞" />
-            <VitalCard label="THIRST" value={thirst} color="bg-cyan-500/20" icon="💧" />
-            <VitalCard label="WARMTH" value={(temperature / 50) * 100} color="bg-purple-500/20" icon="🔥" actualValue={`${Math.round(temperature)}°C`} />
+            <VitalCard label={t.health} value={health} color="bg-rose-500/20" icon="❤️" />
+            <VitalCard label={t.hunger} value={hunger} color="bg-amber-500/20" icon="🍞" />
+            <VitalCard label={t.thirst} value={thirst} color="bg-cyan-500/20" icon="💧" />
+            <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-purple-500/20" icon="🔥" actualValue={`${Math.round(temperature)}°C`} />
           </div>
         </div>
       </div>
