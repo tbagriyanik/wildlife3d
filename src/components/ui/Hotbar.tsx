@@ -1,81 +1,79 @@
 import { useGameStore } from '../../store/useGameStore';
 import { useAudio } from '../../hooks/useAudio';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Hotbar = () => {
     const { inventory, activeSlot, setActiveSlot } = useGameStore();
     const { playSound } = useAudio();
 
-    // Define items to show in hotbar slots based on common survival items
-    // In a real game, this would be an array of slot objects in the store.
-    // For this mockup alignment, we'll map existing inventory items to slots.
     const slots = [
-        { id: 'bow', icon: '🏹', color: 'bg-indigo-500/50' },
-        { id: 'torch', icon: '🔦', color: 'bg-amber-500/50' },
-        { id: 'water', icon: (inventory['water'] || 0) > 0 ? '💧' : '🫙', color: 'bg-blue-500/50' },
-        { id: 'meat', icon: '🍖', color: 'bg-rose-500/50' },
-        { id: 'cooked_meat', icon: '🍗', color: 'bg-orange-500/50' },
-        { id: 'apple', icon: '🍏', color: 'bg-emerald-500/50' },
-        { id: 'baked_apple', icon: '🍎', color: 'bg-red-500/50' },
-        { id: 'campfire', icon: '🔥', color: 'bg-orange-600/50' },
+        { id: 'bow', icon: '🏹', label: 'BOW' },
+        { id: 'torch', icon: '🔦', label: 'TORCH' },
+        { id: 'water', icon: (inventory['water'] || 0) > 0 ? '💧' : '🫙', label: 'WATER' },
+        { id: 'meat', icon: '🍖', label: 'MEAT' },
+        { id: 'cooked_meat', icon: '🍗', label: 'COOKED' },
+        { id: 'apple', icon: '🍏', label: 'APPLE' },
+        { id: 'baked_apple', icon: '🍎', label: 'BAKED' },
+        { id: 'campfire', icon: '🔥', label: 'FIRE' },
     ];
-
-
 
     return (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-            <div className="glass border-white/5 bg-black/20 px-2 py-2 rounded-full flex gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                {slots.map((slot, i) => (
-                    <div
-                        key={i}
-                        onClick={() => {
-                            const consumables = ['water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
-                            if (consumables.includes(slot.id)) {
+            <div className="glass bg-black/40 backdrop-blur-2xl border border-white/10 p-2 rounded-[28px] flex gap-2.5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+                {slots.map((slot, i) => {
+                    const count = slot.id === 'water' ? (inventory['water'] || inventory['waterEmpty'] || 0) : inventory[slot.id];
+                    const isActive = activeSlot === i;
 
-                                if (inventory[slot.id] > 0) {
-                                    useGameStore.getState().consumeItem(slot.id);
-                                    playSound(slot.id === 'water' ? 'water' : 'eat');
+                    return (
+                        <motion.div
+                            key={i}
+                            whileHover={{ y: -4, scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                const consumables = ['water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
+                                if (consumables.includes(slot.id)) {
+                                    if (inventory[slot.id] > 0) {
+                                        useGameStore.getState().consumeItem(slot.id);
+                                        playSound(slot.id === 'water' ? 'water' : 'eat');
+                                    }
+                                } else {
+                                    setActiveSlot(i);
                                 }
-                            } else {
-                                setActiveSlot(i);
-                            }
-                        }}
+                            }}
+                            className={`relative w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 ${isActive
+                                    ? 'bg-indigo-500/20 border-2 border-indigo-500/50 shadow-[0_0_25px_rgba(99,102,241,0.4)]'
+                                    : 'bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20'
+                                }`}
+                        >
+                            <span className="absolute top-1 left-2 text-[8px] font-black text-white/30 tracking-tighter">
+                                {i + 1}
+                            </span>
 
-                        className={`relative w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 group ${activeSlot === i
-                            ? 'bg-indigo-500/30 ring-2 ring-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.3)]'
-                            : 'bg-white/5 hover:bg-white/10'
-                            }`}
-                    >
+                            <span className={`text-2xl filter drop-shadow-lg transition-transform ${isActive ? 'scale-110' : 'opacity-80'}`}>
+                                {slot.icon}
+                            </span>
 
-                        {/* Slot Number */}
-                        <span className="absolute top-1 left-2 text-[7px] font-black text-white/30 uppercase">
-                            {i + 1}
-                        </span>
+                            <AnimatePresence>
+                                {count > 0 && (
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute -bottom-1 -right-1 w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center border-2 border-stone-900 shadow-xl"
+                                    >
+                                        <span className="text-[10px] font-black text-white">{count}</span>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
-                        {/* Icon */}
-                        <span className={`text-xl transition-transform duration-300 ${activeSlot === i ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'opacity-70 group-hover:opacity-100 group-hover:scale-105'}`}>
-                            {slot.icon}
-                        </span>
-
-                        {/* Quantity Badge */}
-                        {(inventory[slot.id] > 0 || (slot.id === 'water' && inventory['waterEmpty'] > 0)) && (
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-stone-900 shadow-lg">
-                                <span className="text-[9px] font-black text-white leading-none">
-                                    {slot.id === 'water' ? (inventory['water'] || inventory['waterEmpty'] || 0) : inventory[slot.id]}
-                                </span>
-                            </div>
-                        )}
-
-
-                        {/* Cherry/Apple quantity specific display just to match mockup visuals if needed */}
-                        {slot.id === 'apple' && inventory['apple'] > 0 && (
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-stone-900 shadow-lg">
-                                <span className="text-[9px] font-black text-white leading-none">
-                                    {inventory['apple']}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                ))}
+                            {isActive && (
+                                <motion.div
+                                    layoutId="active-slot-glow"
+                                    className="absolute -inset-1 bg-indigo-500/10 rounded-[20px] pointer-events-none blur-md"
+                                />
+                            )}
+                        </motion.div>
+                    );
+                })}
             </div>
         </div>
     );

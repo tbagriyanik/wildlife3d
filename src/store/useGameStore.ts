@@ -113,6 +113,9 @@ export interface GameState {
     shelterLevel: number; // 0: none, 1: tent, 2: hut, 3: house
     shelterPosition: [number, number, number] | null;
 
+    isSleeping: boolean;
+    sleep: () => void;
+
     removeWildlife: (id: string) => void;
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
     stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number]) => void;
@@ -196,6 +199,7 @@ export const useGameStore = create<GameState>()(
             placedItems: [],
             shelterLevel: 0,
             shelterPosition: null,
+            isSleeping: false,
 
 
 
@@ -450,6 +454,15 @@ export const useGameStore = create<GameState>()(
                 shelterLevel: Math.min(3, state.shelterLevel + 1),
                 shelterPosition: state.shelterPosition || position
             })),
+
+            sleep: () => {
+                set({ isSleeping: true });
+                setTimeout(() => {
+                    const state = useGameStore.getState();
+                    state.setGameTime(state.gameTime + 500); // 5 hours
+                    set({ isSleeping: false });
+                }, 2000); // 2 second transition
+            },
 
             resetGame: () => set({
                 health: 100,

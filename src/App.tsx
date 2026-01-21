@@ -6,7 +6,6 @@ import { Player } from './components/3d/Player';
 import { CraftingMenu } from './components/ui/CraftingMenu';
 import { MainMenu } from './components/ui/MainMenu';
 import { Hotbar } from './components/ui/Hotbar';
-import { FpsDisplay } from './components/ui/FpsDisplay';
 import { useGameStore } from './store/useGameStore';
 import { GAME_CONSTANTS } from './constants/gameConstants';
 import { TRANSLATIONS } from './constants/translations';
@@ -15,11 +14,12 @@ import { useMusic } from './hooks/useAudio';
 
 import { Maximize, Flame, Axe, Mountain, Target } from 'lucide-react';
 import { Environment } from '@react-three/drei';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 
 function App() {
-  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, setLanguage, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering } = useGameStore();
+  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, setLanguage, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
 
   const { craft: craftAction } = useKeyboard();
   const t = TRANSLATIONS[language];
@@ -180,55 +180,60 @@ function App() {
       {/* CROSSHAIR */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
         <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 shadow-[0_0_10px_rgba(255,255,255,1)] ${isHovering
-          ? 'bg-yellow-400 scale-150 shadow-[0_0_15px_rgba(250,204,21,0.8)]'
+          ? 'bg-yellow-400 scale-150 shadow-[0_0_15px_rgba(250,204,21,1)]'
           : 'bg-white opacity-60'
           }`} />
       </div>
 
+      {/* SLEEP OVERLAY */}
+      {isSleeping && (
+        <div className="fixed inset-0 bg-black z-[200] animate-in fade-in duration-500 flex items-center justify-center">
+          <div className="text-white font-black text-4xl tracking-tighter animate-pulse uppercase">
+            {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
+          </div>
+        </div>
+      )}
 
-      {/* TOP-LEFT HUD - Compact & Large Text */}
-      <div className="absolute top-6 left-6 z-50 w-64">
-        <div className="glass bg-black/60 backdrop-blur-xl px-5 py-5 rounded-[24px] border border-white/10 shadow-2xl flex flex-col gap-5">
-          {/* Header Section */}
-          <div>
-            <h2 className="text-3xl font-black text-white tracking-tighter uppercase tabular-nums leading-none mb-2">
+
+      {/* TOP-LEFT HUD */}
+      <div className="absolute top-8 left-8 z-50">
+        <div className="glass bg-stone-950/40 backdrop-blur-3xl p-6 rounded-[32px] border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] flex flex-col gap-6 min-w-[280px]">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-[10px] font-black tracking-[0.2em] text-white/40 uppercase mb-1">{t.time || 'SURVIVAL CLOCK'}</div>
+              <h2 className="text-4xl font-black text-white tracking-tighter tabular-nums leading-none">
+                {String(Math.floor(gameTime / 100)).padStart(2, '0')}<span className="animate-pulse">:</span>{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
+              </h2>
+            </div>
+            <div className="bg-white/5 px-3 py-1 rounded-full border border-white/10 text-[10px] font-black text-white/60 tracking-widest uppercase">
               {t.day} {day}
-            </h2>
-            <div className="flex items-center justify-between">
-              <div className="text-[10px] font-bold tracking-widest text-white/60 uppercase">
-                {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
-              </div>
-              <FpsDisplay />
             </div>
           </div>
 
-          <div className="h-px w-full bg-white/10" />
-
-          {/* Vitals Section */}
-          <div className="space-y-4">
-            <VitalRow label={t.health} value={health} color="bg-rose-500" />
-            <VitalRow label={t.hunger} value={hunger} color="bg-amber-500" />
-            <VitalRow label={t.thirst} value={thirst} color="bg-blue-500" />
-            <VitalRow label={t.temp} value={(temperature / 50) * 100} color="bg-rose-400" actualValue={`${Math.round(temperature)}°C`} />
+          <div className="space-y-5">
+            <VitalRow label={t.health} value={health} color="bg-rose-500" icon="❤️" />
+            <VitalRow label={t.hunger} value={hunger} color="bg-amber-500" icon="🍖" />
+            <VitalRow label={t.thirst} value={thirst} color="bg-cyan-500" icon="💧" />
+            <VitalRow label={t.temp} value={(temperature / 50) * 100} color="bg-orange-400" actualValue={`${Math.round(temperature)}°C`} icon="🌡️" />
           </div>
         </div>
       </div>
 
       {/* TOP-RIGHT CONTROLS */}
-      <div className="absolute top-6 right-6 z-50 flex items-center gap-4">
-        <div className="glass bg-black/30 rounded-[32px] px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-xl w-40">
-          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
-          <div className="w-[1px] h-4 bg-white/10" />
-          <span className="text-sm font-black text-white tabular-nums uppercase transition-all duration-300 scale-110 w-6 text-center">{dirCenter}</span>
-          <div className="w-[1px] h-4 bg-white/10" />
-          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
+      <div className="absolute top-8 right-8 z-50 flex items-center gap-4">
+        <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-8 py-4 flex items-center justify-center gap-6 border-white/5 shadow-2xl">
+          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-8 text-center">{dirLeft}</span>
+          <div className="w-[1px] h-6 bg-white/10" />
+          <span className="text-sm font-black text-white tabular-nums uppercase transition-all scale-125 w-8 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
+          <div className="w-[1px] h-6 bg-white/10" />
+          <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-8 text-center">{dirRight}</span>
         </div>
 
-        <button onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')} className="glass bg-black/30 w-14 h-14 rounded-[20px] flex items-center justify-center text-[10px] font-black text-white shadow-xl hover:bg-white/10 transition-all active:scale-90 border-white/5 uppercase">
+        <button onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-[11px] font-black text-white shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5 uppercase">
           {language}
         </button>
-        <button onClick={toggleFullScreen} className="glass bg-black/30 w-14 h-14 rounded-[20px] flex items-center justify-center text-white/40 shadow-xl hover:bg-white/10 transition-all active:scale-90 border-white/5">
-          <Maximize size={18} />
+        <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
+          <Maximize size={20} />
         </button>
       </div>
 
@@ -245,9 +250,9 @@ function App() {
 
       {/* DYNAMIC NOTIFICATIONS (Bottom Left) */}
       <div className="absolute bottom-10 left-10 z-50 flex flex-col gap-3">
-        {notifications.map((n) => (
-          <div key={n.id} className="bg-indigo-600/90 backdrop-blur-md px-6 py-4 rounded-[20px] flex items-center gap-4 shadow-[0_10px_30px_rgba(79,70,229,0.4)] border border-indigo-500/50 animate-in fade-in slide-in-from-left duration-300">
-            <Target size={18} className="text-white" />
+        {notifications.slice(-5).map((n) => (
+          <div key={n.id} className="bg-stone-900/90 backdrop-blur-md px-6 py-4 rounded-[20px] flex items-center gap-4 shadow-2xl border border-white/10 animate-in fade-in slide-in-from-left duration-300">
+            <div className={`w-2 h-2 rounded-full ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'}`} />
             <span className="text-xs font-black text-white uppercase tracking-tighter">{n.message}</span>
           </div>
         ))}
@@ -257,22 +262,32 @@ function App() {
   );
 }
 
-const VitalRow = ({ label, value, color, actualValue }: { label: string; value: number; color: string; actualValue?: string }) => (
-  <div className="flex flex-col gap-2">
-    <div className="flex justify-between items-center pr-1">
-      <span className="text-[10px] font-black text-white/40 tracking-widest uppercase">{label}</span>
-      <span className="text-[10px] font-black text-white/90 tabular-nums">{actualValue || `${Math.round(value)}%`}</span>
+const VitalRow = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => (
+  <div className="flex flex-col gap-1.5 group">
+    <div className="flex justify-between items-center px-1">
+      <div className="flex items-center gap-2">
+        <span className="text-sm scale-110 grayscale group-hover:grayscale-0 transition-all">{icon}</span>
+        <span className="text-[10px] font-black text-white/40 tracking-[0.1em] uppercase group-hover:text-white/60 transition-colors">{label}</span>
+      </div>
+      <span className="text-[10px] font-black text-white/80 tabular-nums">{actualValue || `${Math.round(value)}%`}</span>
     </div>
-    <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden">
-      <div className={`h-full ${color} transition-all duration-700 ease-out shadow-[0_0_10px_currentColor]`} style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
+    <div className="h-[4px] w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className={`h-full ${color} shadow-[0_0_12px_rgba(255,255,255,0.2)]`}
+      />
     </div>
   </div>
 );
 
 const ResourceCard = ({ icon, count }: { icon: any; count: number }) => (
-  <div className="glass bg-white/5 backdrop-blur-3xl px-4 py-3 rounded-[20px] flex items-center gap-4 border-white/5 shadow-2xl min-w-[90px] transition-all hover:translate-x-[-8px]">
-    {icon}
-    <span className="text-base font-black text-white tabular-nums">{count}</span>
+  <div className="glass bg-stone-950/40 backdrop-blur-3xl px-5 py-4 rounded-2xl flex items-center gap-4 border border-white/5 shadow-xl min-w-[100px] transition-all hover:translate-x-[-12px] hover:bg-white/5 group">
+    <div className="bg-white/5 p-2 rounded-lg group-hover:bg-white/10 transition-colors">
+      {icon}
+    </div>
+    <span className="text-lg font-black text-white tabular-nums tracking-tight">{count}</span>
   </div>
 );
 
