@@ -110,10 +110,14 @@ export interface GameState {
     respawnDaily: () => void;
 
 
+    shelterLevel: number; // 0: none, 1: tent, 2: hut, 3: house
+    shelterPosition: [number, number, number] | null;
+
     removeWildlife: (id: string) => void;
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
     stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number]) => void;
     removeProjectile: (id: string) => void;
+    upgradeShelter: (position: [number, number, number]) => void;
     resetGame: () => void;
 
 
@@ -190,6 +194,8 @@ export const useGameStore = create<GameState>()(
             ],
             projectiles: [],
             placedItems: [],
+            shelterLevel: 0,
+            shelterPosition: null,
 
 
 
@@ -440,6 +446,11 @@ export const useGameStore = create<GameState>()(
                 projectiles: state.projectiles.filter(p => p.id !== id)
             })),
 
+            upgradeShelter: (position) => set((state) => ({
+                shelterLevel: Math.min(3, state.shelterLevel + 1),
+                shelterPosition: state.shelterPosition || position
+            })),
+
             resetGame: () => set({
                 health: 100,
                 hunger: 100,
@@ -451,7 +462,9 @@ export const useGameStore = create<GameState>()(
                 worldResources: generateResources(),
                 placedItems: [],
                 projectiles: [],
-                playerPosition: [0, 2, 0]
+                playerPosition: [0, 2, 0],
+                shelterLevel: 0,
+                shelterPosition: null
             })
 
         }),
@@ -471,7 +484,9 @@ export const useGameStore = create<GameState>()(
                 masterVolume: state.masterVolume,
                 placedItems: state.placedItems,
                 wildlife: state.wildlife,
-                torchFuel: state.torchFuel
+                torchFuel: state.torchFuel,
+                shelterLevel: state.shelterLevel,
+                shelterPosition: state.shelterPosition
             })
 
 

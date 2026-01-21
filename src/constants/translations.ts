@@ -32,6 +32,10 @@ export const TRANSLATIONS = {
         out_of_arrows_msg: "OUT OF ARROWS",
         campfire_placed_msg: "CAMPFIRE PLACED",
         new_torch_msg: "NEW TORCH LIT",
+        tent: "TENT",
+        hut: "HUT",
+        house: "HOUSE",
+        upgrade: "UPGRADE",
         recipes: {
             water: { name: "Canteen", desc: "Used to store and drink water." },
             campfire: { name: "Campfire", desc: "Provides warmth and allows cooking." },
@@ -102,6 +106,10 @@ export const TRANSLATIONS = {
         out_of_arrows_msg: "OKUNUZ BİTTİ",
         campfire_placed_msg: "KAMP ATEŞİ YAKILDI",
         new_torch_msg: "YENİ MEŞALE YAKILDI",
+        tent: "ÇADIR",
+        hut: "KÜLÜBE",
+        house: "EV",
+        upgrade: "YÜKSELTME",
         recipes: {
             water: { name: "Su Matarası", desc: "Su depolamak ve içmek için kullanılır." },
             campfire: { name: "Kamp Ateşi", desc: "Sıcaklık sağlar ve yemek pişirmeye yarar." },

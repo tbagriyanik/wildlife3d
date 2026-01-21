@@ -5,7 +5,7 @@ import { X, Hammer, Flame } from 'lucide-react';
 import { useAudio } from '../../hooks/useAudio';
 
 export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
-    const { inventory, addItem, removeItem, language } = useGameStore();
+    const { inventory, addItem, removeItem, language, shelterLevel, upgradeShelter } = useGameStore();
     const t = TRANSLATIONS[language];
     const { playSound } = useAudio();
 
@@ -15,7 +15,15 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
         cost: Record<string, number>;
         output?: number;
         icon: React.ReactNode;
+        isShelter?: boolean;
     }
+
+    const shelterNames = [t.tent || 'TENT', t.hut || 'HUT', t.house || 'HOUSE'];
+    const shelterCosts = [
+        { wood: 10, stone: 5 },
+        { wood: 20, stone: 15 },
+        { wood: 40, stone: 30 }
+    ];
 
     const recipes: Recipe[] = [
         { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
@@ -23,6 +31,17 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
         { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 4 }, icon: <Flame size={20} /> },
         { id: 'arrow', name: t.arrow || 'ARROW (5x)', cost: { wood: 1, stone: 1 }, output: 5, icon: <Hammer size={20} /> },
     ];
+
+    // Add shelter upgrade if not max level
+    if (shelterLevel < 3) {
+        recipes.push({
+            id: 'shelter',
+            name: `${t.upgrade || 'UPGRADE'}: ${shelterNames[shelterLevel]}`,
+            cost: shelterCosts[shelterLevel],
+            icon: <Hammer size={20} />,
+            isShelter: true
+        });
+    }
 
     const canCraft = (cost: Record<string, number>) => {
         return Object.entries(cost).every(([item, amount]) => (inventory[item] || 0) >= amount);
@@ -33,7 +52,19 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
             Object.entries(recipe.cost).forEach(([item, amount]) => {
                 removeItem(item, amount as number);
             });
-            addItem(recipe.id === 'cooked_meat' ? 'cooked_meat' : recipe.id, recipe.output || 1);
+
+            if (recipe.isShelter) {
+                const playerPos = useGameStore.getState().playerPosition;
+                const bearing = useGameStore.getState().bearing * (Math.PI / 180);
+                const spawnPos: [number, number, number] = [
+                    playerPos[0] + Math.sin(bearing) * 4,
+                    0,
+                    playerPos[2] + Math.cos(bearing) * 4
+                ];
+                upgradeShelter(spawnPos);
+            } else {
+                addItem(recipe.id === 'cooked_meat' ? 'cooked_meat' : recipe.id, recipe.output || 1);
+            }
             playSound('craft');
         }
     };

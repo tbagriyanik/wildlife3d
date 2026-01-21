@@ -46,22 +46,61 @@ const AnimalAI = ({ children, position, fleeDistance, speed }: { children: React
 
 export const Deer = ({ position }: { position: [number, number, number] }) => (
     <AnimalAI position={position} fleeDistance={15} speed={0.4}>
+        {/* Body */}
         <mesh castShadow position={[0, 0.6, 0]}>
             <boxGeometry args={[0.4, 0.8, 1.2]} />
-            <meshStandardMaterial color="#8d6e63" roughness={1} metalness={0} envMapIntensity={0} />
+            <meshStandardMaterial color="#8d6e63" roughness={1} metalness={0} />
         </mesh>
-        <mesh castShadow position={[0, 1.2, 0.6]}>
-            <boxGeometry args={[0.3, 0.4, 0.4]} />
-            <meshStandardMaterial color="#8d6e63" roughness={1} metalness={0} envMapIntensity={0} />
-        </mesh>
+        {/* Neck & Head */}
+        <group position={[0, 1.2, 0.5]}>
+            <mesh castShadow position={[0, 0, 0.1]}>
+                <boxGeometry args={[0.2, 0.6, 0.2]} />
+                <meshStandardMaterial color="#8d6e63" />
+            </mesh>
+            <mesh castShadow position={[0, 0.3, 0.3]}>
+                <boxGeometry args={[0.3, 0.3, 0.4]} />
+                <meshStandardMaterial color="#8d6e63" />
+            </mesh>
+            {/* Ears */}
+            <mesh position={[0.15, 0.5, 0.3]} rotation={[0, 0, 0.2]}>
+                <boxGeometry args={[0.05, 0.2, 0.1]} />
+                <meshStandardMaterial color="#5d4037" />
+            </mesh>
+            <mesh position={[-0.15, 0.5, 0.3]} rotation={[0, 0, -0.2]}>
+                <boxGeometry args={[0.05, 0.2, 0.1]} />
+                <meshStandardMaterial color="#5d4037" />
+            </mesh>
+        </group>
+        {/* Legs */}
+        {[[-0.15, 0.2, 0.4], [0.15, 0.2, 0.4], [-0.15, 0.2, -0.4], [0.15, 0.2, -0.4]].map((pos, i) => (
+            <mesh key={i} position={pos as [number, number, number]} castShadow>
+                <boxGeometry args={[0.1, 0.4, 0.1]} />
+                <meshStandardMaterial color="#5d4037" />
+            </mesh>
+        ))}
     </AnimalAI>
 );
 
 export const Rabbit = ({ position }: { position: [number, number, number] }) => (
     <AnimalAI position={position} fleeDistance={10} speed={1.2}>
+        {/* Body */}
         <mesh castShadow position={[0, 0.2, 0]}>
-            <sphereGeometry args={[0.3]} />
-            <meshStandardMaterial color="#eeeeee" roughness={1} metalness={0} envMapIntensity={0} />
+            <sphereGeometry args={[0.3, 8, 8]} />
+            <meshStandardMaterial color="#eeeeee" roughness={1} metalness={0} />
+        </mesh>
+        {/* Head */}
+        <mesh castShadow position={[0, 0.4, 0.2]}>
+            <sphereGeometry args={[0.15, 8, 8]} />
+            <meshStandardMaterial color="#eeeeee" />
+        </mesh>
+        {/* Ears */}
+        <mesh position={[0.05, 0.6, 0.2]} rotation={[0.2, 0, 0]}>
+            <boxGeometry args={[0.05, 0.3, 0.1]} />
+            <meshStandardMaterial color="#ffcdd2" />
+        </mesh>
+        <mesh position={[-0.05, 0.6, 0.2]} rotation={[0.2, 0, 0]}>
+            <boxGeometry args={[0.05, 0.3, 0.1]} />
+            <meshStandardMaterial color="#ffcdd2" />
         </mesh>
     </AnimalAI>
 );
@@ -104,6 +143,16 @@ export const Bird = ({ position }: { position: [number, number, number] }) => {
                 <mesh castShadow>
                     <coneGeometry args={[0.2, 0.8, 8]} />
                     <meshStandardMaterial color="#333" />
+                </mesh>
+                {/* Head */}
+                <mesh position={[0, 0.45, 0]}>
+                    <sphereGeometry args={[0.15, 8, 8]} />
+                    <meshStandardMaterial color="#333" />
+                </mesh>
+                {/* Beak */}
+                <mesh position={[0, 0.45, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+                    <coneGeometry args={[0.05, 0.2, 4]} />
+                    <meshStandardMaterial color="#ffa000" />
                 </mesh>
                 {/* Wings - flapping */}
                 <Wing side={1} />

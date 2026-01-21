@@ -99,6 +99,26 @@ function App() {
         }
       });
 
+      // Warmth from Torch
+      const activeSlot = useGameStore.getState().activeSlot;
+      const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple', 'campfire'];
+      if (slotItems[activeSlot] === 'torch' && (useGameStore.getState().inventory['torch'] || 0) > 0) {
+        warmthModifier += 10; // Torch provides steady warmth
+      }
+
+      // Warmth from Shelter
+      if (useGameStore.getState().shelterLevel > 0 && useGameStore.getState().shelterPosition) {
+        const sPos = useGameStore.getState().shelterPosition!;
+        const distToShelter = Math.sqrt(
+          Math.pow(sPos[0] - playerPos[0], 2) +
+          Math.pow(sPos[2] - playerPos[2], 2)
+        );
+        if (distToShelter < 4) {
+          warmthModifier += 15; // Shelter is warm
+          isResting = true; // Resting in shelter
+        }
+      }
+
       // Update Campfire Fuel
       useGameStore.getState().updateCampfires(1); // 1 second delta
 

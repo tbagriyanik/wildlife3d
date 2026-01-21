@@ -14,6 +14,7 @@ import { Water } from './Water';
 
 import { Deer, Rabbit, Bird } from './Wildlife';
 import { Fire } from './Fire';
+import { Shelter } from './Shelter';
 import * as THREE from 'three';
 
 
@@ -103,7 +104,18 @@ export const World = () => {
             )}
 
 
-            <ambientLight intensity={isNight ? 0.1 : isCloudy ? 0.15 : 0.4 + sunsetFactor * 0.1} color={isNight ? '#4a5ab5' : '#ffffff'} />
+            {/* Ambient Light - Reduced at night (90% reduction from 0.1 to 0.01) */}
+            <ambientLight
+                intensity={isNight ? 0.01 : isCloudy ? 0.15 : 0.3}
+                color={isNight ? '#1a1a2e' : '#ffffff'}
+            />
+
+            {/* Blue Tint Fill Light (Day and Night) - helps with tree tops */}
+            <hemisphereLight
+                intensity={isNight ? 0.1 : 0.5}
+                color="#8bb4ff"
+                groundColor="#2c3e50"
+            />
 
             {/* Sun Light */}
             <directionalLight
@@ -161,6 +173,14 @@ export const World = () => {
                 <group name="water">
                     <Water position={[-40, 0.01, -20]} size={[15, 0.5, 15]} />
                 </group>
+
+                {/* Shelter */}
+                {useGameStore.getState().shelterPosition && (
+                    <Shelter
+                        level={useGameStore.getState().shelterLevel}
+                        position={useGameStore.getState().shelterPosition!}
+                    />
+                )}
 
 
 

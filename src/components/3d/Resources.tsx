@@ -62,7 +62,7 @@ export const Tree = memo(({ id, position, variation, durability }: ResourceProps
             {/* Leaves */}
             <mesh position={[0, trunkHeight * 0.85, 0]} castShadow name="tree_leaves" userData={{ id }}>
                 <sphereGeometry args={[leafSize]} />
-                <meshStandardMaterial map={leafTexture} color="#3d5225" roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
+                <meshStandardMaterial map={leafTexture} color="#3d5225" roughness={1} metalness={0} envMapIntensity={0.5} />
             </mesh>
         </group>
     );
@@ -116,15 +116,15 @@ export const PineTree = memo(({ id, position, variation, durability }: ResourceP
             {/* Conical needle segments */}
             <mesh position={[0, trunkHeight * 0.6, 0]} castShadow name="tree_leaves" userData={{ id }}>
                 <coneGeometry args={[baseWidth, trunkHeight * 0.5, 8]} />
-                <meshStandardMaterial map={needleTexture} color="#1b2611" roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
+                <meshStandardMaterial map={needleTexture} color="#1b2611" roughness={1} metalness={0} envMapIntensity={0.5} />
             </mesh>
             <mesh position={[0, trunkHeight * 0.85, 0]} castShadow name="tree_leaves" userData={{ id }}>
                 <coneGeometry args={[baseWidth * 0.75, trunkHeight * 0.4, 8]} />
-                <meshStandardMaterial map={needleTexture} color="#1b2611" roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
+                <meshStandardMaterial map={needleTexture} color="#1b2611" roughness={1} metalness={0} envMapIntensity={0.5} />
             </mesh>
             <mesh position={[0, trunkHeight * 1.05, 0]} castShadow name="tree_leaves" userData={{ id }}>
                 <coneGeometry args={[baseWidth * 0.5, trunkHeight * 0.3, 8]} />
-                <meshStandardMaterial map={needleTexture} color="#1b2611" roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
+                <meshStandardMaterial map={needleTexture} color="#1b2611" roughness={1} metalness={0} envMapIntensity={0.5} />
             </mesh>
         </group>
     );
@@ -202,16 +202,29 @@ export const Bush = memo(({ id, position, variation, durability }: ResourceProps
         }
     });
 
+    const berries = useMemo(() => {
+        return Array.from({ length: 5 }).map((_, i) => ({
+            id: i,
+            position: [
+                (Math.random() - 0.5) * scale * 1.5,
+                scale * 0.5 + Math.random() * scale,
+                (Math.random() - 0.5) * scale * 1.5
+            ] as [number, number, number]
+        }));
+    }, [scale]);
+
     return (
         <group ref={ref as any} name="bush" userData={{ id }}>
             <mesh castShadow scale={[scale, scale, scale]} name="bush_main" userData={{ id }}>
                 <sphereGeometry args={[1]} />
-                <meshStandardMaterial map={bushTexture} roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
+                <meshStandardMaterial map={bushTexture} roughness={1} metalness={0} envMapIntensity={0.5} />
             </mesh>
-            <mesh position={[scale * 0.7, scale * 0.7, scale * 0.7]} name="bush_berry" userData={{ id }}>
-                <sphereGeometry args={[0.2 * scale]} />
-                <meshStandardMaterial color="#d32f2f" roughness={0.9} metalness={0.05} envMapIntensity={0.5} />
-            </mesh>
+            {berries.map(b => (
+                <mesh key={b.id} position={b.position} name="bush_berry" userData={{ id }}>
+                    <sphereGeometry args={[0.1 * scale]} />
+                    <meshStandardMaterial color="#d32f2f" roughness={0.5} metalness={0} envMapIntensity={0.5} />
+                </mesh>
+            ))}
         </group>
     );
 });

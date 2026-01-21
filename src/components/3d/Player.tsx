@@ -59,11 +59,6 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
                     <cylinderGeometry args={[0.06, 0.04, 0.15]} />
                     <meshStandardMaterial color="#212121" roughness={1} depthTest={false} depthWrite={false} transparent opacity={1} />
                 </mesh>
-                {/* Bindings (subtle rings) */}
-                <mesh position={[0, 0.3, 0]} renderOrder={1000}>
-                    <torusGeometry args={[0.045, 0.005, 8, 24]} />
-                    <meshStandardMaterial color="#4e342e" depthTest={false} depthWrite={false} transparent opacity={1} />
-                </mesh>
                 {/* Flame area */}
                 <group position={[0, 0.5, 0]}>
                     <Fire scale={0.4} />
