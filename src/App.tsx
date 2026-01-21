@@ -273,6 +273,8 @@ function App() {
         <div className="bg-[#1a1c23]/80 backdrop-blur-2xl rounded-[28px] border border-white/5 overflow-hidden flex flex-col divide-y divide-white/5 shadow-2xl min-w-[120px]">
           <ResourceCard icon={<Axe size={16} className="text-emerald-400" />} count={inventory.wood || 0} />
           <ResourceCard icon={<Mountain size={16} className="text-stone-400" />} count={inventory.stone || 0} />
+          <ResourceCard icon={<Zap size={16} className="text-amber-400" />} count={inventory.flint_stone || 0} />
+          <ResourceCard icon={<Droplets size={16} className="text-cyan-400" />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} />
           <ResourceCard icon={<Target size={16} className="text-rose-400" />} count={inventory.arrow || 0} />
           <ResourceCard icon={<Flame size={16} className="text-orange-400" />} count={inventory.campfire || 0} />
         </div>
