@@ -123,8 +123,23 @@ export const InteractionSystem = () => {
                     );
                 }
             } else if (name.includes('shelter')) {
-                useGameStore.getState().sleep();
-                playSound('gather');
+                const state = useGameStore.getState();
+                const inv = state.inventory;
+
+                // Priority cooking: Meat then Apple
+                if (inv['meat'] > 0) {
+                    state.cookItem('meat');
+                    playSound('gather');
+                    state.addNotification(state.language === 'tr' ? 'BİFTEK PİŞİRİLDİ' : 'MEAT COOKED', 'success');
+                } else if (inv['apple'] > 0) {
+                    state.cookItem('apple');
+                    playSound('gather');
+                    state.addNotification(state.language === 'tr' ? 'ELMA PİŞİRİLDİ' : 'APPLE COOKED', 'success');
+                } else {
+                    // If nothing to cook, perform sleep action
+                    state.sleep();
+                    playSound('gather');
+                }
             }
 
         }

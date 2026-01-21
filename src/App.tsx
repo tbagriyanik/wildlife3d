@@ -8,7 +8,6 @@ import { MainMenu } from './components/ui/MainMenu';
 import { Hotbar } from './components/ui/Hotbar';
 import { useGameStore } from './store/useGameStore';
 import { GAME_CONSTANTS } from './constants/gameConstants';
-import { TRANSLATIONS } from './constants/translations';
 import { useKeyboard } from './hooks/useKeyboard';
 import { useMusic } from './hooks/useAudio';
 
@@ -19,10 +18,9 @@ import { motion } from 'framer-motion';
 
 
 function App() {
-  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, setLanguage, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
+  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
 
   const { craft: craftAction } = useKeyboard();
-  const t = TRANSLATIONS[language];
 
   // Compass Logic - 3-way display
   const getDisplayDirections = (deg: number) => {
@@ -197,24 +195,24 @@ function App() {
 
       {/* TOP-LEFT HUD */}
       <div className="absolute top-8 left-8 z-50">
-        <div className="glass bg-stone-950/40 backdrop-blur-3xl p-6 rounded-[32px] border border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] flex flex-col gap-6 min-w-[280px]">
-          <div className="flex justify-between items-start">
+        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-6 rounded-[32px] shadow-2xl min-w-[320px] border border-white/5">
+          <div className="flex justify-between items-end mb-6">
             <div>
-              <div className="text-[10px] font-black tracking-[0.2em] text-white/40 uppercase mb-1">{t.time || 'SURVIVAL CLOCK'}</div>
-              <h2 className="text-4xl font-black text-white tracking-tighter tabular-nums leading-none">
-                {String(Math.floor(gameTime / 100)).padStart(2, '0')}<span className="animate-pulse">:</span>{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
-              </h2>
+              <div className="text-[12px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">DAY</div>
+              <div className="text-6xl font-black text-emerald-400 italic leading-none tracking-tighter">
+                {day}
+              </div>
             </div>
-            <div className="bg-white/5 px-3 py-1 rounded-full border border-white/10 text-[10px] font-black text-white/60 tracking-widest uppercase">
-              {t.day} {day}
+            <div className="text-4xl font-black text-white tabular-nums tracking-tighter opacity-80 mb-1">
+              {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
             </div>
           </div>
 
-          <div className="space-y-5">
-            <VitalRow label={t.health} value={health} color="bg-rose-500" icon="❤️" />
-            <VitalRow label={t.hunger} value={hunger} color="bg-amber-500" icon="🍖" />
-            <VitalRow label={t.thirst} value={thirst} color="bg-cyan-500" icon="💧" />
-            <VitalRow label={t.temp} value={(temperature / 50) * 100} color="bg-orange-400" actualValue={`${Math.round(temperature)}°C`} icon="🌡️" />
+          <div className="grid grid-cols-2 gap-3">
+            <VitalCard label="HEALTH" value={health} color="bg-rose-500/20" icon="❤️" />
+            <VitalCard label="HUNGER" value={hunger} color="bg-amber-500/20" icon="🍞" />
+            <VitalCard label="THIRST" value={thirst} color="bg-cyan-500/20" icon="💧" />
+            <VitalCard label="WARMTH" value={(temperature / 50) * 100} color="bg-purple-500/20" icon="🔥" actualValue={`${Math.round(temperature)}°C`} />
           </div>
         </div>
       </div>
@@ -229,20 +227,19 @@ function App() {
           <span className="text-xs font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-8 text-center">{dirRight}</span>
         </div>
 
-        <button onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-[11px] font-black text-white shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5 uppercase">
-          {language}
-        </button>
         <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
           <Maximize size={20} />
         </button>
       </div>
 
-      {/* RESOURCE SUMMARY (Right Side) - Compact */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-50">
-        <ResourceCard icon={<Target size={16} className="text-rose-400" />} count={inventory.arrow || 0} />
-        <ResourceCard icon={<Flame size={16} className="text-orange-400" />} count={inventory.torch || 0} />
-        <ResourceCard icon={<Axe size={16} className="text-stone-400" />} count={inventory.wood || 0} />
-        <ResourceCard icon={<Mountain size={16} className="text-slate-200" />} count={inventory.stone || 0} />
+      {/* RIGHT RESOURCES - List Style */}
+      <div className="absolute top-1/2 -translate-y-1/2 right-6 z-50">
+        <div className="bg-[#1a1c23]/80 backdrop-blur-2xl rounded-[28px] border border-white/5 overflow-hidden flex flex-col divide-y divide-white/5 shadow-2xl min-w-[120px]">
+          <ResourceCard icon={<Axe size={16} className="text-emerald-400" />} count={inventory.wood || 0} />
+          <ResourceCard icon={<Mountain size={16} className="text-stone-400" />} count={inventory.stone || 0} />
+          <ResourceCard icon={<Target size={16} className="text-rose-400" />} count={inventory.arrow || 0} />
+          <ResourceCard icon={<Flame size={16} className="text-orange-400" />} count={inventory.campfire || 0} />
+        </div>
       </div>
 
       {/* HOTBAR (Bottom Center) */}
@@ -262,32 +259,32 @@ function App() {
   );
 }
 
-const VitalRow = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => (
-  <div className="flex flex-col gap-1.5 group">
-    <div className="flex justify-between items-center px-1">
-      <div className="flex items-center gap-2">
-        <span className="text-sm scale-110 grayscale group-hover:grayscale-0 transition-all">{icon}</span>
-        <span className="text-[10px] font-black text-white/40 tracking-[0.1em] uppercase group-hover:text-white/60 transition-colors">{label}</span>
-      </div>
-      <span className="text-[10px] font-black text-white/80 tabular-nums">{actualValue || `${Math.round(value)}%`}</span>
-    </div>
-    <div className="h-[4px] w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => (
+  <div className={`relative px-4 py-8 rounded-[24px] ${color} border border-white/5 flex flex-col items-center justify-center group transition-all hover:scale-[1.02] overflow-hidden`}>
+    <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        className={`h-full ${color} shadow-[0_0_12px_rgba(255,255,255,0.2)]`}
+        className="h-full bg-white/20"
       />
     </div>
+    <span className="text-4xl filter drop-shadow-md mb-3">{icon}</span>
+    <div className="flex items-baseline gap-1">
+      <span className="text-3xl font-black text-white tabular-nums tracking-tighter">
+        {actualValue ? actualValue.split('°')[0] : Math.round(value)}
+      </span>
+      <span className="text-[12px] font-black opacity-30 text-white italic">{actualValue ? '°C' : '%'}</span>
+    </div>
+    <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-40 text-white mt-1">{label}</span>
   </div>
 );
 
 const ResourceCard = ({ icon, count }: { icon: any; count: number }) => (
-  <div className="glass bg-stone-950/40 backdrop-blur-3xl px-5 py-4 rounded-2xl flex items-center gap-4 border border-white/5 shadow-xl min-w-[100px] transition-all hover:translate-x-[-12px] hover:bg-white/5 group">
-    <div className="bg-white/5 p-2 rounded-lg group-hover:bg-white/10 transition-colors">
+  <div className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-white/5 transition-all group">
+    <div className="bg-white/5 p-2 rounded-xl group-hover:bg-white/10 transition-colors">
       {icon}
     </div>
-    <span className="text-lg font-black text-white tabular-nums tracking-tight">{count}</span>
+    <span className="text-xl font-black text-white tabular-nums tracking-tighter">{count}</span>
   </div>
 );
 
