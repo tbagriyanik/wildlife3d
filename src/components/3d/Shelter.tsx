@@ -12,6 +12,7 @@ export const Shelter = memo(({ level, position }: ShelterProps) => {
         mass: 0,
         type: 'Static',
         position: [position[0], 0, position[2]],
+        userData: { id: 'shelter' },
         shapes: level === 1 ? [
             { type: 'Box', args: [2, 2, 2], position: [0, 1, 0] }
         ] : level === 2 ? [

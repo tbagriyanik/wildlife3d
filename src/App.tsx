@@ -14,7 +14,7 @@ import { useMusic } from './hooks/useAudio';
 
 import { Maximize, Flame, Axe, Mountain, Target } from 'lucide-react';
 import { Environment } from '@react-three/drei';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 
 

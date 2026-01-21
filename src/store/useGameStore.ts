@@ -35,6 +35,7 @@ export interface Projectile {
     rotation: [number, number, number];
     stuck?: boolean;
     stuckAt?: number;
+    stuckToId?: string;
     spawnTime: number;
 }
 
@@ -118,7 +119,7 @@ export interface GameState {
 
     removeWildlife: (id: string) => void;
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
-    stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number]) => void;
+    stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number], stuckToId?: string) => void;
     removeProjectile: (id: string) => void;
     upgradeShelter: (position: [number, number, number]) => void;
     resetGame: () => void;
@@ -438,10 +439,10 @@ export const useGameStore = create<GameState>()(
                 }
             },
 
-            stickArrow: (id, position, rotation) => set((state) => ({
+            stickArrow: (id, position, rotation, stuckToId) => set((state) => ({
                 projectiles: state.projectiles.map(p =>
                     p.id === id
-                        ? { ...p, stuck: true, stuckAt: Date.now(), position, rotation, velocity: [0, 0, 0] }
+                        ? { ...p, stuck: true, stuckAt: Date.now(), position, rotation, velocity: [0, 0, 0], stuckToId }
                         : p
                 )
             })),

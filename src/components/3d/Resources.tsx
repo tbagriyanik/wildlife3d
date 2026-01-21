@@ -24,6 +24,7 @@ export const Tree = memo(({ id, position, variation, durability }: ResourceProps
         mass: 0,
         position: [position[0], 0, position[2]],
         type: 'Static',
+        userData: { id },
         shapes: [
             {
                 type: 'Cylinder',
@@ -77,6 +78,7 @@ export const PineTree = memo(({ id, position, variation, durability }: ResourceP
         mass: 0,
         position: [position[0], 0, position[2]],
         type: 'Static',
+        userData: { id },
         shapes: [
             {
                 type: 'Cylinder',
@@ -141,6 +143,7 @@ export const Rock = memo(({ id, position, variation, durability }: ResourceProps
         position: [position[0], 0, position[2]],
         rotation: [0, rotation, 0],
         type: 'Static',
+        userData: { id },
         shapes: [
             {
                 type: 'Box',
@@ -183,6 +186,7 @@ export const Bush = memo(({ id, position, variation, durability }: ResourceProps
         mass: 0,
         position: [position[0], 0, position[2]],
         type: 'Static',
+        userData: { id },
         shapes: [
             {
                 type: 'Sphere',
