@@ -22,7 +22,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
     const recipes: Recipe[] = [
         { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
         { id: 'torch', name: t.torch || 'TORCH', cost: { wood: 2 }, icon: <Flame size={20} /> },
-        { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 4 }, icon: <Flame size={20} /> },
+        { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 2, flint_stone: 1 }, icon: <Flame size={20} /> },
         { id: 'arrow', name: t.arrow || 'ARROW (5x)', cost: { wood: 1, stone: 1 }, output: 5, icon: <Hammer size={20} /> },
 
         // Shelters

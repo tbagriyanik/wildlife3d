@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect } from 'react';
 import { Vector3, Euler } from 'three';
 import { useGameStore } from '../../store/useGameStore';
+import { TRANSLATIONS } from '../../constants/translations';
 import type { Projectile } from '../../store/useGameStore';
 
 export const Arrow = ({ data }: { data: Projectile }) => {
@@ -24,6 +25,18 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             const currentPos = new Vector3(ref.current!.position.x, ref.current!.position.y, ref.current!.position.z);
             const currentRot = new Euler().setFromQuaternion(ref.current!.quaternion);
             const hitToId = e.body.userData?.id;
+
+            // Hunting logic: Check if we hit an animal
+            if (hitToId && (hitToId.includes('deer') || hitToId.includes('rabbit') || hitToId.includes('bird') || hitToId.includes('partridge'))) {
+                const state = useGameStore.getState();
+                const t = TRANSLATIONS[state.language];
+                state.removeWildlife(hitToId);
+                state.addItem('meat', 2);
+                state.addNotification(`${t.collected_msg}: 2x ${(t as any).meat}`, 'success');
+                removeProjectile(id);
+                return;
+            }
+
             stickArrow(id, [currentPos.x, currentPos.y, currentPos.z], [currentRot.x, currentRot.y, currentRot.z], hitToId);
         }
     }));

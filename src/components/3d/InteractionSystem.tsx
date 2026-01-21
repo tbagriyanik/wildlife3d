@@ -49,7 +49,7 @@ export const InteractionSystem = () => {
                         const name = obj.name || '';
 
                         // Priority: Objects with names we recognize
-                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter'];
+                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter', 'deer', 'rabbit', 'bird', 'partridge'];
                         const foundName = interactiveNames.find(n => name.includes(n)) || null;
 
                         if (id && foundName) return { id, name: foundName };

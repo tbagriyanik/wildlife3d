@@ -185,7 +185,7 @@ export const useGameStore = create<GameState>()(
             masterVolume: 0.5,
             isHovering: false,
             torchFuel: 1.0,
-            inventory: { wood: 6, stone: 17, apple: 10, water: 3, waterEmpty: 0, meat: 5 },
+            inventory: { wood: 6, stone: 17, flint_stone: 0, apple: 10, water: 3, waterEmpty: 0, meat: 5 },
 
 
             worldResources: initialResources,

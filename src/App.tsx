@@ -18,40 +18,65 @@ import { motion } from 'framer-motion';
 
 
 
-const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => (
-  <div className="relative overflow-hidden bg-white/5 rounded-2xl p-2.5 border border-white/5 group transition-all duration-300 hover:bg-white/10">
-    <div className="flex items-center justify-between mb-1.5 px-1">
-      <div className="flex items-center gap-1.5">
-        <span className="text-sm filter drop-shadow-[#fff_0_0_2px]">{icon}</span>
-        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">{label}</span>
+const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => {
+  const isCritical = value < 20;
+  return (
+    <motion.div
+      animate={isCritical ? { scale: [1, 1.02, 1] } : {}}
+      transition={isCritical ? { repeat: Infinity, duration: 1 } : {}}
+      className={`relative overflow-hidden bg-stone-900/80 rounded-[20px] p-3 border-2 transition-all duration-500 ${isCritical ? 'border-rose-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-white/5'}`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`text-base ${isCritical ? 'animate-bounce' : ''}`}>{icon}</span>
+          <span className="text-[11px] font-black text-white/40 uppercase tracking-[0.1em]">{label}</span>
+        </div>
+        <span className={`text-[12px] font-black tabular-nums ${isCritical ? 'text-rose-400' : 'text-white/80'}`}>
+          {actualValue || `${Math.round(value)}%`}
+        </span>
       </div>
-      <span className="text-[10px] font-black text-white/80 tabular-nums">{actualValue || `${Math.round(value)}%`}</span>
-    </div>
-    <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.max(0, Math.min(100, value))}%` }}
-        className={`h-full ${color} rounded-full relative shadow-[0_0_10px_rgba(255,255,255,0.1)]`}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
-      </motion.div>
-    </div>
-  </div>
-);
+      <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden p-[2px]">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.max(2, Math.min(100, value))}%` }}
+          className={`h-full ${color} rounded-full relative`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
 
 const ResourceCard = ({ icon, count }: { icon: React.ReactNode; count: number }) => (
   <div className="p-3.5 flex items-center justify-between group hover:bg-white/5 transition-colors">
     <div className="opacity-60 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">{icon}</div>
-    <span className="text-sm font-black text-white/80 tabular-nums">{count}</span>
+    <span className="text-[13px] font-black text-white/80 tabular-nums">{count}</span>
   </div>
 );
 
 function App() {
-  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
+  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
 
   const isAnyMenuOpen = isMenuOpen || isMainMenuOpen;
   const { craft: craftAction } = useKeyboard();
   const t = TRANSLATIONS[language];
+
+  // Cursor and Menu Handling
+  useEffect(() => {
+    if (isAnyMenuOpen) {
+      document.body.style.cursor = 'auto';
+    } else {
+      document.body.style.cursor = 'none';
+    }
+  }, [isAnyMenuOpen]);
+
+  // Day Transition Effect
+  useEffect(() => {
+    if (day > 1) {
+      useGameStore.getState().addNotification(`☀️ ${t.day} ${day} ${language === 'tr' ? 'BAŞLADI' : 'HAS BEGUN'}`, 'info');
+    }
+  }, [day]);
 
   // Compass Logic - 3-way display
   const getDisplayDirections = (deg: number) => {
@@ -70,7 +95,10 @@ function App() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMainMenuOpen(!isMainMenuOpen);
-        if (isMenuOpen) setMenuOpen(false);
+        if (isMenuOpen) {
+          setMenuOpen(false);
+          addNotification(language === 'tr' ? 'İLERLEME KAYDEDİLDİ' : 'PROGRESS SAVED', 'success');
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -94,12 +122,12 @@ function App() {
       // 1 second = 1.6666 units
       setGameTime(gameTime + 1.66666);
 
+      // Weather change every 3000 game units
       if (Math.floor(gameTime) % 3000 === 0) {
         const types: ('sunny' | 'rainy' | 'snowy')[] = ['sunny', 'rainy', 'snowy'];
         const nextWeather = types[Math.floor(Math.random() * types.length)];
         useGameStore.getState().setWeather(nextWeather);
       }
-
 
       const hungerLoss = -GAME_CONSTANTS.CONSUMPTION.HUNGER;
       const thirstLoss = -GAME_CONSTANTS.CONSUMPTION.THIRST;
@@ -203,6 +231,20 @@ function App() {
         </Canvas>
       </div>
 
+      {isMainMenuOpen && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[150] pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-black/40 backdrop-blur-md px-6 py-2 rounded-full border border-white/10"
+          >
+            <span className="text-white/40 text-[11px] font-black tracking-[0.5em] uppercase">
+              {language === 'tr' ? 'OYUN DURAKLATILDI' : 'GAME PAUSED'}
+            </span>
+          </motion.div>
+        </div>
+      )}
+
       {isMenuOpen && <CraftingMenu onClose={() => setMenuOpen(false)} />}
       <MainMenu />
 
@@ -234,7 +276,7 @@ function App() {
         <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-5 rounded-[28px] shadow-2xl min-w-[300px] border border-white/5">
           <div className="flex justify-between items-end mb-4">
             <div>
-              <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">{t.day}</div>
+              <div className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">{t.day}</div>
               <div className="text-5xl font-black text-emerald-400 italic leading-none tracking-tighter">
                 {day}
               </div>
@@ -256,11 +298,11 @@ function App() {
       {/* TOP-RIGHT CONTROLS - Smaller Compass (25% reduction) */}
       <div className="absolute top-8 right-8 z-50 flex items-center gap-4">
         <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-2xl scale-[0.75]">
-          <span className="text-[10px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
+          <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
           <div className="w-[1px] h-5 bg-white/10" />
-          <span className="text-xs font-black text-white tabular-nums uppercase transition-all scale-125 w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
+          <span className="text-[12px] font-black text-white tabular-nums uppercase transition-all scale-125 w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
           <div className="w-[1px] h-5 bg-white/10" />
-          <span className="text-[10px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
+          <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
         </div>
 
         <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
@@ -288,7 +330,7 @@ function App() {
         {notifications.slice(-5).map((n) => (
           <div key={n.id} className="bg-stone-900/90 backdrop-blur-md px-6 py-4 rounded-[20px] flex items-center gap-4 shadow-2xl border border-white/10 animate-in fade-in slide-in-from-left duration-300">
             <div className={`w-2 h-2 rounded-full ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'}`} />
-            <span className="text-xs font-black text-white uppercase tracking-tighter">{n.message}</span>
+            <span className="text-[11px] font-black text-white uppercase tracking-tighter">{n.message}</span>
           </div>
         ))}
       </div>

@@ -54,8 +54,8 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
 
     return (
         <group ref={groupRef} name={name}>
-            {/* Physics target */}
-            <mesh ref={physicsRef as any}>
+            {/* Physics target - also used for raycast interaction */}
+            <mesh ref={physicsRef as any} name={name}>
                 <sphereGeometry args={[name === 'deer' ? 1 : 0.6]} />
                 <meshStandardMaterial transparent opacity={0} />
             </mesh>
@@ -203,8 +203,8 @@ export const Bird = ({ position, id }: { position: [number, number, number], id:
 
     return (
         <group ref={groupRef} name="animal">
-            {/* Physics target */}
-            <mesh ref={physicsRef as any}>
+            {/* Physics target - bird specific */}
+            <mesh ref={physicsRef as any} name="animal_bird">
                 <sphereGeometry args={[1.5]} />
                 <meshStandardMaterial transparent opacity={0} />
             </mesh>
