@@ -271,22 +271,22 @@ function App() {
       )}
 
 
-      {/* TOP-LEFT HUD - Smaller (50%) */}
-      <div className="absolute top-8 left-8 z-50 scale-50 origin-top-left">
-        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-5 rounded-[28px] shadow-2xl min-w-[300px] border border-white/5">
-          <div className="flex justify-between items-end mb-4">
+      {/* TOP-LEFT HUD - Direct Pixel Sizes */}
+      <div className="absolute top-8 left-8 z-50">
+        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-4 rounded-[20px] shadow-2xl w-[240px] border border-white/5">
+          <div className="flex justify-between items-end mb-3">
             <div>
               <div className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">{t.day}</div>
-              <div className="text-5xl font-black text-emerald-400 italic leading-none tracking-tighter">
+              <div className="text-3xl font-black text-emerald-400 italic leading-none tracking-tighter">
                 {day}
               </div>
             </div>
-            <div className="text-3xl font-black text-white tabular-nums tracking-tighter opacity-80 mb-0.5">
+            <div className="text-xl font-black text-white tabular-nums tracking-tighter opacity-80 mb-0.5">
               {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
             <VitalCard label={t.health} value={health} color="bg-rose-500/20" icon="❤️" />
             <VitalCard label={t.hunger} value={hunger} color="bg-amber-500/20" icon="🍞" />
             <VitalCard label={t.thirst} value={thirst} color="bg-cyan-500/20" icon="💧" />
