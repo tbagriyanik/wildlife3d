@@ -59,7 +59,7 @@ const ResourceCard = ({ icon, count }: { icon: React.ReactNode; count: number })
 );
 
 function App() {
-  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping } = useGameStore();
+  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping, isDead } = useGameStore();
 
   const isAnyMenuOpen = isMenuOpen || isMainMenuOpen;
   const { craft: craftAction } = useKeyboard();
@@ -135,7 +135,17 @@ function App() {
       const hungerLoss = -GAME_CONSTANTS.CONSUMPTION.HUNGER;
       const thirstLoss = -GAME_CONSTANTS.CONSUMPTION.THIRST;
       let healthDelta = 0;
-      if (hunger <= 0 || thirst <= 0) healthDelta = -GAME_CONSTANTS.CONSUMPTION.HEALTH_DRAIN;
+
+      // Critical condition: faster health drain
+      const isCriticalHunger = hunger <= 10;
+      const isCriticalThirst = thirst <= 10;
+      const isCriticalTemp = temperature <= 10;
+
+      if (hunger <= 0 || thirst <= 0) {
+        healthDelta = -GAME_CONSTANTS.CONSUMPTION.HEALTH_DRAIN;
+      } else if (isCriticalHunger || isCriticalThirst || isCriticalTemp) {
+        healthDelta = -GAME_CONSTANTS.CONSUMPTION.HEALTH_DRAIN * 0.5; // Half damage in critical state
+      }
 
       const isNight = gameTime < 600 || gameTime > 1800;
       const baseTemp = isNight ? GAME_CONSTANTS.TEMPERATURE.NIGHT : GAME_CONSTANTS.TEMPERATURE.DAY;
@@ -198,14 +208,25 @@ function App() {
         // Or at least significantly reduce the loss.
         // User said "energy increases", so let's give a small positive tick.
         updateVitals({
-          hunger: 0.05, // Recover hunger slowly
-          thirst: 0.05, // Recover thirst slowly
           health: healthDelta,
+          hunger: hungerLoss * 0.3, // Reduced drain
+          thirst: thirstLoss * 0.3,
           temperature: tempDelta
         });
       } else {
         if (temperature < 15 || temperature > 42) healthDelta -= 0.2;
-        updateVitals({ hunger: hungerLoss, thirst: thirstLoss, health: healthDelta, temperature: tempDelta });
+        updateVitals({
+          health: healthDelta,
+          hunger: hungerLoss,
+          thirst: thirstLoss,
+          temperature: tempDelta
+        });
+      }
+
+      // Death check
+      const currentHealth = useGameStore.getState().health;
+      if (currentHealth <= 0) {
+        useGameStore.setState({ isDead: true });
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -270,6 +291,45 @@ function App() {
           <div className="text-white font-black text-5xl tracking-[0.5em] animate-pulse">
             {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
           </div>
+        </div>
+      )}
+
+      {/* GAME OVER SCREEN */}
+      {isDead && (
+        <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center backdrop-blur-xl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-8"
+          >
+            <div className="space-y-4">
+              <div className="text-rose-500 text-8xl font-black tracking-wider drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]">
+                {language === 'tr' ? 'ÖLDÜN' : 'YOU DIED'}
+              </div>
+              <div className="text-white/60 text-xl font-bold">
+                {language === 'tr' ? `${day} gün hayatta kaldın` : `You survived ${day} day${day > 1 ? 's' : ''}`}
+              </div>
+            </div>
+            <div className="flex gap-6 justify-center">
+              <button
+                onClick={() => {
+                  useGameStore.getState().resetGame();
+                  useGameStore.setState({ isDead: false });
+                }}
+                className="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg rounded-2xl transition-all hover:scale-105 shadow-2xl"
+              >
+                {language === 'tr' ? 'YENİDEN BAŞLA' : 'RESTART'}
+              </button>
+              <button
+                onClick={() => {
+                  useGameStore.setState({ isDead: false, isMainMenuOpen: true });
+                }}
+                className="px-10 py-4 bg-stone-700 hover:bg-stone-600 text-white font-black text-lg rounded-2xl transition-all hover:scale-105 shadow-2xl"
+              >
+                {language === 'tr' ? 'ANA MENÜ' : 'MAIN MENU'}
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
 

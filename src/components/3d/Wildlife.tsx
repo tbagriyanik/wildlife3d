@@ -65,7 +65,7 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
 };
 
 export const Deer = ({ position, id }: { position: [number, number, number], id: string }) => (
-    <AnimalAI position={position} fleeDistance={15} speed={0.4} id={id} name="deer">
+    <AnimalAI position={position} fleeDistance={20} speed={0.4} id={id} name="deer">
         {/* Body */}
         <mesh castShadow position={[0, 0.7, 0]}>
             <boxGeometry args={[0.5, 0.8, 1.4]} />
@@ -106,7 +106,7 @@ export const Deer = ({ position, id }: { position: [number, number, number], id:
 );
 
 export const Rabbit = ({ position, id }: { position: [number, number, number], id: string }) => (
-    <AnimalAI position={position} fleeDistance={10} speed={1.2} id={id} name="rabbit">
+    <AnimalAI position={position} fleeDistance={12} speed={1.2} id={id} name="rabbit">
         <group scale={1.2}>
             {/* Body */}
             <mesh castShadow position={[0, 0.2, 0]}>
@@ -137,7 +137,7 @@ export const Rabbit = ({ position, id }: { position: [number, number, number], i
 );
 
 export const Partridge = ({ position, id }: { position: [number, number, number], id: string }) => (
-    <AnimalAI position={position} fleeDistance={8} speed={0.8} id={id} name="partridge">
+    <AnimalAI position={position} fleeDistance={10} speed={0.8} id={id} name="partridge">
         <group scale={1.5}>
             {/* Body - Rounder */}
             <mesh castShadow position={[0, 0.25, 0]}>

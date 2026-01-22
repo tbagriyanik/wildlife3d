@@ -75,6 +75,7 @@ export interface GameState {
     wildlife: Resource[];
     projectiles: Projectile[];
     day: number;
+    isDead: boolean;
 
 
     masterVolume: number;
@@ -129,34 +130,111 @@ export interface GameState {
 
 
 const generateResources = (): WorldResources => {
-    const trees = Array.from({ length: 60 }).map((_, i) => ({
-        id: `tree-${i}`,
-        type: Math.random() > 0.4 ? ('pine' as const) : ('normal' as const),
-        position: [(Math.random() - 0.5) * 180, 0, (Math.random() - 0.5) * 180] as [number, number, number],
-        durability: 100,
-        variation: {
-            height: 3 + Math.random() * 4,
-            leafSize: 1.5 + Math.random() * 1.5
-        }
-    }));
-    const rocks = Array.from({ length: 50 }).map((_, i) => ({
-        id: `rock-${i}`,
-        position: [(Math.random() - 0.5) * 150, 0, (Math.random() - 0.5) * 150] as [number, number, number],
-        durability: 100,
-        variation: {
-            scale: 0.4 + Math.random() * 0.6,
-            rotation: Math.random() * Math.PI * 2
-        }
+    // Define water pond locations (these are fixed areas where water exists)
+    const waterPonds = [
+        { x: 40, z: 40, radius: 8 },
+        { x: -50, z: -30, radius: 6 },
+        { x: 60, z: -60, radius: 7 },
+    ];
 
-    }));
-    const bushes = Array.from({ length: 40 }).map((_, i) => ({
-        id: `bush-${i}`,
-        position: [(Math.random() - 0.5) * 120, 0, (Math.random() - 0.5) * 120] as [number, number, number],
-        durability: 100,
-        variation: {
-            scale: 0.6 + Math.random() * 1.2
+    // Helper: Check if position is in water
+    const isInWater = (x: number, z: number): boolean => {
+        return waterPonds.some(pond => {
+            const dist = Math.sqrt((x - pond.x) ** 2 + (z - pond.z) ** 2);
+            return dist < pond.radius;
+        });
+    };
+
+    // Helper: Check if position collides with existing resources
+    const hasCollision = (x: number, z: number, minDist: number, existing: { position: [number, number, number] }[]): boolean => {
+        return existing.some(res => {
+            const dist = Math.sqrt((x - res.position[0]) ** 2 + (z - res.position[2]) ** 2);
+            return dist < minDist;
+        });
+    };
+
+    // Helper: Generate position with collision check
+    const generatePosition = (
+        range: number,
+        minDist: number,
+        existing: { position: [number, number, number] }[],
+        maxAttempts = 50,
+        favorWater = false
+    ): [number, number, number] | null => {
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            let x: number, z: number;
+
+            // 60% chance to spawn near water if favorWater is true
+            if (favorWater && Math.random() < 0.6 && waterPonds.length > 0) {
+                const pond = waterPonds[Math.floor(Math.random() * waterPonds.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const distance = pond.radius + 3 + Math.random() * 15; // 3-18 units from water edge
+                x = pond.x + Math.cos(angle) * distance;
+                z = pond.z + Math.sin(angle) * distance;
+            } else {
+                x = (Math.random() - 0.5) * range;
+                z = (Math.random() - 0.5) * range;
+            }
+
+            // Check if in water or has collision
+            if (!isInWater(x, z) && !hasCollision(x, z, minDist, existing)) {
+                return [x, 0, z];
+            }
         }
-    }));
+        return null; // Failed to find valid position
+    };
+
+    // Generate trees (favor water areas)
+    const trees: Resource[] = [];
+    for (let i = 0; i < 60; i++) {
+        const pos = generatePosition(180, 4, trees, 50, true);
+        if (pos) {
+            trees.push({
+                id: `tree-${i}`,
+                type: Math.random() > 0.4 ? ('pine' as const) : ('normal' as const),
+                position: pos,
+                durability: 100,
+                variation: {
+                    height: 3 + Math.random() * 4,
+                    leafSize: 1.5 + Math.random() * 1.5
+                }
+            });
+        }
+    }
+
+    // Generate rocks (favor water areas)
+    const rocks: Resource[] = [];
+    for (let i = 0; i < 50; i++) {
+        const pos = generatePosition(150, 3, [...trees, ...rocks], 50, true);
+        if (pos) {
+            rocks.push({
+                id: `rock-${i}`,
+                position: pos,
+                durability: 100,
+                variation: {
+                    scale: 0.4 + Math.random() * 0.6,
+                    rotation: Math.random() * Math.PI * 2
+                }
+            });
+        }
+    }
+
+    // Generate bushes (favor water areas)
+    const bushes: Resource[] = [];
+    for (let i = 0; i < 40; i++) {
+        const pos = generatePosition(120, 2.5, [...trees, ...rocks, ...bushes], 50, true);
+        if (pos) {
+            bushes.push({
+                id: `bush-${i}`,
+                position: pos,
+                durability: 100,
+                variation: {
+                    scale: 0.6 + Math.random() * 1.2
+                }
+            });
+        }
+    }
+
     return { trees, rocks, bushes };
 };
 
@@ -182,6 +260,7 @@ export const useGameStore = create<GameState>()(
             isSettingsOpen: false,
             notifications: [],
             day: 1,
+            isDead: false,
             masterVolume: 0.5,
             isHovering: false,
             torchFuel: 1.0,
