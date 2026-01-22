@@ -70,8 +70,11 @@ export const World = () => {
     }));
 
 
+    const fogColor = isNight ? '#020617' : (isCloudy ? '#94a3b8' : '#cbd5e1');
+
     return (
         <>
+            <fog attach="fog" args={[fogColor, 20, 180]} />
             <InteractionSystem />
             <Weather />
             <Sky

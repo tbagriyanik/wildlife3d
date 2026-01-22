@@ -98,6 +98,15 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 removeProjectile(id);
             }
         } else {
+            // Auto-pickup restored
+            const playerPos = state.playerPosition;
+            const dist = new Vector3(position[0], position[1], position[2]).distanceTo(new Vector3(...playerPos));
+            if (dist < 2.5) {
+                useGameStore.getState().addItem('arrow', 1);
+                removeProjectile(id);
+                return;
+            }
+
             // Drop logic if target is gone
             if (data.stuckToId) {
                 const wr = state.worldResources;

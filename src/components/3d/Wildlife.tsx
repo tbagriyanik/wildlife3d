@@ -222,19 +222,41 @@ export const Bird = ({ position, id }: { position: [number, number, number], id:
                 <meshStandardMaterial transparent opacity={0} />
             </mesh>
 
-            <group rotation={[0, -Math.PI / 2, 0]} scale={1.8}>
+            <group rotation={[0, -Math.PI / 2, 0]} scale={2}>
+                {/* Body - More aerodynamic */}
                 <mesh castShadow>
-                    <coneGeometry args={[0.15, 0.7, 8]} />
-                    <meshStandardMaterial color="#212121" />
+                    <sphereGeometry args={[0.2, 8, 8]} />
+                    <meshStandardMaterial color="#333" />
                 </mesh>
-                <mesh position={[0, 0.4, 0]}>
-                    <sphereGeometry args={[0.18, 8, 8]} />
-                    <meshStandardMaterial color="#212121" />
+
+                {/* Tail */}
+                <mesh position={[-0.2, 0, 0]} rotation={[0, 0, 0.2]}>
+                    <boxGeometry args={[0.3, 0.02, 0.2]} />
+                    <meshStandardMaterial color="#222" />
                 </mesh>
-                <mesh position={[0, 0.4, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
-                    <coneGeometry args={[0.04, 0.2, 4]} />
-                    <meshStandardMaterial color="#fdd835" />
+
+                {/* Head */}
+                <mesh position={[0.22, 0.1, 0]}>
+                    <sphereGeometry args={[0.12, 8, 8]} />
+                    <meshStandardMaterial color="#444" />
                 </mesh>
+
+                {/* Beak */}
+                <mesh position={[0.35, 0.08, 0]} rotation={[0, 0, -Math.PI / 2]}>
+                    <coneGeometry args={[0.03, 0.15, 4]} />
+                    <meshStandardMaterial color="#fcd34d" />
+                </mesh>
+
+                {/* Eyes */}
+                <mesh position={[0.28, 0.15, 0.06]}>
+                    <sphereGeometry args={[0.02]} />
+                    <meshStandardMaterial color="white" />
+                </mesh>
+                <mesh position={[0.28, 0.15, -0.06]}>
+                    <sphereGeometry args={[0.02]} />
+                    <meshStandardMaterial color="white" />
+                </mesh>
+
                 <Wing side={1} />
                 <Wing side={-1} />
             </group>
