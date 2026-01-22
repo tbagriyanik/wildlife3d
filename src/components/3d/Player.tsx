@@ -186,8 +186,10 @@ export const Player = () => {
 
     const setBearing = useGameStore((state) => state.setBearing);
 
-    // Archery shooting buffer
+    // Archery shooting buffer & cooldown
     const shootBuffer = useRef(false);
+    const lastShootTime = useRef(0);
+    const SHOOT_COOLDOWN = 500; // ms
 
     const itemGroupRef = useRef<THREE.Group>(null);
 
@@ -215,7 +217,9 @@ export const Player = () => {
 
 
         // --- ARCHERY LOGIC ---
-        if (currentItem === 'bow' && leftClick && !shootBuffer.current && !isAnyMenuOpen) {
+        const now = Date.now();
+        if (currentItem === 'bow' && leftClick && !shootBuffer.current && !isAnyMenuOpen && (now - lastShootTime.current > SHOOT_COOLDOWN)) {
+            lastShootTime.current = now;
 
             const state = useGameStore.getState();
             if ((state.inventory['arrow'] || 0) > 0) {

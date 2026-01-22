@@ -15,6 +15,8 @@ export const InteractionSystem = () => {
     const raycaster = useRef(new THREE.Raycaster());
     const interactBuffer = useRef(false);
     const mouseBuffer = useRef(false);
+    const lastInteractTime = useRef(0);
+    const INTERACT_COOLDOWN = 300; // ms
 
     const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen);
 
@@ -49,7 +51,7 @@ export const InteractionSystem = () => {
                         const name = obj.name || '';
 
                         // Priority: Objects with names we recognize
-                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter_fire', 'shelter', 'deer', 'rabbit', 'bird', 'partridge'];
+                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter_fire', 'shelter', 'deer', 'rabbit', 'bird', 'partridge', 'arrow'];
                         const foundName = interactiveNames.find(n => name.includes(n)) || null;
 
                         if (id && foundName) return { id, name: foundName };
@@ -77,10 +79,14 @@ export const InteractionSystem = () => {
             useGameStore.getState().setHovering(currentHover);
         }
 
-        const isTriggered = (interact && !interactBuffer.current) || (leftClick && !mouseBuffer.current);
+        const state = useGameStore.getState();
+        const isBowActive = state.activeSlot === 0;
+        const now = Date.now();
+        const isTriggered = ((interact && !interactBuffer.current) || (leftClick && !mouseBuffer.current && !isBowActive)) && (now - lastInteractTime.current > INTERACT_COOLDOWN);
 
 
         if (isTriggered && targetObject) {
+            lastInteractTime.current = now;
             const { id, name } = targetObject;
 
             if (name.includes('tree')) {
@@ -156,6 +162,12 @@ export const InteractionSystem = () => {
                 const state = useGameStore.getState();
                 state.sleep();
                 playSound('gather');
+            } else if (name.includes('arrow')) {
+                if (id) {
+                    useGameStore.getState().addItem('arrow', 1);
+                    useGameStore.getState().removeProjectile(id);
+                    playSound('gather');
+                }
             }
 
         }

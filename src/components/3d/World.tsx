@@ -51,9 +51,16 @@ export const World = () => {
     const sunColor = isNight ? '#ffffff' : (sunsetFactor > 0.5 ? '#ff9d5c' : '#ffffff');
 
 
-    const grassTexture = useTexture('/textures/grass.png');
+    const [grassTexture, sandTexture] = useTexture([
+        '/textures/grass.png',
+        '/textures/sand.png'
+    ]);
+
     grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
-    grassTexture.repeat.set(200, 200);
+    grassTexture.repeat.set(50, 50); // Enlarge: smaller repeat means larger texture
+
+    sandTexture.wrapS = sandTexture.wrapT = THREE.RepeatWrapping;
+    sandTexture.repeat.set(40, 40); // Larger details for sand
 
     // Physics Ground
     const [planeRef] = usePlane(() => ({
@@ -142,7 +149,7 @@ export const World = () => {
             {/* MAIN TERRAIN (SAND) */}
             <mesh ref={planeRef as any} receiveShadow>
                 <planeGeometry args={[1000, 1000]} />
-                <meshStandardMaterial color="#d2b48c" roughness={1} metalness={0} />
+                <meshStandardMaterial map={sandTexture} color="#d2b48c" roughness={1} metalness={0} />
             </mesh>
 
             {/* GRASS PATCHES AROUND LAKES */}

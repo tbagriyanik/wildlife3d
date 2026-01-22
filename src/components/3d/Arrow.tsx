@@ -32,7 +32,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const { id, position, velocity, rotation, stuck } = data;
     const stickArrow = useGameStore((state) => state.stickArrow);
     const removeProjectile = useGameStore((state) => state.removeProjectile);
-    const addItem = useGameStore((state) => state.addItem);
 
     // Physics body
     const [ref, api] = useBox(() => ({
@@ -42,6 +41,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         velocity: stuck ? [0, 0, 0] : velocity,
         args: [0.12, 0.12, 0.8],
         linearDamping: 0.1,
+        userData: { id },
         onCollide: (e: any) => {
             if (stuck) return;
             const currentPos = new Vector3(ref.current!.position.x, ref.current!.position.y, ref.current!.position.z);
@@ -109,18 +109,13 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 }
             }
 
-            // Pickup Logic
-            const playerPos = state.playerPosition;
-            const dist = new Vector3(position[0], position[1], position[2]).distanceTo(new Vector3(...playerPos));
-            if (dist < 2.5) {
-                addItem('arrow', 1);
-                removeProjectile(id);
-            }
+            // Auto-pickup removed to allow arrows to stay stuck.
+            // Manual pickup handled by InteractionSystem.
         }
     });
 
     return (
-        <mesh ref={ref as any} castShadow name="arrow">
+        <mesh ref={ref as any} castShadow name="arrow" userData={{ id }}>
             <boxGeometry args={[0.08, 0.08, 0.8]} />
             <meshStandardMaterial color="#4a3728" roughness={1} />
             <mesh position={[0, 0, -0.4]} rotation={[-Math.PI / 2, 0, 0]}>
