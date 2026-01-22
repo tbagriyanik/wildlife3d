@@ -378,8 +378,26 @@ function App() {
         </button>
       </div>
 
-      {/* RIGHT RESOURCES - List Style */}
-      <div className="absolute top-1/2 -translate-y-1/2 right-8 z-50">
+      {/* RIGHT RESOURCES - List Style & Capacity */}
+      <div className="absolute top-1/2 -translate-y-1/2 right-8 z-50 flex flex-col gap-3">
+        {/* Capacity Indicator */}
+        <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-2xl border border-white/10 p-4 shadow-2xl">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{language === 'tr' ? 'KAPASİTE' : 'CAPACITY'}</span>
+            <span className={`text-xs font-black tabular-nums ${Object.values(inventory).reduce((a, b) => a + b, 0) > 180 ? 'text-rose-500' : 'text-emerald-400'}`}>
+              {Object.values(inventory).reduce((a, b) => (a || 0) + (b || 0), 0)} / 200
+            </span>
+          </div>
+          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full bg-emerald-500`}
+              initial={{ width: 0 }}
+              animate={{ width: `${(Object.values(inventory).reduce((a, b) => (a || 0) + (b || 0), 0) / 200) * 100}%` }}
+              style={{ backgroundColor: Object.values(inventory).reduce((a, b) => (a || 0) + (b || 0), 0) > 180 ? '#f43f5e' : '#10b981' }}
+            />
+          </div>
+        </div>
+
         <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[32px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[160px]">
           <ResourceCard icon={<Axe size={16} />} count={inventory.wood || 0} label={t.wood} />
           <ResourceCard icon={<Mountain size={16} />} count={inventory.stone || 0} label={t.stone} />
