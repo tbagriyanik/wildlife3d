@@ -77,7 +77,9 @@ export const useKeyboard = () => {
                 case 'KeyS': setActions((prev) => ({ ...prev, moveBackward: false })); break;
                 case 'KeyA': setActions((prev) => ({ ...prev, moveLeft: false })); break;
                 case 'KeyD': setActions((prev) => ({ ...prev, moveRight: false })); break;
-                case 'Space': setActions((prev) => ({ ...prev, jump: false })); break;
+                case 'Space':
+                case ' ':
+                    setActions((prev) => ({ ...prev, jump: false })); break;
                 case 'ShiftLeft': setActions((prev) => ({ ...prev, sprint: false })); break;
                 case 'KeyE': setActions((prev) => ({ ...prev, interact: false })); break;
                 case 'KeyC': setActions((prev) => ({ ...prev, craft: false })); break;

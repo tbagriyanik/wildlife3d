@@ -11,12 +11,11 @@ export const Hotbar = () => {
     const slots = [
         { id: 'bow', icon: '🏹', label: t.bow || 'BOW' },
         { id: 'torch', icon: '🔦', label: t.torch || 'TORCH' },
-        { id: 'water', icon: (inventory['water'] || 0) > 0 ? '💧' : '🫙', label: t.water || 'WATER' },
+        { id: 'water', icon: (inventory['water'] || 0) > 0 ? '🧪' : '🧪', label: t.water || 'WATER' },
         { id: 'meat', icon: '🍖', label: t.meat || 'MEAT' },
         { id: 'cooked_meat', icon: '🍗', label: t.cooked_meat || 'COOKED' },
         { id: 'apple', icon: '🍏', label: t.apple || 'APPLE' },
         { id: 'baked_apple', icon: '🍎', label: t.baked_apple || 'BAKED' },
-        { id: 'campfire', icon: '🔥', label: t.campfire || 'FIRE' },
     ];
 
     return (
@@ -57,11 +56,24 @@ export const Hotbar = () => {
                                     setActiveSlot(i);
                                 }
                             }}
-                            className={`relative w-16 h-16 rounded-[24px] flex items-center justify-center cursor-pointer transition-all duration-500 ${isActive
+                            className={`relative w-16 h-16 rounded-[24px] flex items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden ${isActive
                                 ? 'bg-white text-stone-950 shadow-[0_15px_30px_rgba(255,255,255,0.2)]'
                                 : 'bg-white/5 border border-white/5 text-white/40 hover:bg-white/10 hover:border-white/20 hover:text-white'
                                 }`}
                         >
+                            {/* PROGRESS BACKGROUNDS */}
+                            {slot.id === 'torch' && (inventory['torch'] || 0) > 0 && (
+                                <div
+                                    className="absolute bottom-0 left-0 w-full bg-orange-500/30 transition-all duration-300"
+                                    style={{ height: `${useGameStore.getState().torchFuel * 100}%` }}
+                                />
+                            )}
+                            {slot.id === 'water' && (
+                                <div
+                                    className="absolute bottom-0 left-0 w-full bg-blue-500/30 transition-all duration-300"
+                                    style={{ height: `${((inventory['water'] || 0) / ((inventory['water'] || 0) + (inventory['waterEmpty'] || 0) || 1)) * 100}%` }}
+                                />
+                            )}
                             <span className={`absolute top-2 left-3 text-[9px] font-black tracking-tighter ${isActive ? 'text-stone-950/20' : 'text-white/10'}`}>
                                 {i + 1}
                             </span>

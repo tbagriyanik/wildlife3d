@@ -71,7 +71,9 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 state.removeWildlife(actualId || hitToId);
                 state.addItem('meat', 2);
                 state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
-                removeProjectile(id);
+
+                // Instead of removing, stick it to the "phantom" or ground where animal was
+                stickArrow(id, [currentPos.x, currentPos.y, currentPos.z], [currentRot.x, currentRot.y, currentRot.z], actualId || hitToId);
                 return;
             }
 
@@ -84,42 +86,41 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             api.mass.set(0);
             api.velocity.set(0, 0, 0);
             api.angularVelocity.set(0, 0, 0);
-            api.position.set(position[0], position[1], position[2]);
-            api.rotation.set(rotation[0], rotation[1], rotation[2]);
         } else {
             api.mass.set(0.5);
         }
-    }, [stuck, position, rotation, api]);
+    }, [stuck, api]);
 
     useFrame(() => {
         const state = useGameStore.getState();
+
+        // Always check for pickup if player is close
+        const playerPos = state.playerPosition;
+        const arrowPos = new Vector3(ref.current?.position.x || 0, ref.current?.position.y || 0, ref.current?.position.z || 0);
+        const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
+
+        if (distToPlayer < 2.5) {
+            useGameStore.getState().addItem('arrow', 1);
+            removeProjectile(id);
+            return;
+        }
+
         if (!stuck) {
-            if (Date.now() - data.spawnTime > 10000) {
+            if (Date.now() - data.spawnTime > 15000) {
                 removeProjectile(id);
             }
         } else {
-            // Auto-pickup restored
-            const playerPos = state.playerPosition;
-            const dist = new Vector3(position[0], position[1], position[2]).distanceTo(new Vector3(...playerPos));
-            if (dist < 2.5) {
-                useGameStore.getState().addItem('arrow', 1);
-                removeProjectile(id);
-                return;
-            }
-
             // Drop logic if target is gone
             if (data.stuckToId) {
                 const wr = state.worldResources;
-                const resources = [...wr.trees, ...wr.rocks, ...wr.bushes, ...state.wildlife];
+                const resources = [...wr.trees, ...wr.rocks, ...wr.bushes, ...state.wildlife, ...state.placedItems];
                 if (!resources.some(r => r.id === data.stuckToId)) {
+                    // Target object is gone! Make arrow fall.
                     useGameStore.setState(s => ({
                         projectiles: s.projectiles.map(p => p.id === id ? { ...p, stuck: false, stuckToId: undefined } : p)
                     }));
                 }
             }
-
-            // Auto-pickup removed to allow arrows to stay stuck.
-            // Manual pickup handled by InteractionSystem.
         }
     });
 

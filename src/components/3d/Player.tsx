@@ -130,14 +130,12 @@ export const Player = () => {
     const inventory = useGameStore((state) => state.inventory);
 
     const removeItem = useGameStore((state) => state.removeItem);
-    const placeItemAction = useGameStore((state) => state.placeItem);
     const addNotification = useGameStore((state) => state.addNotification);
 
     const torchFuel = useGameStore((state) => state.torchFuel);
     const setTorchFuel = useGameStore((state) => state.setTorchFuel);
 
-    const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple', 'campfire'];
-
+    const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
     const currentItem = slotItems[activeSlot];
 
     // Ensure we only try to "hold" actual tools/weapons
@@ -161,24 +159,6 @@ export const Player = () => {
 
     const pos = useRef([0, 0, 0]);
     useEffect(() => api.position.subscribe((p) => (pos.current = p)), [api.position]);
-
-    // Handle Placement (Auto-place when selected)
-    useEffect(() => {
-        if (currentItem === 'campfire' && (inventory['campfire'] || 0) > 0) {
-            const placementPos: [number, number, number] = [
-                pos.current[0] + Math.sin(useGameStore.getState().bearing * (Math.PI / 180)) * 2,
-                0.1, // Ground level
-                pos.current[2] + Math.cos(useGameStore.getState().bearing * (Math.PI / 180)) * 2
-            ];
-            placeItemAction('campfire', placementPos);
-            removeItem('campfire', 1);
-            const lang = useGameStore.getState().language;
-            addNotification(TRANSLATIONS[lang].campfire_placed_msg, 'success');
-
-            // Switch back to empty slot or first slot to prevent rapid-fire placement if they have multiple
-            useGameStore.getState().setActiveSlot(0);
-        }
-    }, [currentItem, inventory, activeSlot]); // Added activeSlot dependency to ensure it triggers on switch
 
 
     // Basic mobile check
@@ -207,11 +187,18 @@ export const Player = () => {
             setTorchFuel(nextFuel);
 
             // Refill if fuel is out but we have more items
-            if (nextFuel <= 0 && inventory['torch'] > 0) {
-                removeItem('torch', 1);
-                setTorchFuel(1.0);
-                const lang = useGameStore.getState().language;
-                addNotification(TRANSLATIONS[lang].new_torch_msg, 'info');
+            if (nextFuel <= 0) {
+                if (inventory['torch'] > 1) { // We use > 1 because 1 is the currently held one
+                    removeItem('torch', 1);
+                    setTorchFuel(1.0);
+                    const lang = useGameStore.getState().language;
+                    addNotification(TRANSLATIONS[lang].new_torch_msg, 'info');
+                } else {
+                    // Out of torches
+                    removeItem('torch', 1);
+                    useGameStore.getState().setActiveSlot(-1);
+                    setTorchFuel(0);
+                }
             }
         }
 
@@ -317,7 +304,7 @@ export const Player = () => {
         useGameStore.getState().setPlayerPosition(pos.current as [number, number, number]);
     });
 
-    const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen);
+    const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen || state.isDead);
 
     const controlsRef = useRef<any>(null); // Ref for PointerLockControls
 

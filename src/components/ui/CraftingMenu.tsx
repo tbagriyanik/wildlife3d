@@ -63,6 +63,15 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                 }
 
                 addShelter(recipe.level, spawnPos);
+            } else if (recipe.id === 'campfire') {
+                const playerPos = useGameStore.getState().playerPosition;
+                const bearing = useGameStore.getState().bearing * (Math.PI / 180);
+                const spawnPos: [number, number, number] = [
+                    playerPos[0] + Math.sin(bearing) * 3,
+                    0.1,
+                    playerPos[2] + Math.cos(bearing) * 3
+                ];
+                useGameStore.getState().placeItem('campfire', spawnPos);
             } else {
                 addItem(recipe.id, recipe.output || 1);
             }

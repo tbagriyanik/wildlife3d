@@ -121,8 +121,15 @@ export const InteractionSystem = () => {
 
             } else if (name.includes('animal')) {
                 if (id) {
-                    useGameStore.getState().removeWildlife(id);
+                    const state = useGameStore.getState();
+                    const t = TRANSLATIONS[state.language];
+
+                    // Spawn blood at animal position
+                    state.spawnBlood([targetObject.object.position.x, targetObject.object.position.y + 0.5, targetObject.object.position.z]);
+
+                    state.removeWildlife(id);
                     addItem('meat', 2);
+                    state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
                     playSound('gather');
                 }
             } else if (name.includes('campfire')) {

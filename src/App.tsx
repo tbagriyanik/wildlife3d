@@ -14,7 +14,7 @@ import { useMusic } from './hooks/useAudio';
 
 import { Environment } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Flame, Axe, Mountain, Target, Zap, Droplets, RefreshCw } from 'lucide-react';
+import { Maximize, Axe, Mountain, Target, Zap, Droplets, RefreshCw } from 'lucide-react';
 
 
 
@@ -29,42 +29,49 @@ const VitalCard = ({ label, value, color, icon, actualValue, criticalThreshold =
       transition={isCritical ? { repeat: Infinity, duration: 2 } : {}}
       className={`relative overflow-hidden bg-stone-900/40 backdrop-blur-xl rounded-2xl p-3 border-2 transition-all duration-700 ${isCritical ? 'border-rose-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'border-white/5 hover:border-white/20'}`}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm ${isCritical ? 'bg-rose-500/20 text-rose-500' : 'bg-white/5 text-white/50'}`}>
-            {icon}
+      {/* Background fill */}
+      <div
+        className={`absolute inset-0 opacity-10 ${color}`}
+        style={{ width: `${Math.max(0, Math.min(100, value))}%`, transition: 'width 0.5s ease-out' }}
+      />
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm ${isCritical ? 'bg-rose-500/20 text-rose-500' : 'bg-white/5 text-white/50'}`}>
+              {icon}
+            </div>
+            <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">{label}</span>
           </div>
-          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">{label}</span>
+          {isCritical && (
+            <motion.div
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ repeat: Infinity, duration: 1 }}
+              className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_10px_#ef4444]"
+            />
+          )}
         </div>
-        {isCritical && (
+        <div className="flex items-baseline gap-1 mb-2">
+          <span className={`text-2xl font-black tabular-nums tracking-tighter ${isCritical ? 'text-rose-400' : 'text-white'}`}>
+            {actualValue && actualValue.includes('°') ? actualValue.split('°')[0] : (actualValue || Math.round(value))}
+          </span>
+          <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{actualValue && actualValue.includes('°') ? '°C' : (actualValue ? '' : '%')}</span>
+        </div>
+        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
           <motion.div
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ repeat: Infinity, duration: 1 }}
-            className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_10px_#ef4444]"
-          />
-        )}
-      </div>
-      <div className="flex items-baseline gap-1 mb-2">
-        <span className={`text-2xl font-black tabular-nums tracking-tighter ${isCritical ? 'text-rose-400' : 'text-white'}`}>
-          {actualValue && actualValue.includes('°') ? actualValue.split('°')[0] : (actualValue || Math.round(value))}
-        </span>
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{actualValue && actualValue.includes('°') ? '°C' : (actualValue ? '' : '%')}</span>
-      </div>
-      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${Math.max(2, Math.min(100, value))}%` }}
-          className={`h-full ${color} rounded-full relative`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent opacity-50" />
-        </motion.div>
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.max(2, Math.min(100, value))}%` }}
+            className={`h-full ${color} rounded-full relative`}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent opacity-50" />
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );
 };
 
 const ResourceCard = ({ icon, count, label, iconColor }: { icon: React.ReactNode; count: number; label: string; iconColor?: string }) => (
-  <div className="p-3.5 flex items-center justify-between group hover:bg-stone-800/50 transition-all border-b border-white/5 last:border-0 px-5">
+  <div className="p-3.5 flex items-center justify-between group hover:bg-white/10 transition-all border-b border-white/5 last:border-0 px-5 backdrop-blur-md">
     <div className="flex items-center gap-4">
       <div className={`transition-all scale-110 group-hover:scale-125 flex items-center justify-center`} style={{ color: iconColor || 'rgba(255,255,255,0.4)' }}>{icon}</div>
       <div className="flex flex-col">
@@ -84,12 +91,13 @@ function App() {
 
   // Cursor and Menu Handling
   useEffect(() => {
-    if (isAnyMenuOpen) {
+    // Show cursor if ANY menu, craft menu, dead screen, or settings is open
+    if (isAnyMenuOpen || isDead) {
       document.body.style.cursor = 'auto';
     } else {
       document.body.style.cursor = 'none';
     }
-  }, [isAnyMenuOpen]);
+  }, [isAnyMenuOpen, isDead]);
 
   // Day Transition Effect
   const [showDayOverlay, setShowDayOverlay] = useState(false);
@@ -100,6 +108,17 @@ function App() {
       return () => clearTimeout(timer);
     }
   }, [day]);
+
+  // Auto-pause on focus loss
+  useEffect(() => {
+    const handleBlur = () => {
+      if (!isDead && !isMainMenuOpen) {
+        setMainMenuOpen(true);
+      }
+    };
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, [isDead, isMainMenuOpen, setMainMenuOpen]);
 
   // Compass Logic - 3-way display
   const getDisplayDirections = (deg: number) => {
@@ -462,16 +481,16 @@ function App() {
           <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-[10px] rounded-[32px] shadow-2xl w-[250px] h-[420px] border border-white/10 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
 
-            <div className="flex justify-between items-end mb-6 relative z-10">
-              <div>
-                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-1">{t.day}</div>
-                <div className="text-4xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">
+            <div className="flex flex-col items-center justify-center mb-8 relative z-10 pt-4">
+              <div className="text-center w-full">
+                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.day}</div>
+                <div className="text-6xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(52,211,153,0.3)] mb-4">
                   {day.toString().padStart(2, '0')}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-1">{t.time}</div>
-                <div className="text-lg font-black text-white tabular-nums leading-none">
+              <div className="text-center w-full border-t border-white/5 pt-4">
+                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.time}</div>
+                <div className="text-2xl font-black text-white tabular-nums leading-none tracking-tight">
                   {Math.floor(gameTime / 100).toString().padStart(2, '0')}:
                   {Math.floor((gameTime % 100) * 0.6).toString().padStart(2, '0')}
                 </div>
@@ -537,13 +556,12 @@ function App() {
           </div>
 
           {/* ITEM LIST - Repositioned under buttons */}
-          <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[24px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[170px] origin-top-right">
+          <div className="bg-[#1a1c23]/40 backdrop-blur-3xl rounded-[24px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[170px] origin-top-right">
             <ResourceCard icon={<Axe size={14} />} count={inventory.wood || 0} label={t.wood} iconColor="#fbbf24" />
             <ResourceCard icon={<Mountain size={14} />} count={inventory.stone || 0} label={t.stone} iconColor="#94a3b8" />
             <ResourceCard icon={<Zap size={14} />} count={inventory.flint_stone || 0} label={(t as any).flint_stone} iconColor="#38bdf8" />
             <ResourceCard icon={<Droplets size={14} />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} label={t.water} iconColor="#60a5fa" />
             <ResourceCard icon={<Target size={14} />} count={inventory.arrow || 0} label={(t as any).arrow} iconColor="#f87171" />
-            <ResourceCard icon={<Flame size={14} />} count={inventory.campfire || 0} label={(t as any).campfire} iconColor="#fb923c" />
           </div>
         </div>
 
