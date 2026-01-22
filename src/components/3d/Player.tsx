@@ -73,33 +73,51 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
 
     if (type === 'bow') {
         return (
-            <group position={[0.5, -0.5, -0.8]} rotation={[0, -1, 0.2]}>
-                {/* Bow Riser */}
-                <mesh castShadow renderOrder={1000}>
-                    <boxGeometry args={[0.04, 0.4, 0.04]} />
-                    <meshStandardMaterial color="#5d4037" roughness={1} depthTest={false} depthWrite={false} transparent opacity={1} />
+            <group position={[0.5, -0.6, -0.8]} rotation={[0, -0.8, 0.2]}>
+                {/* Bow Riser (Handle) */}
+                <mesh castShadow>
+                    <boxGeometry args={[0.05, 0.4, 0.06]} />
+                    <meshStandardMaterial color="#3e2723" roughness={1} />
                 </mesh>
-                {/* Limbs */}
-                <mesh position={[0, 0.4, 0]} rotation={[0.4, 0, 0]} renderOrder={1000}>
-                    <boxGeometry args={[0.04, 0.4, 0.02]} />
-                    <meshStandardMaterial color="#5d4037" roughness={1} depthTest={false} depthWrite={false} transparent opacity={1} />
+
+                {/* Limbs - Top */}
+                <group position={[0, 0.2, 0]}>
+                    <mesh position={[0, 0.15, -0.05]} rotation={[-0.4, 0, 0]}>
+                        <boxGeometry args={[0.04, 0.35, 0.02]} />
+                        <meshStandardMaterial color="#5d4037" roughness={1} />
+                    </mesh>
+                    <mesh position={[0, 0.4, -0.15]} rotation={[-0.8, 0, 0]}>
+                        <boxGeometry args={[0.035, 0.3, 0.02]} />
+                        <meshStandardMaterial color="#5d4037" roughness={1} />
+                    </mesh>
+                </group>
+
+                {/* Limbs - Bottom */}
+                <group position={[0, -0.2, 0]}>
+                    <mesh position={[0, -0.15, -0.05]} rotation={[0.4, 0, 0]}>
+                        <boxGeometry args={[0.04, 0.35, 0.02]} />
+                        <meshStandardMaterial color="#5d4037" roughness={1} />
+                    </mesh>
+                    <mesh position={[0, -0.4, -0.15]} rotation={[0.8, 0, 0]}>
+                        <boxGeometry args={[0.035, 0.3, 0.02]} />
+                        <meshStandardMaterial color="#5d4037" roughness={1} />
+                    </mesh>
+                </group>
+
+                {/* Bowstring */}
+                <mesh position={[0, 0, -0.32]}>
+                    <cylinderGeometry args={[0.003, 0.003, 1.4]} />
+                    <meshStandardMaterial color="#ffffff" transparent opacity={0.6} />
                 </mesh>
-                <mesh position={[0, -0.4, 0]} rotation={[-0.4, 0, 0]} renderOrder={1000}>
-                    <boxGeometry args={[0.04, 0.4, 0.02]} />
-                    <meshStandardMaterial color="#5d4037" roughness={1} depthTest={false} depthWrite={false} transparent opacity={1} />
-                </mesh>
-                {/* String */}
-                <mesh position={[0.02, 0, 0.15]} renderOrder={1000}>
-                    <boxGeometry args={[0.005, 1.4, 0.005]} />
-                    <meshStandardMaterial color="#ffffff" depthTest={false} depthWrite={false} transparent opacity={1} />
+
+                {/* Arrow Nock Point (Visual detail) */}
+                <mesh position={[0, 0, -0.32]}>
+                    <boxGeometry args={[0.01, 0.05, 0.01]} />
+                    <meshStandardMaterial color="#ffcc00" />
                 </mesh>
             </group>
-
-
-
         );
     }
-
     return null;
 };
 
@@ -270,9 +288,9 @@ export const Player = () => {
         const targetVelocity = moveDirection.multiplyScalar(baseSpeed);
 
         // --- JUMP LOGIC ---
-        // Only jump if space is pressed and we are likely on the ground (low Y-velocity)
-        if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.05) {
-            api.velocity.set(velocity.current[0], 5, velocity.current[2]);
+        // Increased tolerance to 0.5 to allow jumping on slight slopes or uneven terrain
+        if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.5) {
+            api.velocity.set(velocity.current[0], 6, velocity.current[2]);
         }
 
         // Apply movement velocity to physics body

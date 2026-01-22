@@ -399,16 +399,32 @@ export const useGameStore = create<GameState>()(
             fillWater: () => {
                 const state = useGameStore.getState();
                 const emptyCount = state.inventory['waterEmpty'] || 0;
+                const lang = state.language;
+                const t = TRANSLATIONS[lang];
+                let acted = false;
+
+                // 1. Fill empty canteens
                 if (emptyCount > 0) {
                     state.removeItem('waterEmpty', emptyCount);
                     state.addItem('water', emptyCount);
-                    const lang = state.language;
-                    const t = TRANSLATIONS[lang];
-                    state.addNotification(t.canteen_filled_msg, 'success');
+                    acted = true;
+                }
+
+                // 2. Drink water if thirsty
+                if (state.thirst < 100) {
+                    set({ thirst: 100 });
+                    acted = true;
+                }
+
+                // 3. Feedback
+                if (acted) {
+                    const msg = emptyCount > 0
+                        ? `${t.canteen_filled_msg} & ${state.language === 'tr' ? 'SUSUZLUK GİDERİLDİ' : 'THIRST QUENCHED'}`
+                        : (state.language === 'tr' ? 'SU İÇİLDİ' : 'DRANK WATER');
+                    state.addNotification(msg, 'success');
                 } else {
-                    const lang = state.language;
-                    const t = TRANSLATIONS[lang];
-                    state.addNotification(t.no_empty_canteen_msg, 'info');
+                    // Canteens full AND Thirst 100
+                    state.addNotification(state.language === 'tr' ? 'MATARALAR DOLU VE SUSUZLUK YOK' : 'CANTEENS FULL & THIRST IS 100%', 'warning');
                 }
             },
 
@@ -593,8 +609,9 @@ export const useGameStore = create<GameState>()(
                 set({ isSleeping: true });
                 setTimeout(() => {
                     const state = useGameStore.getState();
-                    state.setGameTime(state.gameTime + 500); // 5 hours
-                    set({ isSleeping: false });
+                    state.setGameTime(state.gameTime + 800); // 8 hours (was 5)
+                    set({ health: 100, isSleeping: false });
+                    state.addNotification(state.language === 'tr' ? 'DİNLENDİN VE İYİLEŞTİN' : 'RESTED AND HEALED', 'success');
                 }, 2000); // 2 second transition
             },
 

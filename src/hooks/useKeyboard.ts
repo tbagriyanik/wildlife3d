@@ -27,7 +27,7 @@ export const useKeyboard = () => {
             if (e.code === 'KeyS') setActions((prev) => ({ ...prev, moveBackward: true }));
             if (e.code === 'KeyA') setActions((prev) => ({ ...prev, moveLeft: true }));
             if (e.code === 'KeyD') setActions((prev) => ({ ...prev, moveRight: true }));
-            if (e.code === 'Space') setActions((prev) => ({ ...prev, jump: true }));
+            if (e.code === 'Space' || e.key === ' ') setActions((prev) => ({ ...prev, jump: true }));
             if (e.code === 'ShiftLeft') setActions((prev) => ({ ...prev, sprint: true }));
             if (e.code === 'KeyE') setActions((prev) => ({ ...prev, interact: true }));
             if (e.code === 'KeyC') setActions((prev) => ({ ...prev, craft: true }));
@@ -35,30 +35,30 @@ export const useKeyboard = () => {
             // Numeric keys for slots
             if (e.code.startsWith('Digit')) {
                 const digit = parseInt(e.code.replace('Digit', ''));
-
-                // 1(Bow), 2(Torch), 8(Campfire): Select slot or Toggle off
-                if (digit === 1 || digit === 2 || digit === 8) {
+                if (digit >= 1 && digit <= 8) {
                     const targetSlot = digit - 1;
-                    const currentSlot = useGameStore.getState().activeSlot;
-                    if (currentSlot === targetSlot) {
-                        useGameStore.getState().setActiveSlot(-1); // Toggle off (Empty hands)
-                    } else {
-                        useGameStore.getState().setActiveSlot(targetSlot);
-                    }
-                }
-                // 3(Water), 4(Meat), 5(Cooked Meat), 6(Apple), 7(Baked Apple): Consume
-                else if (digit >= 3 && digit <= 7) {
-                    const consumableMap: Record<number, string> = {
-                        3: 'water',
-                        4: 'meat',
-                        5: 'cooked_meat',
-                        6: 'apple',
-                        7: 'baked_apple'
-                    };
-                    const itemId = consumableMap[digit];
                     const state = useGameStore.getState();
-                    if ((state.inventory[itemId] || 0) > 0) {
-                        state.consumeItem(itemId);
+                    const currentSlot = state.activeSlot;
+
+                    // Toggle logic: If same slot pressed, deactivate. Otherwise switch to it.
+                    if (currentSlot === targetSlot) {
+                        state.setActiveSlot(-1);
+                    } else {
+                        state.setActiveSlot(targetSlot);
+
+                        // If it's a consumable (3-7), use it immediately and then maybe deactivate?
+                        // USER request was about toggle for 1 and 2, but let's make it consistent.
+                        const consumableMap: Record<number, string> = {
+                            3: 'water',
+                            4: 'meat',
+                            5: 'cooked_meat',
+                            6: 'apple',
+                            7: 'baked_apple'
+                        };
+                        const itemId = consumableMap[digit];
+                        if (itemId && (state.inventory[itemId] || 0) > 0) {
+                            state.consumeItem(itemId);
+                        }
                     }
                 }
             }
