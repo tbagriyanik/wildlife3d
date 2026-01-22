@@ -40,14 +40,15 @@ export const useKeyboard = () => {
                     const state = useGameStore.getState();
                     const currentSlot = state.activeSlot;
 
-                    // Toggle logic: If same slot pressed, deactivate. Otherwise switch to it.
-                    if (currentSlot === targetSlot) {
-                        state.setActiveSlot(-1);
+                    // Slot 1 (Bow) and 2 (Torch) are TOGGLEABLE
+                    if (digit === 1 || digit === 2) {
+                        if (currentSlot === targetSlot) {
+                            state.setActiveSlot(-1);
+                        } else {
+                            state.setActiveSlot(targetSlot);
+                        }
                     } else {
-                        state.setActiveSlot(targetSlot);
-
-                        // If it's a consumable (3-7), use it immediately and then maybe deactivate?
-                        // USER request was about toggle for 1 and 2, but let's make it consistent.
+                        // Consumables (3-7) trigger action WITHOUT selecting slot
                         const consumableMap: Record<number, string> = {
                             3: 'water',
                             4: 'meat',
@@ -56,8 +57,13 @@ export const useKeyboard = () => {
                             7: 'baked_apple'
                         };
                         const itemId = consumableMap[digit];
-                        if (itemId && (state.inventory[itemId] || 0) > 0) {
-                            state.consumeItem(itemId);
+                        if (itemId) {
+                            if ((state.inventory[itemId] || 0) > 0) {
+                                state.consumeItem(itemId);
+                            }
+                        } else if (digit === 8) {
+                            // Campfire (8) selection needed for placement
+                            state.setActiveSlot(7);
                         }
                     }
                 }

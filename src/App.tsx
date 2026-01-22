@@ -18,8 +18,8 @@ import { Maximize, Flame, Axe, Mountain, Target, Zap, Droplets, RefreshCw } from
 
 
 
-const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => {
-  const isCritical = value < 25;
+const VitalCard = ({ label, value, color, icon, actualValue, criticalThreshold = 25 }: { label: string; value: number; color: string; icon: string; actualValue?: string; criticalThreshold?: number }) => {
+  const isCritical = value < criticalThreshold;
   return (
     <motion.div
       animate={isCritical ? {
@@ -46,9 +46,9 @@ const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; 
       </div>
       <div className="flex items-baseline gap-1 mb-2">
         <span className={`text-2xl font-black tabular-nums tracking-tighter ${isCritical ? 'text-rose-400' : 'text-white'}`}>
-          {actualValue ? actualValue.split('°')[0] : Math.round(value)}
+          {actualValue && actualValue.includes('°') ? actualValue.split('°')[0] : (actualValue || Math.round(value))}
         </span>
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{actualValue ? '°C' : '%'}</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{actualValue && actualValue.includes('°') ? '°C' : (actualValue ? '' : '%')}</span>
       </div>
       <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
         <motion.div
@@ -315,7 +315,7 @@ function App() {
         <MainMenu />
 
         {/* CRITICAL CONDITION WARNING */}
-        {(health < 20 || hunger < 20 || thirst < 20) && (
+        {(health < 25 || hunger < 25 || thirst < 25) && (
           <div className="fixed inset-0 z-[100] pointer-events-none shadow-[inset_0_0_150px_rgba(239,68,68,0.5)] animate-pulse border-[12px] border-rose-500/20" />
         )}
 
@@ -369,7 +369,7 @@ function App() {
               >
                 <div className="text-stone-500 font-black tracking-[1em] uppercase text-xs mb-4">Final Moments</div>
                 <h2 className="text-rose-600 text-[120px] font-black italic tracking-tighter leading-none mb-6 drop-shadow-[0_0_50px_rgba(225,29,72,0.4)]">
-                  {language === 'tr' ? 'VAES GEÇTİN' : 'DEFEATED'}
+                  {language === 'tr' ? 'ÖLDÜN' : 'YOU DIED'}
                 </h2>
                 <p className="text-white/40 text-lg font-medium leading-relaxed max-w-md mx-auto">
                   {language === 'tr'
@@ -408,7 +408,7 @@ function App() {
 
         {/* COMPACT TOP-LEFT HUD */}
         <div className="absolute top-6 left-6 z-50">
-          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-5 rounded-[32px] shadow-2xl w-[250px] h-[400px] border border-white/10 relative overflow-hidden flex flex-col">
+          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-1.5 rounded-[32px] shadow-2xl w-[250px] h-[400px] border border-white/10 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
 
             <div className="flex justify-between items-end mb-6 relative z-10">
@@ -435,7 +435,14 @@ function App() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-teal-500" icon="🌡️" actualValue={`${Math.round(temperature)}°C`} />
-                <VitalCard label={language === 'tr' ? 'YÜK' : 'LOAD'} value={(Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) / 200) * 100} color="bg-indigo-500" icon="📦" actualValue={`${Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0)}`} />
+                <VitalCard
+                  label={language === 'tr' ? 'YÜK' : 'LOAD'}
+                  value={(Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) / 200) * 100}
+                  color={Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) > 180 ? 'bg-rose-500' : 'bg-indigo-500'}
+                  icon="📦"
+                  actualValue={`${Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0)}`}
+                  criticalThreshold={-1} // Disable generic pulsing for load card
+                />
               </div>
             </div>
 

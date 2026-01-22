@@ -49,7 +49,15 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             const hitToId = e.body.userData?.id;
 
             // Hunting logic: Check if we hit an animal
-            if (hitToId && (hitToId.includes('deer') || hitToId.includes('rabbit') || hitToId.includes('bird') || hitToId.includes('partridge') || hitToId.includes('animal'))) {
+            const isAnimal = hitToId && (
+                hitToId.includes('deer') ||
+                hitToId.includes('rabbit') ||
+                hitToId.includes('bird') ||
+                hitToId.includes('partridge') ||
+                hitToId.includes('animal')
+            );
+
+            if (isAnimal) {
                 const state = useGameStore.getState();
                 const t = TRANSLATIONS[state.language];
                 state.spawnBlood([currentPos.x, currentPos.y, currentPos.z]); // Spawn blood
