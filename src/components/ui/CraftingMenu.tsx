@@ -76,6 +76,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                 addItem(recipe.id, recipe.output || 1);
             }
             playSound('craft');
+            onClose(); // Close menu after craft
         }
     };
 

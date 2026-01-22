@@ -102,7 +102,7 @@ export interface GameState {
     addNotification: (message: string, type?: 'info' | 'success' | 'warning') => void;
 
     inventory: Record<string, number>;
-    addItem: (id: string, amount: number) => void;
+    addItem: (id: string, amount: number) => boolean;
     removeItem: (id: string, amount: number) => void;
     consumeItem: (id: string) => void;
     fillWater: () => void;
@@ -336,12 +336,12 @@ export const useGameStore = create<GameState>()(
             addItem: (id, amount) => {
                 const state = useGameStore.getState();
                 const currentTotal = Object.values(state.inventory).reduce((a, b) => a + b, 0);
-                const MAX_CAPACITY = 200; // Total item limit
+                const MAX_CAPACITY = 100; // Total item limit (Reduced for gameplay challenge)
 
                 if (currentTotal + amount > MAX_CAPACITY) {
                     const t = TRANSLATIONS[state.language];
                     state.addNotification(t.inventory_full_msg || 'INVENTORY FULL!', 'warning');
-                    return;
+                    return false;
                 }
 
                 set((state) => ({ inventory: { ...state.inventory, [id]: (state.inventory[id] || 0) + amount } }));
@@ -350,6 +350,7 @@ export const useGameStore = create<GameState>()(
                 const itemName = (t as any)[id] || id.toUpperCase();
                 const msg = `${itemName} ${t.collected_msg}`;
                 state.addNotification(msg, 'success');
+                return true;
             },
 
             removeItem: (id, amount) => set((state) => {

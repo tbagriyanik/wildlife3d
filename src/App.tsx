@@ -136,10 +136,11 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setMainMenuOpen(!isMainMenuOpen);
         if (isMenuOpen) {
           setMenuOpen(false);
           addNotification(language === 'tr' ? 'İLERLEME KAYDEDİLDİ' : 'PROGRESS SAVED', 'success');
+        } else {
+          setMainMenuOpen(!isMainMenuOpen);
         }
       }
     };
@@ -487,10 +488,10 @@ function App() {
                 <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] relative z-10">{t.day}</span>
                 <span className="text-2xl font-black text-emerald-400 italic tracking-tighter drop-shadow-[0_0_10px_rgba(52,211,153,0.3)] relative z-10">{day.toString().padStart(2, '0')}</span>
               </div>
-              <div className="flex-1 bg-stone-900/40 backdrop-blur-xl rounded-2xl h-[50px] border border-white/5 flex items-center justify-between px-4 overflow-hidden relative">
+              <div className="flex-1 bg-stone-900/40 backdrop-blur-xl rounded-2xl h-[50px] border border-white/5 flex items-center justify-between px-3 overflow-hidden relative">
                 <div className="absolute inset-0 bg-white/5 opacity-10" />
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] relative z-10">{t.time}</span>
-                <span className="text-xl font-black text-white tabular-nums tracking-tight relative z-10">
+                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.1em] relative z-10">{t.time}</span>
+                <span className="text-lg font-black text-white tabular-nums tracking-tighter relative z-10 leading-none">
                   {Math.floor(gameTime / 100).toString().padStart(2, '0')}:
                   {Math.floor((gameTime % 100) * 0.6).toString().padStart(2, '0')}
                 </span>

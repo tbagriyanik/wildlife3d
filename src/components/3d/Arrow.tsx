@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { Vector3, Euler } from 'three';
 import { useGameStore } from '../../store/useGameStore';
-import { TRANSLATIONS } from '../../constants/translations';
 import type { Projectile } from '../../store/useGameStore';
 import * as THREE from 'three';
 
@@ -35,23 +34,20 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
     // Physics body
     const [ref, api] = useBox(() => ({
-        mass: stuck ? 0 : 0.5,
+        mass: 0.5,
         position,
         rotation,
-        velocity: stuck ? [0, 0, 0] : velocity,
-        args: [0.12, 0.12, 0.8],
-        linearDamping: 0.1,
+        velocity,
+        args: [0.1, 0.1, 0.8],
+        linearDamping: 0.05,
+        angularDamping: 1.0,
         userData: { id },
         onCollide: (e: any) => {
             if (stuck) return;
-            const currentPos = new Vector3(ref.current!.position.x, ref.current!.position.y, ref.current!.position.z);
-            const currentRot = new Euler().setFromQuaternion(ref.current!.quaternion);
 
-            // Extensive check for hit target
             const hitBody = e.body;
             const hitToId = hitBody.userData?.id || hitBody.name;
 
-            // Hunting logic: Check if we hit an animal
             const isAnimal = hitToId && (
                 hitToId.includes('deer') ||
                 hitToId.includes('rabbit') ||
@@ -60,26 +56,31 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 hitToId.includes('animal')
             );
 
+            const currentPos = new Vector3(ref.current!.position.x, ref.current!.position.y, ref.current!.position.z);
+            const currentRot = new Euler().setFromQuaternion(ref.current!.quaternion);
+
             if (isAnimal) {
                 const state = useGameStore.getState();
-                const t = TRANSLATIONS[state.language];
-                state.spawnBlood([currentPos.x, currentPos.y, currentPos.z]); // Spawn blood
+                state.spawnBlood([currentPos.x, currentPos.y, currentPos.z]);
 
-                // If hitToId is just 'animal', try to find a more specific ID in userData
                 const actualId = (hitToId === 'animal' || !hitToId.includes('-')) ? hitBody.userData?.id : hitToId;
-
                 state.removeWildlife(actualId || hitToId);
                 state.addItem('meat', 2);
-                state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
 
-                // Instead of removing, stick it to the "phantom" or ground where animal was
-                stickArrow(id, [currentPos.x, currentPos.y, currentPos.z], [currentRot.x, currentRot.y, currentRot.z], actualId || hitToId);
+                stickArrow(id, currentPos.toArray() as [number, number, number], currentRot.toArray().slice(0, 3) as [number, number, number], actualId || hitToId);
                 return;
             }
 
-            stickArrow(id, [currentPos.x, currentPos.y, currentPos.z], [currentRot.x, currentRot.y, currentRot.z], hitToId);
+            // Stick to ground/walls/shelters
+            stickArrow(id, currentPos.toArray() as [number, number, number], currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
         }
     }));
+
+    const localVel = useRef([0, 0, 0]);
+    useEffect(() => {
+        const unsubscribe = api.velocity.subscribe(v => localVel.current = v);
+        return () => unsubscribe();
+    }, [api.velocity]);
 
     useEffect(() => {
         if (stuck) {
@@ -93,12 +94,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
     useFrame(() => {
         const state = useGameStore.getState();
-
-        // Always check for pickup if player is close
         const playerPos = state.playerPosition;
-        const arrowPos = new Vector3(ref.current?.position.x || 0, ref.current?.position.y || 0, ref.current?.position.z || 0);
+        const arrowPos = new Vector3(ref.current?.position.x || position[0], ref.current?.position.y || position[1], ref.current?.position.z || position[2]);
         const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
+        // Auto-pickup
         if (distToPlayer < 2.5) {
             useGameStore.getState().addItem('arrow', 1);
             removeProjectile(id);
@@ -108,14 +108,15 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         if (!stuck) {
             if (Date.now() - data.spawnTime > 15000) {
                 removeProjectile(id);
+                return;
             }
+
+            // Low speed drop logic (handled naturally by physics if mass is not 0)
         } else {
-            // Drop logic if target is gone
             if (data.stuckToId) {
                 const wr = state.worldResources;
-                const resources = [...wr.trees, ...wr.rocks, ...wr.bushes, ...state.wildlife, ...state.placedItems];
-                if (!resources.some(r => r.id === data.stuckToId)) {
-                    // Target object is gone! Make arrow fall.
+                const activeObjects = [...wr.trees, ...wr.rocks, ...wr.bushes, ...state.wildlife, ...state.shelters, ...state.placedItems];
+                if (!activeObjects.some(r => r.id === data.stuckToId)) {
                     useGameStore.setState(s => ({
                         projectiles: s.projectiles.map(p => p.id === id ? { ...p, stuck: false, stuckToId: undefined } : p)
                     }));
@@ -127,10 +128,10 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     return (
         <mesh ref={ref as any} castShadow name="arrow" userData={{ id }}>
             <boxGeometry args={[0.08, 0.08, 0.8]} />
-            <meshStandardMaterial color="#4a3728" roughness={1} />
+            <meshStandardMaterial color="#4a3728" />
             <mesh position={[0, 0, -0.4]} rotation={[-Math.PI / 2, 0, 0]}>
                 <coneGeometry args={[0.08, 0.2, 4]} />
-                <meshStandardMaterial color="#666" metalness={0.8} roughness={0.2} />
+                <meshStandardMaterial color="#666" metalness={0.8} />
             </mesh>
             <mesh position={[0, 0, 0.3]}>
                 <boxGeometry args={[0.01, 0.15, 0.2]} />

@@ -19,7 +19,7 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
     }));
 
     useFrame((_, delta) => {
-        if (!groupRef.current) return;
+        if (!groupRef.current || useGameStore.getState().isMainMenuOpen) return;
 
         const pPos = new THREE.Vector3(...playerPos);
         const dist = currentPos.current.distanceTo(pPos);
@@ -199,7 +199,7 @@ export const Bird = ({ position, id }: { position: [number, number, number], id:
     }));
 
     useFrame((state) => {
-        if (!groupRef.current) return;
+        if (!groupRef.current || useGameStore.getState().isMainMenuOpen) return;
         const time = state.clock.elapsedTime;
         const x = startPos.current.x + Math.cos(time * params.speed + params.offset) * params.radius;
         const z = startPos.current.z + Math.sin(time * params.speed + params.offset) * params.radius;
@@ -267,6 +267,7 @@ export const Bird = ({ position, id }: { position: [number, number, number], id:
 const Wing = ({ side }: { side: number }) => {
     const ref = useRef<THREE.Mesh>(null);
     useFrame(({ clock }) => {
+        if (!ref.current || useGameStore.getState().isMainMenuOpen) return;
         if (ref.current) {
             ref.current.rotation.z = Math.sin(clock.elapsedTime * 6) * 0.4 * side;
         }

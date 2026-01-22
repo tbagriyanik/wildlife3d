@@ -91,29 +91,29 @@ export const InteractionSystem = () => {
 
             if (name.includes('tree')) {
                 if (id) {
-                    useGameStore.getState().updateResourceDurability('trees', id, 20);
-                    addItem('wood', 1);
-                    playSound('wood');
+                    if (addItem('wood', 1)) {
+                        useGameStore.getState().updateResourceDurability('trees', id, 20);
+                        playSound('wood');
+                    }
                 }
             } else if (name.includes('rock')) {
                 if (id) {
-                    useGameStore.getState().updateResourceDurability('rocks', id, 25);
-                    addItem('stone', 1);
-                    playSound('stone');
+                    if (addItem('stone', 1)) {
+                        useGameStore.getState().updateResourceDurability('rocks', id, 25);
+                        playSound('stone');
 
-                    // 10% chance for flint stone
-                    if (Math.random() < 0.1) {
-                        addItem('flint_stone', 1);
-                        const state = useGameStore.getState();
-                        const t = TRANSLATIONS[state.language];
-                        state.addNotification(t.gather_flint, 'success');
+                        // 10% chance for flint stone
+                        if (Math.random() < 0.1) {
+                            addItem('flint_stone', 1);
+                        }
                     }
                 }
             } else if (name.includes('bush')) {
                 if (id) {
-                    useGameStore.getState().updateResourceDurability('bushes', id, 50);
-                    addItem('apple', 1);
-                    playSound('gather');
+                    if (addItem('apple', 1)) {
+                        useGameStore.getState().updateResourceDurability('bushes', id, 50);
+                        playSound('gather');
+                    }
                 }
             } else if (name.includes('water')) {
                 useGameStore.getState().fillWater();
@@ -122,15 +122,11 @@ export const InteractionSystem = () => {
             } else if (name.includes('animal')) {
                 if (id) {
                     const state = useGameStore.getState();
-                    const t = TRANSLATIONS[state.language];
-
-                    // Spawn blood at animal position
-                    state.spawnBlood([targetObject.object.position.x, targetObject.object.position.y + 0.5, targetObject.object.position.z]);
-
-                    state.removeWildlife(id);
-                    addItem('meat', 2);
-                    state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
-                    playSound('gather');
+                    if (addItem('meat', 2)) {
+                        state.spawnBlood([targetObject.object.position.x, targetObject.object.position.y + 0.5, targetObject.object.position.z]);
+                        state.removeWildlife(id);
+                        playSound('gather');
+                    }
                 }
             } else if (name.includes('campfire')) {
                 const state = useGameStore.getState();
