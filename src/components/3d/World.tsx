@@ -75,13 +75,7 @@ export const World = () => {
                 mieDirectionalG={0.8}
             />
 
-            {/* Sun Model */}
-            {!isNight && sunY > 5 && (
-                <mesh position={sunPosition}>
-                    <sphereGeometry args={[4, 32, 32]} />
-                    <meshBasicMaterial color={sunColor} />
-                </mesh>
-            )}
+            {/* Sky component handles the sun visual */}
 
             {/* Moon Model */}
             {isNight && moonPosition[1] > 5 && (

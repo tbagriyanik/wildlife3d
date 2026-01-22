@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Physics } from '@react-three/cannon';
 import { World } from './components/3d/World';
 import { Player } from './components/3d/Player';
@@ -12,39 +12,51 @@ import { TRANSLATIONS } from './constants/translations';
 import { useKeyboard } from './hooks/useKeyboard';
 import { useMusic } from './hooks/useAudio';
 
-import { Maximize, Flame, Axe, Mountain, Target, Zap, Droplets } from 'lucide-react';
 import { Environment } from '@react-three/drei';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Maximize, Flame, Axe, Mountain, Target, Zap, Droplets, RefreshCw } from 'lucide-react';
 
 
 
 const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; value: number; color: string; icon: string; actualValue?: string }) => {
-  const isCritical = value < 20;
+  const isCritical = value < 25;
   return (
     <motion.div
-      animate={isCritical ? { scale: [1, 1.02, 1] } : {}}
-      transition={isCritical ? { repeat: Infinity, duration: 1 } : {}}
-      className={`relative overflow-hidden bg-stone-900/90 rounded-2xl p-3 border-2 transition-all duration-500 ${isCritical ? 'border-rose-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'border-white/10'}`}
+      animate={isCritical ? {
+        backgroundColor: ['rgba(28, 25, 23, 0.9)', 'rgba(239, 68, 68, 0.15)', 'rgba(28, 25, 23, 0.9)'],
+        scale: [1, 1.01, 1]
+      } : {}}
+      transition={isCritical ? { repeat: Infinity, duration: 2 } : {}}
+      className={`relative overflow-hidden bg-stone-900/40 backdrop-blur-xl rounded-3xl p-4 border-2 transition-all duration-700 ${isCritical ? 'border-rose-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'border-white/5 hover:border-white/20'}`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className={`text-xl ${isCritical ? 'animate-bounce' : ''}`}>{icon}</span>
-          <span className="text-[12px] font-black text-white/50 uppercase tracking-wide">{label}</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg ${isCritical ? 'bg-rose-500/20 text-rose-500' : 'bg-white/5 text-white/50'}`}>
+            {icon}
+          </div>
+          <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{label}</span>
         </div>
+        {isCritical && (
+          <motion.div
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ repeat: Infinity, duration: 1 }}
+            className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_10px_#ef4444]"
+          />
+        )}
       </div>
-      <div className="flex items-baseline gap-1 mb-2">
-        <span className={`text-2xl font-black tabular-nums ${isCritical ? 'text-rose-400' : 'text-white'}`}>
+      <div className="flex items-baseline gap-1 mb-3">
+        <span className={`text-3xl font-black tabular-nums tracking-tighter ${isCritical ? 'text-rose-400' : 'text-white'}`}>
           {actualValue ? actualValue.split('°')[0] : Math.round(value)}
         </span>
-        <span className="text-sm font-bold text-white/40">{actualValue ? '°C' : '%'}</span>
+        <span className="text-xs font-black text-white/20 uppercase tracking-widest">{actualValue ? '°C' : '%'}</span>
       </div>
-      <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden">
+      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.max(2, Math.min(100, value))}%` }}
-          className={`h-full ${color} rounded-full relative shadow-lg`}
+          className={`h-full ${color} rounded-full relative`}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent opacity-50" />
         </motion.div>
       </div>
     </motion.div>
@@ -80,9 +92,12 @@ function App() {
   }, [isAnyMenuOpen]);
 
   // Day Transition Effect
+  const [showDayOverlay, setShowDayOverlay] = useState(false);
   useEffect(() => {
     if (day > 1) {
-      useGameStore.getState().addNotification(`☀️ ${t.day} ${day} ${language === 'tr' ? 'BAŞLADI' : 'HAS BEGUN'}`, 'info');
+      setShowDayOverlay(true);
+      const timer = setTimeout(() => setShowDayOverlay(false), 4000);
+      return () => clearTimeout(timer);
     }
   }, [day]);
 
@@ -258,170 +273,231 @@ function App() {
             </Physics>
           </Suspense>
         </Canvas>
-      </div>
+        {/* MODERN CROSSHAIR */}
+        {!isAnyMenuOpen && (
+          <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
+            <div className="relative">
+              {/* Center Dot */}
+              <div className={`w-1 h-1 rounded-full transition-all duration-300 ${isHovering ? 'bg-emerald-400 scale-150' : 'bg-white/40'}`} />
 
-      {isMainMenuOpen && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[150] pointer-events-none">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-black/40 backdrop-blur-md px-6 py-2 rounded-full border border-white/10"
-          >
-            <span className="text-white/40 text-[11px] font-black tracking-[0.5em] uppercase">
-              {language === 'tr' ? 'OYUN DURAKLATILDI' : 'GAME PAUSED'}
-            </span>
-          </motion.div>
-        </div>
-      )}
-
-      {isMenuOpen && <CraftingMenu onClose={() => setMenuOpen(false)} />}
-      <MainMenu />
-
-      {/* CROSSHAIR */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
-        <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 shadow-[0_0_10px_rgba(255,255,255,1)] ${isHovering
-          ? 'bg-yellow-400 scale-150 shadow-[0_0_15px_rgba(250,204,21,1)]'
-          : 'bg-white opacity-60'
-          }`} />
-      </div>
-
-      {/* CRITICAL CONDITION WARNING */}
-      {(health < 20 || hunger < 20 || thirst < 20) && (
-        <div className="fixed inset-0 z-[100] pointer-events-none shadow-[inset_0_0_150px_rgba(239,68,68,0.5)] animate-pulse border-[12px] border-rose-500/20" />
-      )}
-
-      {/* SLEEP OVERLAY */}
-      {isSleeping && (
-        <div className="fixed inset-0 bg-black z-[1000] animate-in fade-in duration-1000 flex items-center justify-center">
-          <div className="text-white font-black text-5xl tracking-[0.5em] animate-pulse">
-            {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
-          </div>
-        </div>
-      )}
-
-      {/* GAME OVER SCREEN */}
-      {isDead && (
-        <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center backdrop-blur-xl">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-8"
-          >
-            <div className="space-y-4">
-              <div className="text-rose-500 text-8xl font-black tracking-wider drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]">
-                {language === 'tr' ? 'ÖLDÜN' : 'YOU DIED'}
-              </div>
-              <div className="text-white/60 text-xl font-bold">
-                {language === 'tr' ? `${day} gün hayatta kaldın` : `You survived ${day} day${day > 1 ? 's' : ''}`}
-              </div>
-            </div>
-            <div className="flex gap-6 justify-center">
-              <button
-                onClick={() => {
-                  useGameStore.getState().resetGame();
-                  useGameStore.setState({ isDead: false });
+              {/* Dynamic Rings */}
+              <motion.div
+                animate={{
+                  scale: isHovering ? 1.2 : 1,
+                  opacity: isHovering ? 1 : 0.3,
+                  rotate: isHovering ? 90 : 0
                 }}
-                className="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg rounded-2xl transition-all hover:scale-105 shadow-2xl"
-              >
-                {language === 'tr' ? 'YENİDEN BAŞLA' : 'RESTART'}
-              </button>
-              <button
-                onClick={() => {
-                  useGameStore.setState({ isDead: false, isMainMenuOpen: true });
-                }}
-                className="px-10 py-4 bg-stone-700 hover:bg-stone-600 text-white font-black text-lg rounded-2xl transition-all hover:scale-105 shadow-2xl"
-              >
-                {language === 'tr' ? 'ANA MENÜ' : 'MAIN MENU'}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+                className="absolute -inset-4 border-2 border-white/10 rounded-full"
+              />
 
-
-      {/* TOP-LEFT HUD - Larger & More Readable */}
-      <div className="absolute top-6 left-6 z-50">
-        <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-5 rounded-[24px] shadow-2xl w-[280px] border border-white/10">
-          <div className="flex justify-between items-end mb-4">
-            <div>
-              <div className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">{t.day}</div>
-              <div className="text-4xl font-black text-emerald-400 italic leading-none tracking-tighter">
-                {day}
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white tabular-nums tracking-tighter opacity-90">
-              {String(Math.floor(gameTime / 100)).padStart(2, '0')}:{String(Math.floor((gameTime % 100) * 0.6)).padStart(2, '0')}
+              {/* Action Preview */}
+              <AnimatePresence>
+                {isHovering && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+                  >
+                    <div className="bg-emerald-500/20 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-500/30">
+                      <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.3em] whitespace-nowrap">
+                        {t.interact || 'INTERACT'} [E]
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-2 gap-2.5">
-            <VitalCard label={t.health} value={health} color="bg-rose-500/20" icon="❤️" />
-            <VitalCard label={t.hunger} value={hunger} color="bg-amber-500/20" icon="🍞" />
-            <VitalCard label={t.thirst} value={thirst} color="bg-cyan-500/20" icon="💧" />
-            <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-purple-500/20" icon="🔥" actualValue={`${Math.round(temperature)}°C`} />
-          </div>
-        </div>
-      </div>
+        {isMenuOpen && <CraftingMenu onClose={() => setMenuOpen(false)} />}
+        <MainMenu />
 
-      {/* TOP-RIGHT CONTROLS - Smaller Compass (25% reduction) */}
-      <div className="absolute top-8 right-8 z-50 flex items-center gap-4">
-        <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-2xl scale-[0.75]">
-          <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
-          <div className="w-[1px] h-5 bg-white/10" />
-          <span className="text-[12px] font-black text-white tabular-nums uppercase transition-all scale-125 w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
-          <div className="w-[1px] h-5 bg-white/10" />
-          <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
-        </div>
+        {/* CRITICAL CONDITION WARNING */}
+        {(health < 20 || hunger < 20 || thirst < 20) && (
+          <div className="fixed inset-0 z-[100] pointer-events-none shadow-[inset_0_0_150px_rgba(239,68,68,0.5)] animate-pulse border-[12px] border-rose-500/20" />
+        )}
 
-        <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
-          <Maximize size={20} />
-        </button>
-      </div>
-
-      {/* RIGHT RESOURCES - List Style & Capacity */}
-      <div className="absolute top-1/2 -translate-y-1/2 right-8 z-50 flex flex-col gap-3">
-        {/* Capacity Indicator */}
-        <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-2xl border border-white/10 p-4 shadow-2xl">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{language === 'tr' ? 'KAPASİTE' : 'CAPACITY'}</span>
-            <span className={`text-xs font-black tabular-nums ${Object.values(inventory).reduce((a, b) => a + b, 0) > 180 ? 'text-rose-500' : 'text-emerald-400'}`}>
-              {Object.values(inventory).reduce((a, b) => (a || 0) + (b || 0), 0)} / 200
-            </span>
-          </div>
-          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+        {/* DAY TRANSITION OVERLAY */}
+        <AnimatePresence>
+          {showDayOverlay && (
             <motion.div
-              className={`h-full bg-emerald-500`}
-              initial={{ width: 0 }}
-              animate={{ width: `${(Object.values(inventory).reduce((a, b) => (a || 0) + (b || 0), 0) / 200) * 100}%` }}
-              style={{ backgroundColor: Object.values(inventory).reduce((a, b) => (a || 0) + (b || 0), 0) > 180 ? '#f43f5e' : '#10b981' }}
-            />
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[1500] flex flex-col items-center justify-center pointer-events-none bg-stone-950/20 backdrop-blur-[2px]"
+            >
+              <motion.div
+                initial={{ scale: 0.8, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 1.1, opacity: 0 }}
+                className="text-center"
+              >
+                <div className="text-stone-400 font-black tracking-[1.5em] uppercase text-xs mb-4 ml-6">{t.day}</div>
+                <h1 className="text-[180px] font-black italic tracking-tighter leading-none text-white drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                  {day.toString().padStart(2, '0')}
+                </h1>
+                <div className="h-1 w-32 bg-emerald-500 mx-auto rounded-full mt-4" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* SLEEP OVERLAY */}
+        {isSleeping && (
+          <div className="fixed inset-0 bg-black z-[1000] animate-in fade-in duration-1000 flex items-center justify-center">
+            <div className="text-white font-black text-5xl tracking-[0.5em] animate-pulse">
+              {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
+            </div>
+          </div>
+        )}
+
+        {/* GAME OVER SCREEN */}
+        {isDead && (
+          <div className="fixed inset-0 bg-stone-950/90 z-[2000] flex items-center justify-center backdrop-blur-3xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="text-center max-w-2xl px-8"
+            >
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mb-8"
+              >
+                <div className="text-stone-500 font-black tracking-[1em] uppercase text-xs mb-4">Final Moments</div>
+                <h2 className="text-rose-600 text-[120px] font-black italic tracking-tighter leading-none mb-6 drop-shadow-[0_0_50px_rgba(225,29,72,0.4)]">
+                  {language === 'tr' ? 'VAES GEÇTİN' : 'DEFEATED'}
+                </h2>
+                <p className="text-white/40 text-lg font-medium leading-relaxed max-w-md mx-auto">
+                  {language === 'tr'
+                    ? `Doğa bazen en güçlü olanı bile dize getirir. Tam ${day} gün boyunca direndin.`
+                    : `Nature sometimes brings down even even the strongest. You endured for ${day} days.`}
+                </p>
+              </motion.div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
+                <button
+                  onClick={() => {
+                    useGameStore.getState().resetGame();
+                    useGameStore.setState({ isDead: false });
+                  }}
+                  className="group relative px-12 py-6 bg-white text-stone-950 font-black text-xl rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.2)]"
+                >
+                  <span className="relative z-10 flex items-center gap-3">
+                    <RefreshCw size={24} className="group-hover:rotate-180 transition-transform duration-700" />
+                    {language === 'tr' ? 'YENİDEN DENE' : 'TRY AGAIN'}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    useGameStore.setState({ isDead: false, isMainMenuOpen: true });
+                  }}
+                  className="px-12 py-6 bg-white/5 hover:bg-white/10 text-white font-black text-xl rounded-full border border-white/10 transition-all hover:scale-105"
+                >
+                  {language === 'tr' ? 'ANA MENÜ' : 'MAIN MENU'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+
+        {/* TOP-LEFT HUD - Larger & More Readable */}
+        <div className="absolute top-8 left-8 z-50">
+          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-8 rounded-[40px] shadow-2xl w-[320px] border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
+
+            <div className="flex justify-between items-end mb-8 relative z-10">
+              <div>
+                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.day}</div>
+                <div className="text-6xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                  {day.toString().padStart(2, '0')}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.time}</div>
+                <div className="text-2xl font-black text-white tabular-nums leading-none">
+                  {Math.floor(gameTime / 100).toString().padStart(2, '0')}:
+                  {Math.floor((gameTime % 100) * 0.6).toString().padStart(2, '0')}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 relative z-10">
+              <VitalCard label={t.health} value={health} color="bg-rose-500" icon="❤️" />
+              <div className="grid grid-cols-2 gap-3">
+                <VitalCard label={t.hunger} value={hunger} color="bg-amber-500" icon="🍗" />
+                <VitalCard label={t.thirst} value={thirst} color="bg-blue-500" icon="💧" />
+              </div>
+              <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-teal-500" icon="🌡️" actualValue={`${Math.round(temperature)}°C`} />
+            </div>
+
+            {/* Capacity Info moved here */}
+            <div className="mt-6 pt-6 border-t border-white/5">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">{language === 'tr' ? 'ENVANTER DOLULUĞU' : 'INVENTORY LOAD'}</span>
+                <span className={`text-[11px] font-black tabular-nums ${Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) > 180 ? 'text-rose-500' : 'text-white/40'}`}>
+                  {Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0)}/200
+                </span>
+              </div>
+              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-emerald-500"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) / 200) * 100}%` }}
+                  style={{ backgroundColor: Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) > 180 ? '#f43f5e' : '#10b981' }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[32px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[160px]">
-          <ResourceCard icon={<Axe size={16} />} count={inventory.wood || 0} label={t.wood} />
-          <ResourceCard icon={<Mountain size={16} />} count={inventory.stone || 0} label={t.stone} />
-          <ResourceCard icon={<Zap size={16} />} count={inventory.flint_stone || 0} label={(t as any).flint_stone} />
-          <ResourceCard icon={<Droplets size={16} />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} label={t.water} />
-          <ResourceCard icon={<Target size={16} />} count={inventory.arrow || 0} label={(t as any).arrow} />
-          <ResourceCard icon={<Flame size={16} />} count={inventory.campfire || 0} label={(t as any).campfire} />
-        </div>
-      </div>
-
-      {/* HOTBAR (Bottom Center) */}
-      <Hotbar />
-
-      {/* DYNAMIC NOTIFICATIONS (Bottom Left) */}
-      <div className="absolute bottom-10 left-10 z-50 flex flex-col gap-3">
-        {notifications.slice(-5).map((n) => (
-          <div key={n.id} className="bg-stone-900/90 backdrop-blur-md px-6 py-4 rounded-[20px] flex items-center gap-4 shadow-2xl border border-white/10 animate-in fade-in slide-in-from-left duration-300">
-            <div className={`w-2 h-2 rounded-full ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'}`} />
-            <span className="text-[11px] font-black text-white uppercase tracking-tighter">{n.message}</span>
+        {/* TOP-RIGHT CONTROLS - Smaller Compass (25% reduction) */}
+        <div className="absolute top-8 right-8 z-50 flex items-center gap-4">
+          <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-2xl scale-[0.75]">
+            <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
+            <div className="w-[1px] h-5 bg-white/10" />
+            <span className="text-[12px] font-black text-white tabular-nums uppercase transition-all scale-125 w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
+            <div className="w-[1px] h-5 bg-white/10" />
+            <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
           </div>
-        ))}
-      </div>
 
-    </div >
+          <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
+            <Maximize size={20} />
+          </button>
+        </div>
+
+        {/* RIGHT RESOURCES - List Style */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-8 z-50">
+          <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[32px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[160px]">
+            <ResourceCard icon={<Axe size={16} />} count={inventory.wood || 0} label={t.wood} />
+            <ResourceCard icon={<Mountain size={16} />} count={inventory.stone || 0} label={t.stone} />
+            <ResourceCard icon={<Zap size={16} />} count={inventory.flint_stone || 0} label={(t as any).flint_stone} />
+            <ResourceCard icon={<Droplets size={16} />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} label={t.water} />
+            <ResourceCard icon={<Target size={16} />} count={inventory.arrow || 0} label={(t as any).arrow} />
+            <ResourceCard icon={<Flame size={16} />} count={inventory.campfire || 0} label={(t as any).campfire} />
+          </div>
+        </div>
+
+        {/* HOTBAR (Bottom Center) */}
+        <Hotbar />
+
+        {/* DYNAMIC NOTIFICATIONS (Bottom Left) */}
+        <div className="absolute bottom-10 left-10 z-50 flex flex-col gap-3">
+          {notifications.slice(-5).map((n) => (
+            <div key={n.id} className="bg-stone-900/90 backdrop-blur-md px-6 py-4 rounded-[20px] flex items-center gap-4 shadow-2xl border border-white/10 animate-in fade-in slide-in-from-left duration-300">
+              <div className={`w-2 h-2 rounded-full ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'warning' ? 'bg-amber-500' : 'bg-indigo-500'}`} />
+              <span className="text-[11px] font-black text-white uppercase tracking-tighter">{n.message}</span>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
   );
 }
 

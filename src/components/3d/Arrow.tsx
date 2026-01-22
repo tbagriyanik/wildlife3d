@@ -18,7 +18,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         position,
         rotation,
         velocity: stuck ? [0, 0, 0] : velocity,
-        args: [0.05, 0.05, 0.8],
+        args: [0.12, 0.12, 0.8],
         linearDamping: 0.1,
         onCollide: (e: any) => {
             if (stuck) return;
@@ -83,7 +83,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
     return (
         <mesh ref={ref as any} castShadow name="arrow">
-            <boxGeometry args={[0.05, 0.05, 0.8]} />
+            <boxGeometry args={[0.08, 0.08, 0.8]} />
             <meshStandardMaterial color="#4a3728" roughness={1} />
             <mesh position={[0, 0, -0.4]} rotation={[-Math.PI / 2, 0, 0]}>
                 <coneGeometry args={[0.08, 0.2, 4]} />

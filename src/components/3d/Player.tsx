@@ -62,7 +62,7 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
                 {/* Flame area */}
                 <group position={[0, 0.5, 0]}>
                     <Fire scale={0.4} />
-                    <pointLight ref={lightRef as any} intensity={2} distance={35} color="#ffaa44" castShadow />
+                    <pointLight ref={lightRef as any} intensity={2} distance={35} color="#ffaa44" />
                 </group>
             </group>
 
@@ -174,7 +174,7 @@ export const Player = () => {
 
 
     useFrame((state, delta) => {
-        const { camera, gl } = state;
+        const { camera } = state;
         // Default RUN (12), Shift WALK (6)
         const baseSpeed = sprint ? 6 : 12;
 
@@ -235,10 +235,6 @@ export const Player = () => {
             perspectiveCamera.fov = THREE.MathUtils.lerp(perspectiveCamera.fov, targetFOV, 0.1);
             perspectiveCamera.updateProjectionMatrix();
         }
-
-        // --- VIEWMODEL CLEAR ---
-        // Force items to draw over world
-        gl.clearDepth();
 
         // Update bearing in store (0-360)
         const forwardVec = new THREE.Vector3();
