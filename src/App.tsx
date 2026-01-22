@@ -433,7 +433,10 @@ function App() {
                 <VitalCard label={t.hunger} value={hunger} color="bg-amber-500" icon="🍗" />
                 <VitalCard label={t.thirst} value={thirst} color="bg-blue-500" icon="💧" />
               </div>
-              <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-teal-500" icon="🌡️" actualValue={`${Math.round(temperature)}°C`} />
+              <div className="grid grid-cols-2 gap-2">
+                <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-teal-500" icon="🌡️" actualValue={`${Math.round(temperature)}°C`} />
+                <VitalCard label={language === 'tr' ? 'YÜK' : 'LOAD'} value={(Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) / 200) * 100} color="bg-indigo-500" icon="📦" actualValue={`${Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0)}`} />
+              </div>
             </div>
 
             {/* Capacity Info */}
@@ -467,8 +470,11 @@ function App() {
               <span className="text-[10px] font-black text-white/30 tabular-nums uppercase w-6 text-center">{dirRight}</span>
             </div>
 
-            <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-12 h-12 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
-              <Maximize size={18} />
+            <button
+              onClick={toggleFullScreen}
+              className="glass bg-stone-950/40 h-[42px] px-4 rounded-full flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5 scale-[0.85] origin-right"
+            >
+              <Maximize size={16} />
             </button>
           </div>
 

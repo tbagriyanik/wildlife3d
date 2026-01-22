@@ -229,7 +229,7 @@ export const Player = () => {
                     .addScaledVector(direction, 1);
 
                 // Speed
-                const arrowSpeed = 35;
+                const arrowSpeed = 60;
                 const arrowVelocity = direction.clone().multiplyScalar(arrowSpeed);
 
                 // Rotation (Look at direction)

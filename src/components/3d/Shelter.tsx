@@ -40,7 +40,7 @@ export const Shelter = memo(({ level, position }: ShelterProps) => {
             {level === 2 && <Hut />}
             {level === 3 && <House />}
             {/* Permanent Campfire */}
-            <group position={[level === 1 ? 2 : 3, 0, 0]}>
+            <group position={[level === 1 ? 2 : 3, 0, 0]} name="shelter_fire">
                 {[...Array(6)].map((_, i) => (
                     <mesh key={i} position={[Math.cos(i * Math.PI / 3) * 0.4, 0.05, Math.sin(i * Math.PI / 3) * 0.4]}>
                         <dodecahedronGeometry args={[0.1, 0]} />

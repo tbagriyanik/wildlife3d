@@ -49,7 +49,7 @@ export const InteractionSystem = () => {
                         const name = obj.name || '';
 
                         // Priority: Objects with names we recognize
-                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter', 'deer', 'rabbit', 'bird', 'partridge'];
+                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter_fire', 'shelter', 'deer', 'rabbit', 'bird', 'partridge'];
                         const foundName = interactiveNames.find(n => name.includes(n)) || null;
 
                         if (id && foundName) return { id, name: foundName };
@@ -135,25 +135,27 @@ export const InteractionSystem = () => {
                     playSound('gather');
                     state.addNotification(t.nothing_to_cook, 'info');
                 }
-            } else if (name.includes('shelter')) {
+            } else if (name.includes('shelter_fire')) {
                 const state = useGameStore.getState();
                 const inv = state.inventory;
                 const t = TRANSLATIONS[state.language];
 
-                // Priority cooking: Meat then Apple
+                // Cooking only
                 if (inv['meat'] > 0) {
                     state.cookItem('meat');
                     playSound('gather');
-                    state.addNotification(t.meat_cooked, 'success');
                 } else if (inv['apple'] > 0) {
                     state.cookItem('apple');
                     playSound('gather');
-                    state.addNotification(t.apple_cooked, 'success');
                 } else {
-                    // If nothing to cook, perform sleep action
-                    state.sleep();
                     playSound('gather');
+                    state.addNotification(t.nothing_to_cook, 'info');
                 }
+            } else if (name.includes('shelter')) {
+                // Sleep only
+                const state = useGameStore.getState();
+                state.sleep();
+                playSound('gather');
             }
 
         }

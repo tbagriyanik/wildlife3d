@@ -29,7 +29,7 @@ export interface WorldResources {
 
 export interface Projectile {
     id: string;
-    type: 'arrow';
+    type: 'arrow' | 'blood';
     position: [number, number, number];
     velocity: [number, number, number];
     rotation: [number, number, number];
@@ -123,8 +123,7 @@ export interface GameState {
     removeProjectile: (id: string) => void;
     addShelter: (level: number, position: [number, number, number]) => void;
     resetGame: () => void;
-
-
+    spawnBlood: (position: [number, number, number]) => void;
 }
 
 
@@ -628,7 +627,21 @@ export const useGameStore = create<GameState>()(
                 projectiles: [],
                 playerPosition: [0, 2, 0],
                 shelters: []
-            })
+            }),
+
+            spawnBlood: (position) => {
+                const id = `blood-${Math.random().toString(36).substring(7)}`;
+                set((state) => ({
+                    projectiles: [...state.projectiles, {
+                        id,
+                        type: 'blood' as any,
+                        position,
+                        velocity: [(Math.random() - 0.5) * 2, 2, (Math.random() - 0.5) * 2],
+                        rotation: [0, 0, 0],
+                        spawnTime: Date.now()
+                    }]
+                }));
+            }
 
         }),
         {

@@ -1,10 +1,32 @@
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Vector3, Euler } from 'three';
 import { useGameStore } from '../../store/useGameStore';
 import { TRANSLATIONS } from '../../constants/translations';
 import type { Projectile } from '../../store/useGameStore';
+import * as THREE from 'three';
+
+const Blood = ({ position, velocity }: { position: [number, number, number], velocity: [number, number, number] }) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const vel = new Vector3(...velocity);
+    const pos = new Vector3(...position);
+
+    useFrame((_, delta) => {
+        if (!meshRef.current) return;
+        vel.y -= 9.81 * delta; // Gravity
+        pos.add(vel.clone().multiplyScalar(delta));
+        meshRef.current.position.copy(pos);
+        meshRef.current.scale.multiplyScalar(0.95); // Fade out
+    });
+
+    return (
+        <mesh ref={meshRef} position={position}>
+            <sphereGeometry args={[0.1, 8, 8]} />
+            <meshStandardMaterial color="#880000" emissive="#440000" />
+        </mesh>
+    );
+};
 
 export const Arrow = ({ data }: { data: Projectile }) => {
     const { id, position, velocity, rotation, stuck } = data;
@@ -27,9 +49,10 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             const hitToId = e.body.userData?.id;
 
             // Hunting logic: Check if we hit an animal
-            if (hitToId && (hitToId.includes('deer') || hitToId.includes('rabbit') || hitToId.includes('bird') || hitToId.includes('partridge'))) {
+            if (hitToId && (hitToId.includes('deer') || hitToId.includes('rabbit') || hitToId.includes('bird') || hitToId.includes('partridge') || hitToId.includes('animal'))) {
                 const state = useGameStore.getState();
                 const t = TRANSLATIONS[state.language];
+                state.spawnBlood([currentPos.x, currentPos.y, currentPos.z]); // Spawn blood
                 state.removeWildlife(hitToId);
                 state.addItem('meat', 2);
                 state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
@@ -99,11 +122,24 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
 export const ArrowManager = () => {
     const projectiles = useGameStore((state) => state.projectiles);
+    const removeProjectile = useGameStore((state) => state.removeProjectile);
+
+    useFrame(() => {
+        // Automatically remove blood after 1 second
+        projectiles.filter(p => p.type as any === 'blood').forEach(p => {
+            if (Date.now() - p.spawnTime > 1000) {
+                removeProjectile(p.id);
+            }
+        });
+    });
+
     return (
         <>
-            {projectiles.filter(p => p.type === 'arrow').map(p => (
-                <Arrow key={p.id} data={p} />
-            ))}
+            {projectiles.map(p => {
+                if (p.type === 'arrow') return <Arrow key={p.id} data={p} />;
+                if (p.type as any === 'blood') return <Blood key={p.id} position={p.position} velocity={p.velocity} />;
+                return null;
+            })}
         </>
     );
 };
