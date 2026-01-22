@@ -336,7 +336,7 @@ export const useGameStore = create<GameState>()(
             addItem: (id, amount) => {
                 const state = useGameStore.getState();
                 const currentTotal = Object.values(state.inventory).reduce((a, b) => a + b, 0);
-                const MAX_CAPACITY = 100; // Total item limit (Reduced for gameplay challenge)
+                const MAX_CAPACITY = 200; // Total item limit (Reduced for gameplay challenge)
 
                 if (currentTotal + amount > MAX_CAPACITY) {
                     const t = TRANSLATIONS[state.language];
