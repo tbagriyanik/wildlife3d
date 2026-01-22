@@ -406,41 +406,41 @@ function App() {
         )}
 
 
-        {/* TOP-LEFT HUD - Larger & More Readable */}
-        <div className="absolute top-8 left-8 z-50">
-          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-8 rounded-[40px] shadow-2xl w-[320px] border border-white/10 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
+        {/* COMPACT TOP-LEFT HUD */}
+        <div className="absolute top-6 left-6 z-50">
+          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-6 rounded-[32px] shadow-2xl w-[260px] border border-white/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
 
-            <div className="flex justify-between items-end mb-8 relative z-10">
+            <div className="flex justify-between items-end mb-6 relative z-10">
               <div>
-                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.day}</div>
-                <div className="text-6xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-1">{t.day}</div>
+                <div className="text-4xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">
                   {day.toString().padStart(2, '0')}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.time}</div>
-                <div className="text-2xl font-black text-white tabular-nums leading-none">
+                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-1">{t.time}</div>
+                <div className="text-lg font-black text-white tabular-nums leading-none">
                   {Math.floor(gameTime / 100).toString().padStart(2, '0')}:
                   {Math.floor((gameTime % 100) * 0.6).toString().padStart(2, '0')}
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 relative z-10">
+            <div className="grid grid-cols-1 gap-2.5 relative z-10">
               <VitalCard label={t.health} value={health} color="bg-rose-500" icon="❤️" />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <VitalCard label={t.hunger} value={hunger} color="bg-amber-500" icon="🍗" />
                 <VitalCard label={t.thirst} value={thirst} color="bg-blue-500" icon="💧" />
               </div>
               <VitalCard label={(t as any).temp || t.temperature} value={(temperature / 50) * 100} color="bg-teal-500" icon="🌡️" actualValue={`${Math.round(temperature)}°C`} />
             </div>
 
-            {/* Capacity Info moved here */}
-            <div className="mt-6 pt-6 border-t border-white/5">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">{language === 'tr' ? 'ENVANTER DOLULUĞU' : 'INVENTORY LOAD'}</span>
-                <span className={`text-[11px] font-black tabular-nums ${Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) > 180 ? 'text-rose-500' : 'text-white/40'}`}>
+            {/* Capacity Info */}
+            <div className="mt-5 pt-5 border-t border-white/5">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">{language === 'tr' ? 'ENVANTER' : 'INVENTORY'}</span>
+                <span className={`text-[10px] font-black tabular-nums ${Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0) > 180 ? 'text-rose-500' : 'text-white/40'}`}>
                   {Object.values(inventory).reduce((a: number, b: any) => a + (b || 0), 0)}/200
                 </span>
               </div>
@@ -456,30 +456,30 @@ function App() {
           </div>
         </div>
 
-        {/* TOP-RIGHT CONTROLS - Smaller Compass (25% reduction) */}
-        <div className="absolute top-8 right-8 z-50 flex items-center gap-4">
-          <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-6 py-3 flex items-center justify-center gap-4 border-white/5 shadow-2xl scale-[0.75]">
-            <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirLeft}</span>
-            <div className="w-[1px] h-5 bg-white/10" />
-            <span className="text-[12px] font-black text-white tabular-nums uppercase transition-all scale-125 w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
-            <div className="w-[1px] h-5 bg-white/10" />
-            <span className="text-[11px] font-black text-white/30 tabular-nums uppercase transition-all duration-300 w-6 text-center">{dirRight}</span>
+        {/* TOP-RIGHT CONTROLS */}
+        <div className="absolute top-6 right-6 z-50 flex flex-col items-end gap-3">
+          <div className="flex items-center gap-3">
+            <div className="glass bg-stone-950/40 backdrop-blur-3xl rounded-full px-5 py-2.5 flex items-center justify-center gap-4 border-white/5 shadow-2xl scale-[0.85] origin-right">
+              <span className="text-[10px] font-black text-white/30 tabular-nums uppercase w-6 text-center">{dirLeft}</span>
+              <div className="w-[1px] h-4 bg-white/10" />
+              <span className="text-[11px] font-black text-white tabular-nums uppercase w-6 text-center drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">{dirCenter}</span>
+              <div className="w-[1px] h-4 bg-white/10" />
+              <span className="text-[10px] font-black text-white/30 tabular-nums uppercase w-6 text-center">{dirRight}</span>
+            </div>
+
+            <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-12 h-12 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
+              <Maximize size={18} />
+            </button>
           </div>
 
-          <button onClick={toggleFullScreen} className="glass bg-stone-950/40 w-14 h-14 rounded-2xl flex items-center justify-center text-white/40 shadow-2xl hover:bg-white/10 transition-all active:scale-95 border border-white/5">
-            <Maximize size={20} />
-          </button>
-        </div>
-
-        {/* RIGHT RESOURCES - List Style */}
-        <div className="absolute top-1/2 -translate-y-1/2 right-8 z-50">
-          <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[32px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[160px]">
-            <ResourceCard icon={<Axe size={16} />} count={inventory.wood || 0} label={t.wood} />
-            <ResourceCard icon={<Mountain size={16} />} count={inventory.stone || 0} label={t.stone} />
-            <ResourceCard icon={<Zap size={16} />} count={inventory.flint_stone || 0} label={(t as any).flint_stone} />
-            <ResourceCard icon={<Droplets size={16} />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} label={t.water} />
-            <ResourceCard icon={<Target size={16} />} count={inventory.arrow || 0} label={(t as any).arrow} />
-            <ResourceCard icon={<Flame size={16} />} count={inventory.campfire || 0} label={(t as any).campfire} />
+          {/* ITEM LIST - Repositioned under buttons */}
+          <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[24px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[140px] origin-top-right">
+            <ResourceCard icon={<Axe size={14} />} count={inventory.wood || 0} label={t.wood} />
+            <ResourceCard icon={<Mountain size={14} />} count={inventory.stone || 0} label={t.stone} />
+            <ResourceCard icon={<Zap size={14} />} count={inventory.flint_stone || 0} label={(t as any).flint_stone} />
+            <ResourceCard icon={<Droplets size={14} />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} label={t.water} />
+            <ResourceCard icon={<Target size={14} />} count={inventory.arrow || 0} label={(t as any).arrow} />
+            <ResourceCard icon={<Flame size={14} />} count={inventory.campfire || 0} label={(t as any).campfire} />
           </div>
         </div>
 

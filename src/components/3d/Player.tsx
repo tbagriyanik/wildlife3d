@@ -26,8 +26,9 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
             // Flicker light
             if (lightRef.current) {
                 const flicker = Math.sin(time * 20) * 0.2 + Math.cos(time * 15) * 0.1;
-                lightRef.current.intensity = (2.0 + flicker) * torchFuel;
-                lightRef.current.distance = (15 + flicker * 2) * Math.sqrt(torchFuel);
+                const safeFuel = Math.max(0.01, torchFuel);
+                lightRef.current.intensity = (2.0 + flicker) * safeFuel;
+                lightRef.current.distance = (15 + flicker * 2) * Math.sqrt(safeFuel);
             }
 
             // Animate flame meshes
@@ -52,12 +53,12 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
                 {/* Tapered Handle (Meşale style) */}
                 <mesh castShadow renderOrder={1000}>
                     <cylinderGeometry args={[0.02, 0.04, 0.7]} />
-                    <meshStandardMaterial color="#3e2723" roughness={1} depthTest={false} depthWrite={false} transparent opacity={1} />
+                    <meshStandardMaterial color="#3e2723" roughness={1} />
                 </mesh>
                 {/* Top Coal / Binding area */}
                 <mesh position={[0, 0.35, 0]} renderOrder={1000}>
                     <cylinderGeometry args={[0.06, 0.04, 0.15]} />
-                    <meshStandardMaterial color="#212121" roughness={1} depthTest={false} depthWrite={false} transparent opacity={1} />
+                    <meshStandardMaterial color="#212121" roughness={1} />
                 </mesh>
                 {/* Flame area */}
                 <group position={[0, 0.5, 0]}>

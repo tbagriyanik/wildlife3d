@@ -32,7 +32,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 const t = TRANSLATIONS[state.language];
                 state.removeWildlife(hitToId);
                 state.addItem('meat', 2);
-                state.addNotification(`${t.collected_msg}: 2x ${(t as any).meat}`, 'success');
+                state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
                 removeProjectile(id);
                 return;
             }

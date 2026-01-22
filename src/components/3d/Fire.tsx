@@ -58,7 +58,7 @@ export const Fire = ({ scale = 1, color = "#ff5500" }: { scale?: number, color?:
             </mesh>
 
             {/* Light source */}
-            <pointLight distance={8 * scale} decay={2} color="#ffaa44" castShadow />
+            <pointLight distance={8 * scale} decay={2} color="#ffaa44" />
         </group>
     );
 };
