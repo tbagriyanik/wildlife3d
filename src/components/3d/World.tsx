@@ -53,7 +53,7 @@ export const World = () => {
 
     const [grassTexture, sandTexture] = useTexture([
         '/textures/grass.png',
-        '/textures/sand.png'
+        '/textures/sand.jpg'
     ]);
 
     grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
