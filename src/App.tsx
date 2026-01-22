@@ -51,10 +51,15 @@ const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; 
   );
 };
 
-const ResourceCard = ({ icon, count }: { icon: React.ReactNode; count: number }) => (
-  <div className="p-3.5 flex items-center justify-between group hover:bg-white/5 transition-colors">
-    <div className="opacity-60 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">{icon}</div>
-    <span className="text-[13px] font-black text-white/80 tabular-nums">{count}</span>
+const ResourceCard = ({ icon, count, label }: { icon: React.ReactNode; count: number; label: string }) => (
+  <div className="p-3.5 flex items-center justify-between group hover:bg-stone-800/50 transition-all border-b border-white/5 last:border-0 px-5">
+    <div className="flex items-center gap-4">
+      <div className="opacity-60 group-hover:opacity-100 transition-all scale-110 group-hover:scale-125 group-hover:text-emerald-400">{icon}</div>
+      <div className="flex flex-col">
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest leading-none group-hover:text-white/40 transition-colors">{label}</span>
+      </div>
+    </div>
+    <span className="text-sm font-black text-white group-hover:text-emerald-400 tabular-nums transition-colors">{count}</span>
   </div>
 );
 
@@ -374,14 +379,14 @@ function App() {
       </div>
 
       {/* RIGHT RESOURCES - List Style */}
-      <div className="absolute top-1/2 -translate-y-1/2 right-6 z-50">
-        <div className="bg-[#1a1c23]/80 backdrop-blur-2xl rounded-[28px] border border-white/5 overflow-hidden flex flex-col divide-y divide-white/5 shadow-2xl min-w-[120px]">
-          <ResourceCard icon={<Axe size={16} className="text-emerald-400" />} count={inventory.wood || 0} />
-          <ResourceCard icon={<Mountain size={16} className="text-stone-400" />} count={inventory.stone || 0} />
-          <ResourceCard icon={<Zap size={16} className="text-amber-400" />} count={inventory.flint_stone || 0} />
-          <ResourceCard icon={<Droplets size={16} className="text-cyan-400" />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} />
-          <ResourceCard icon={<Target size={16} className="text-rose-400" />} count={inventory.arrow || 0} />
-          <ResourceCard icon={<Flame size={16} className="text-orange-400" />} count={inventory.campfire || 0} />
+      <div className="absolute top-1/2 -translate-y-1/2 right-8 z-50">
+        <div className="bg-[#1a1c23]/90 backdrop-blur-3xl rounded-[32px] border border-white/10 overflow-hidden flex flex-col shadow-2xl min-w-[160px]">
+          <ResourceCard icon={<Axe size={16} />} count={inventory.wood || 0} label={t.wood} />
+          <ResourceCard icon={<Mountain size={16} />} count={inventory.stone || 0} label={t.stone} />
+          <ResourceCard icon={<Zap size={16} />} count={inventory.flint_stone || 0} label={(t as any).flint_stone} />
+          <ResourceCard icon={<Droplets size={16} />} count={(inventory.water || 0) + (inventory.waterEmpty || 0)} label={t.water} />
+          <ResourceCard icon={<Target size={16} />} count={inventory.arrow || 0} label={(t as any).arrow} />
+          <ResourceCard icon={<Flame size={16} />} count={inventory.campfire || 0} label={(t as any).campfire} />
         </div>
       </div>
 

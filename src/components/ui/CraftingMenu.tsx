@@ -19,16 +19,19 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
         level?: number;
     }
 
+    const shelters = useGameStore(state => state.shelters);
+    const maxShelterLevel = shelters.length > 0 ? Math.max(...shelters.map(s => s.level)) : 0;
+
     const recipes: Recipe[] = [
         { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
         { id: 'torch', name: t.torch || 'TORCH', cost: { wood: 2 }, icon: <Flame size={20} /> },
         { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 2, flint_stone: 1 }, icon: <Flame size={20} /> },
         { id: 'arrow', name: t.arrow || 'ARROW (5x)', cost: { wood: 1, stone: 1 }, output: 5, icon: <Hammer size={20} /> },
 
-        // Shelters
-        { id: 'tent', name: t.tent || 'TENT', cost: { wood: 10, stone: 5 }, icon: <Tent size={20} />, isShelter: true, level: 1 },
-        { id: 'hut', name: t.hut || 'HUT', cost: { wood: 20, stone: 15 }, icon: <Home size={20} />, isShelter: true, level: 2 },
-        { id: 'house', name: t.house || 'HOUSE', cost: { wood: 40, stone: 30 }, icon: <Landmark size={20} />, isShelter: true, level: 3 },
+        // Filtered Shelters based on progression
+        ...(maxShelterLevel === 0 ? [{ id: 'tent', name: t.tent || 'TENT', cost: { wood: 10, stone: 5 }, icon: <Tent size={20} />, isShelter: true, level: 1 }] : []),
+        ...(maxShelterLevel === 1 ? [{ id: 'hut', name: t.hut || 'HUT', cost: { wood: 25, stone: 15 }, icon: <Home size={20} />, isShelter: true, level: 2 }] : []),
+        ...(maxShelterLevel === 2 ? [{ id: 'house', name: t.house || 'HOUSE', cost: { wood: 50, stone: 40 }, icon: <Landmark size={20} />, isShelter: true, level: 3 }] : []),
     ];
 
     const canCraft = (cost: Record<string, number>) => {
@@ -51,14 +54,14 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                 ];
                 addShelter(recipe.level, spawnPos);
             } else {
-                addItem(recipe.id === 'cooked_meat' ? 'cooked_meat' : recipe.id, recipe.output || 1);
+                addItem(recipe.id, recipe.output || 1);
             }
             playSound('craft');
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -66,23 +69,26 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                 onMouseDown={(e) => e.stopPropagation()}
                 onMouseUp={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-stone-900/90 border border-white/10 p-6 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden"
+                className="bg-[#1a1c23]/95 border border-white/10 p-8 rounded-[32px] shadow-2xl w-full max-w-4xl relative overflow-hidden"
             >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-amber-500/20 p-2 rounded-xl">
-                            <Hammer size={24} className="text-amber-500" />
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-emerald-500/20 p-3 rounded-2xl">
+                            <Hammer size={28} className="text-emerald-500" />
                         </div>
-                        <h2 className="text-2xl font-black text-white tracking-tight">{t.crafting || 'CRAFTING'}</h2>
+                        <div>
+                            <h2 className="text-3xl font-black text-white tracking-tight leading-none mb-1">{t.crafting || 'CRAFTING'}</h2>
+                            <p className="text-white/30 text-xs font-bold uppercase tracking-widest">{language === 'tr' ? 'Yeni eşyalar üret' : 'Create new items'}</p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-3 hover:bg-white/10 rounded-2xl text-white/50 hover:text-white transition-all active:scale-90 border border-white/5">
                         <X size={24} />
                     </button>
                 </div>
 
-                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
                     {recipes.map((recipe) => {
                         const craftable = canCraft(recipe.cost);
                         return (
@@ -90,28 +96,36 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                                 key={recipe.id}
                                 disabled={!craftable}
                                 onClick={() => handleCraft(recipe)}
-                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 group ${craftable
-                                    ? 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]'
-                                    : 'bg-black/20 border-transparent opacity-50 cursor-not-allowed grayscale'
+                                className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all duration-300 group relative overflow-hidden ${craftable
+                                    ? 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)]'
+                                    : 'bg-black/20 border-transparent opacity-40 cursor-not-allowed grayscale'
                                     }`}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-3 rounded-xl ${craftable ? 'bg-amber-500/20 text-amber-500' : 'bg-white/5 text-white/20'}`}>
+                                <div className="flex items-center gap-5 z-10">
+                                    <div className={`p-4 rounded-2xl transition-colors duration-300 ${craftable ? 'bg-emerald-500/20 text-emerald-500 group-hover:bg-emerald-500/30' : 'bg-white/5 text-white/20'}`}>
                                         {recipe.icon}
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-bold text-white group-hover:text-amber-400 transition-colors">
-                                            {recipe.name}
+                                        <div className="font-black text-lg text-white group-hover:text-emerald-400 transition-colors tracking-tight">
+                                            {recipe.isShelter ? `${t.upgrade || 'UPGRADE'}: ${recipe.name}` : recipe.name}
                                         </div>
-                                        <div className="text-xs font-semibold text-white/40 flex gap-2 mt-1">
-                                            {Object.entries(recipe.cost).map(([item, amount]) => (
-                                                <span key={item} className="flex items-center gap-1 bg-black/30 px-2 py-0.5 rounded-full">
-                                                    {(t as any)[item] || item.toUpperCase()} <span className="text-amber-500">{amount as number}</span>
-                                                </span>
-                                            ))}
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {Object.entries(recipe.cost).map(([item, amount]) => {
+                                                const hasEnough = (inventory[item] || 0) >= (amount as number);
+                                                return (
+                                                    <span key={item} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${hasEnough ? 'bg-white/5 text-white/60' : 'bg-rose-500/10 text-rose-500'}`}>
+                                                        {(t as any)[item] || item.toUpperCase()} <span className={hasEnough ? 'text-emerald-500' : 'text-rose-500'}>{amount as number}</span>
+                                                    </span>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
+                                {craftable && (
+                                    <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="bg-emerald-500/20 text-emerald-500 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">Craft</div>
+                                    </div>
+                                )}
                             </button>
                         );
                     })}

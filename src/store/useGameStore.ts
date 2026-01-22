@@ -130,11 +130,10 @@ export interface GameState {
 
 
 const generateResources = (): WorldResources => {
-    // Define water pond locations (these are fixed areas where water exists)
+    // Define water pond locations matching World.tsx
     const waterPonds = [
-        { x: 40, z: 40, radius: 8 },
-        { x: -50, z: -30, radius: 6 },
-        { x: 60, z: -60, radius: 7 },
+        { x: 30, z: 30, radius: 10 },
+        { x: -40, z: -20, radius: 8 },
     ];
 
     // Helper: Check if position is in water
@@ -336,13 +335,22 @@ export const useGameStore = create<GameState>()(
             },
 
             addItem: (id, amount) => {
+                const state = useGameStore.getState();
+                const currentTotal = Object.values(state.inventory).reduce((a, b) => a + b, 0);
+                const MAX_CAPACITY = 200; // Total item limit
+
+                if (currentTotal + amount > MAX_CAPACITY) {
+                    const t = TRANSLATIONS[state.language];
+                    state.addNotification(t.inventory_full_msg || 'INVENTORY FULL!', 'warning');
+                    return;
+                }
+
                 set((state) => ({ inventory: { ...state.inventory, [id]: (state.inventory[id] || 0) + amount } }));
-                const lang = useGameStore.getState().language;
+                const lang = state.language;
                 const t = TRANSLATIONS[lang];
                 const itemName = (t as any)[id] || id.toUpperCase();
-                // "ITEMNAME COLLECTED"
                 const msg = `${itemName} ${t.collected_msg}`;
-                useGameStore.getState().addNotification(msg, 'success');
+                state.addNotification(msg, 'success');
             },
 
             removeItem: (id, amount) => set((state) => {
@@ -424,16 +432,32 @@ export const useGameStore = create<GameState>()(
 
 
 
-            placeItem: (type, position) => set((state) => ({
-                placedItems: [...state.placedItems, {
-                    id: Math.random().toString(36).substring(7),
-                    type,
-                    position,
-                    active: true,
-                    fuel: 100,
-                    maxFuel: 100
-                }]
-            })),
+            placeItem: (type, position) => {
+                const state = useGameStore.getState();
+
+                // Area check logic
+                const isOccupied = [...state.worldResources.trees, ...state.worldResources.rocks, ...state.worldResources.bushes, ...state.placedItems, ...state.shelters].some(item => {
+                    const dist = Math.sqrt((item.position[0] - position[0]) ** 2 + (item.position[2] - position[2]) ** 2);
+                    return dist < 2.5; // Minimum 2.5m clearance
+                });
+
+                if (isOccupied) {
+                    const t = TRANSLATIONS[state.language];
+                    state.addNotification(t.area_blocked_msg || 'AREA BLOCKED!', 'warning');
+                    return;
+                }
+
+                set((state) => ({
+                    placedItems: [...state.placedItems, {
+                        id: Math.random().toString(36).substring(7),
+                        type,
+                        position,
+                        active: true,
+                        fuel: 100,
+                        maxFuel: 100
+                    }]
+                }));
+            },
 
             updateCampfires: (delta) => set((state) => ({
                 placedItems: state.placedItems.map(item => {
@@ -545,9 +569,25 @@ export const useGameStore = create<GameState>()(
                 projectiles: state.projectiles.filter(p => p.id !== id)
             })),
 
-            addShelter: (level, position) => set((state) => ({
-                shelters: [...state.shelters, { id: Math.random().toString(36).substring(7), level, position }]
-            })),
+            addShelter: (level, position) => {
+                const state = useGameStore.getState();
+
+                // Area check
+                const isOccupied = [...state.worldResources.trees, ...state.worldResources.rocks, ...state.worldResources.bushes, ...state.placedItems, ...state.shelters].some(item => {
+                    const dist = Math.sqrt((item.position[0] - position[0]) ** 2 + (item.position[2] - position[2]) ** 2);
+                    return dist < (level === 1 ? 4 : 6); // Larger clearance for houses
+                });
+
+                if (isOccupied) {
+                    const t = TRANSLATIONS[state.language];
+                    state.addNotification(t.area_blocked_msg || 'AREA BLOCKED!', 'warning');
+                    return;
+                }
+
+                set((state) => ({
+                    shelters: [...state.shelters, { id: Math.random().toString(36).substring(7), level, position }]
+                }));
+            },
 
             sleep: () => {
                 set({ isSleeping: true });
