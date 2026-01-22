@@ -33,23 +33,36 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
         } else if (Math.random() < 0.005) {
             // Wander
             setTargetPos(new THREE.Vector3(
-                position[0] + (Math.random() - 0.5) * 30,
-                groupRef.current.position.y,
-                position[2] + (Math.random() - 0.5) * 30
+                position[0] + (Math.random() - 0.5) * 40,
+                0,
+                position[2] + (Math.random() - 0.5) * 40
             ));
         }
 
-        currentPos.current.lerp(targetPos, delta * speed * 0.5);
+        // 1. Rotate towards target smoothly
+        const lookAtTarget = targetPos.clone();
+        lookAtTarget.y = 0;
+
+        if (currentPos.current.distanceTo(lookAtTarget) > 0.5) {
+            // Calculate angle to target
+            const targetRotation = Math.atan2(
+                lookAtTarget.x - currentPos.current.x,
+                lookAtTarget.z - currentPos.current.z
+            );
+
+            // Smoothly interpolate rotation
+            const currentRotation = groupRef.current.rotation.y;
+            groupRef.current.rotation.y = THREE.MathUtils.lerp(currentRotation, targetRotation, delta * 2);
+
+            // 2. Move forward in the CURRENT facing direction
+            const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), groupRef.current.rotation.y);
+            currentPos.current.add(forward.multiplyScalar(delta * speed * 5));
+        }
+
         groupRef.current.position.copy(currentPos.current);
 
         // Sync physics body to AI position
         api.position.set(currentPos.current.x, currentPos.current.y + (name === 'deer' ? 0.7 : 0.3), currentPos.current.z);
-
-        const lookAtTarget = targetPos.clone();
-        lookAtTarget.y = groupRef.current.position.y;
-        if (groupRef.current.position.distanceTo(lookAtTarget) > 0.1) {
-            groupRef.current.lookAt(lookAtTarget);
-        }
     });
 
     return (

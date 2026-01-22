@@ -262,7 +262,7 @@ export const useGameStore = create<GameState>()(
             masterVolume: 0.5,
             isHovering: false,
             torchFuel: 1.0,
-            inventory: { wood: 6, stone: 17, flint_stone: 0, apple: 10, water: 3, waterEmpty: 0, meat: 5 },
+            inventory: { wood: 6, stone: 17, flint_stone: 0, apple: 10, water: 3, waterEmpty: 0, meat: 5, bow: 1, arrow: 20 },
 
 
             worldResources: initialResources,
@@ -587,7 +587,15 @@ export const useGameStore = create<GameState>()(
             addShelter: (level, position) => {
                 const state = useGameStore.getState();
 
-                // Area check
+                // If level > 1, it's an upgrade. Replace the existing shelter(s).
+                if (level > 1 && state.shelters.length > 0) {
+                    set({
+                        shelters: [{ id: Math.random().toString(36).substring(7), level, position }]
+                    });
+                    return;
+                }
+
+                // Area check for new shelter (level 1)
                 const isOccupied = [...state.worldResources.trees, ...state.worldResources.rocks, ...state.worldResources.bushes, ...state.placedItems, ...state.shelters].some(item => {
                     const dist = Math.sqrt((item.position[0] - position[0]) ** 2 + (item.position[2] - position[2]) ** 2);
                     return dist < (level === 1 ? 4 : 6); // Larger clearance for houses
@@ -620,7 +628,7 @@ export const useGameStore = create<GameState>()(
                 thirst: 100,
                 day: 1,
                 gameTime: 800,
-                inventory: { wood: 6, stone: 17, water: 3, waterEmpty: 0 },
+                inventory: { wood: 6, stone: 17, water: 3, waterEmpty: 0, bow: 1, arrow: 20 },
 
                 worldResources: generateResources(),
                 placedItems: [],

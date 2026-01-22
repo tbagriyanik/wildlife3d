@@ -139,9 +139,21 @@ export const World = () => {
 
 
 
+            {/* MAIN TERRAIN (SAND) */}
             <mesh ref={planeRef as any} receiveShadow>
                 <planeGeometry args={[1000, 1000]} />
-                <meshStandardMaterial map={grassTexture} color="#5e7a46" roughness={1} metalness={0} envMapIntensity={0.5} />
+                <meshStandardMaterial color="#d2b48c" roughness={1} metalness={0} />
+            </mesh>
+
+            {/* GRASS PATCHES AROUND LAKES */}
+            <mesh position={[30, 0.02, 30]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+                <circleGeometry args={[45]} />
+                <meshStandardMaterial map={grassTexture} color="#5e7a46" roughness={1} />
+            </mesh>
+
+            <mesh position={[-40, 0.02, -20]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+                <circleGeometry args={[35]} />
+                <meshStandardMaterial map={grassTexture} color="#5e7a46" roughness={1} />
             </mesh>
 
 

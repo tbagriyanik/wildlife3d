@@ -344,14 +344,65 @@ function App() {
           )}
         </AnimatePresence>
 
-        {/* SLEEP OVERLAY */}
-        {isSleeping && (
-          <div className="fixed inset-0 bg-black z-[1000] animate-in fade-in duration-1000 flex items-center justify-center">
-            <div className="text-white font-black text-5xl tracking-[0.5em] animate-pulse">
-              {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
-            </div>
-          </div>
-        )}
+        {/* PREMIUM SLEEP OVERLAY */}
+        <AnimatePresence>
+          {isSleeping && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-stone-950 z-[3000] flex items-center justify-center overflow-hidden"
+            >
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/20 via-stone-950 to-stone-950" />
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.1, 0.3, 0.1]
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="absolute w-[500px] h-[500px] bg-indigo-500/10 blur-[150px] rounded-full"
+              />
+
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="relative z-10 flex flex-col items-center gap-8"
+              >
+                <motion.div
+                  animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center border border-white/10 backdrop-blur-xl shadow-2xl"
+                >
+                  <RefreshCw size={40} className="text-indigo-400 opacity-50 animate-spin-slow" />
+                </motion.div>
+
+                <div className="text-center">
+                  <motion.div
+                    animate={{ opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-indigo-400 font-black tracking-[1em] uppercase text-xs mb-3 ml-4"
+                  >
+                    {language === 'tr' ? 'DERİN UYKU' : 'RESTORING'}
+                  </motion.div>
+                  <h2 className="text-white text-6xl font-black tracking-tighter italic">
+                    {language === 'tr' ? 'UYUYOR...' : 'SLEEPING...'}
+                  </h2>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-48 h-1 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                  <motion.div
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "100%" }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-full h-full bg-indigo-500"
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* GAME OVER SCREEN */}
         {isDead && (
@@ -408,7 +459,7 @@ function App() {
 
         {/* COMPACT TOP-LEFT HUD */}
         <div className="absolute top-6 left-6 z-50">
-          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-1.5 rounded-[32px] shadow-2xl w-[250px] h-[400px] border border-white/10 relative overflow-hidden flex flex-col">
+          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-[10px] rounded-[32px] shadow-2xl w-[250px] h-[420px] border border-white/10 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
 
             <div className="flex justify-between items-end mb-6 relative z-10">

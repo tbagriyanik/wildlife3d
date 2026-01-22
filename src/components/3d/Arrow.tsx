@@ -46,7 +46,10 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             if (stuck) return;
             const currentPos = new Vector3(ref.current!.position.x, ref.current!.position.y, ref.current!.position.z);
             const currentRot = new Euler().setFromQuaternion(ref.current!.quaternion);
-            const hitToId = e.body.userData?.id;
+
+            // Extensive check for hit target
+            const hitBody = e.body;
+            const hitToId = hitBody.userData?.id || hitBody.name;
 
             // Hunting logic: Check if we hit an animal
             const isAnimal = hitToId && (
@@ -61,7 +64,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 const state = useGameStore.getState();
                 const t = TRANSLATIONS[state.language];
                 state.spawnBlood([currentPos.x, currentPos.y, currentPos.z]); // Spawn blood
-                state.removeWildlife(hitToId);
+
+                // If hitToId is just 'animal', try to find a more specific ID in userData
+                const actualId = (hitToId === 'animal' || !hitToId.includes('-')) ? hitBody.userData?.id : hitToId;
+
+                state.removeWildlife(actualId || hitToId);
                 state.addItem('meat', 2);
                 state.addNotification(`${t.collected_msg}: 2x ${state.language === 'tr' ? 'Çiğ Et' : 'Raw Meat'}`, 'success');
                 removeProjectile(id);

@@ -73,7 +73,7 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
 
     if (type === 'bow') {
         return (
-            <group position={[0.5, -0.6, -0.8]} rotation={[0, -0.8, 0.2]}>
+            <group position={[0.4, -0.5, -0.7]} rotation={[0.2, -1.2, 0.1]}>
                 {/* Bow Riser (Handle) */}
                 <mesh castShadow>
                     <boxGeometry args={[0.05, 0.4, 0.06]} />

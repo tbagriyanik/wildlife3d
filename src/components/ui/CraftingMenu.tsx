@@ -47,11 +47,21 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
             if (recipe.isShelter && recipe.level !== undefined) {
                 const playerPos = useGameStore.getState().playerPosition;
                 const bearing = useGameStore.getState().bearing * (Math.PI / 180);
-                const spawnPos: [number, number, number] = [
-                    playerPos[0] + Math.sin(bearing) * 4,
-                    0,
-                    playerPos[2] + Math.cos(bearing) * 4
-                ];
+                const currentShelters = useGameStore.getState().shelters;
+
+                let spawnPos: [number, number, number];
+
+                // If upgrading (level > 1) and we have an existing shelter, use its position
+                if (recipe.level > 1 && currentShelters.length > 0) {
+                    spawnPos = currentShelters[0].position;
+                } else {
+                    spawnPos = [
+                        playerPos[0] + Math.sin(bearing) * 4,
+                        0,
+                        playerPos[2] + Math.cos(bearing) * 4
+                    ];
+                }
+
                 addShelter(recipe.level, spawnPos);
             } else {
                 addItem(recipe.id, recipe.output || 1);
