@@ -24,15 +24,17 @@ export const Hotbar = () => {
             <div className="bg-[#1a1c23]/40 backdrop-blur-3xl border border-white/10 p-3 rounded-[32px] flex gap-3 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] relative">
                 {/* Active Item Name */}
                 <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeSlot}
-                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.9 }}
-                        className="absolute -top-14 left-1/2 -translate-x-1/2 bg-emerald-500 text-stone-950 text-[10px] font-black px-5 py-2 rounded-full uppercase tracking-[0.3em] shadow-[0_10px_20px_rgba(16,185,129,0.3)] whitespace-nowrap pointer-events-none"
-                    >
-                        {slots[activeSlot].label}
-                    </motion.div>
+                    {activeSlot >= 0 && slots[activeSlot] && (
+                        <motion.div
+                            key={activeSlot}
+                            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                            className="absolute -top-14 left-1/2 -translate-x-1/2 bg-emerald-500 text-stone-950 text-[10px] font-black px-5 py-2 rounded-full uppercase tracking-[0.3em] shadow-[0_10px_20px_rgba(16,185,129,0.3)] whitespace-nowrap pointer-events-none"
+                        >
+                            {slots[activeSlot].label}
+                        </motion.div>
+                    )}
                 </AnimatePresence>
 
                 {slots.map((slot, i) => {

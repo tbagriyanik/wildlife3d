@@ -27,30 +27,30 @@ const VitalCard = ({ label, value, color, icon, actualValue }: { label: string; 
         scale: [1, 1.01, 1]
       } : {}}
       transition={isCritical ? { repeat: Infinity, duration: 2 } : {}}
-      className={`relative overflow-hidden bg-stone-900/40 backdrop-blur-xl rounded-3xl p-4 border-2 transition-all duration-700 ${isCritical ? 'border-rose-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'border-white/5 hover:border-white/20'}`}
+      className={`relative overflow-hidden bg-stone-900/40 backdrop-blur-xl rounded-2xl p-3 border-2 transition-all duration-700 ${isCritical ? 'border-rose-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'border-white/5 hover:border-white/20'}`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg ${isCritical ? 'bg-rose-500/20 text-rose-500' : 'bg-white/5 text-white/50'}`}>
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm ${isCritical ? 'bg-rose-500/20 text-rose-500' : 'bg-white/5 text-white/50'}`}>
             {icon}
           </div>
-          <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{label}</span>
+          <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">{label}</span>
         </div>
         {isCritical && (
           <motion.div
             animate={{ opacity: [0, 1, 0] }}
             transition={{ repeat: Infinity, duration: 1 }}
-            className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_10px_#ef4444]"
+            className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_10px_#ef4444]"
           />
         )}
       </div>
-      <div className="flex items-baseline gap-1 mb-3">
-        <span className={`text-3xl font-black tabular-nums tracking-tighter ${isCritical ? 'text-rose-400' : 'text-white'}`}>
+      <div className="flex items-baseline gap-1 mb-2">
+        <span className={`text-2xl font-black tabular-nums tracking-tighter ${isCritical ? 'text-rose-400' : 'text-white'}`}>
           {actualValue ? actualValue.split('°')[0] : Math.round(value)}
         </span>
-        <span className="text-xs font-black text-white/20 uppercase tracking-widest">{actualValue ? '°C' : '%'}</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{actualValue ? '°C' : '%'}</span>
       </div>
-      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.max(2, Math.min(100, value))}%` }}
@@ -408,28 +408,28 @@ function App() {
 
         {/* COMPACT TOP-LEFT HUD */}
         <div className="absolute top-6 left-6 z-50">
-          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-8 rounded-[40px] shadow-2xl w-[250px] h-[400px] border border-white/10 relative overflow-hidden flex flex-col">
+          <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-5 rounded-[32px] shadow-2xl w-[250px] h-[400px] border border-white/10 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
 
-            <div className="flex justify-between items-end mb-10 relative z-10">
+            <div className="flex justify-between items-end mb-6 relative z-10">
               <div>
-                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.day}</div>
-                <div className="text-5xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">
+                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-1">{t.day}</div>
+                <div className="text-4xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">
                   {day.toString().padStart(2, '0')}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.time}</div>
-                <div className="text-xl font-black text-white tabular-nums leading-none">
+                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-1">{t.time}</div>
+                <div className="text-lg font-black text-white tabular-nums leading-none">
                   {Math.floor(gameTime / 100).toString().padStart(2, '0')}:
                   {Math.floor((gameTime % 100) * 0.6).toString().padStart(2, '0')}
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 relative z-10 flex-grow">
+            <div className="grid grid-cols-1 gap-2 relative z-10 flex-grow">
               <VitalCard label={t.health} value={health} color="bg-rose-500" icon="❤️" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <VitalCard label={t.hunger} value={hunger} color="bg-amber-500" icon="🍗" />
                 <VitalCard label={t.thirst} value={thirst} color="bg-blue-500" icon="💧" />
               </div>
