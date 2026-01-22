@@ -481,19 +481,19 @@ function App() {
           <div className="bg-[#1a1c23]/40 backdrop-blur-2xl p-[10px] rounded-[32px] shadow-2xl w-[250px] h-[420px] border border-white/10 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-400 to-transparent" />
 
-            <div className="flex flex-col items-center justify-center mb-8 relative z-10 pt-4">
-              <div className="text-center w-full">
-                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.day}</div>
-                <div className="text-6xl font-black text-emerald-400 italic leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(52,211,153,0.3)] mb-4">
-                  {day.toString().padStart(2, '0')}
-                </div>
+            <div className="flex gap-2 mb-4 relative z-10">
+              <div className="flex-1 bg-stone-900/40 backdrop-blur-xl rounded-2xl h-[50px] border border-white/5 flex items-center justify-between px-4 overflow-hidden relative">
+                <div className="absolute inset-0 bg-emerald-500/5 opacity-10" />
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] relative z-10">{t.day}</span>
+                <span className="text-2xl font-black text-emerald-400 italic tracking-tighter drop-shadow-[0_0_10px_rgba(52,211,153,0.3)] relative z-10">{day.toString().padStart(2, '0')}</span>
               </div>
-              <div className="text-center w-full border-t border-white/5 pt-4">
-                <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-2">{t.time}</div>
-                <div className="text-2xl font-black text-white tabular-nums leading-none tracking-tight">
+              <div className="flex-1 bg-stone-900/40 backdrop-blur-xl rounded-2xl h-[50px] border border-white/5 flex items-center justify-between px-4 overflow-hidden relative">
+                <div className="absolute inset-0 bg-white/5 opacity-10" />
+                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] relative z-10">{t.time}</span>
+                <span className="text-xl font-black text-white tabular-nums tracking-tight relative z-10">
                   {Math.floor(gameTime / 100).toString().padStart(2, '0')}:
                   {Math.floor((gameTime % 100) * 0.6).toString().padStart(2, '0')}
-                </div>
+                </span>
               </div>
             </div>
 
