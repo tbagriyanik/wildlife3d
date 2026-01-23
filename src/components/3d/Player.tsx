@@ -321,7 +321,7 @@ export const Player = () => {
 
     return (
         <>
-            {!isMobile && (
+            {!isMobile && !isAnyMenuOpen && (
                 <PointerLockControls
                     ref={controlsRef}
                     selector="#root" // Lock on canvas click

@@ -72,15 +72,26 @@ return (
             onMouseUp={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => e.preventDefault()}
+            onWheel={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            style={{ pointerEvents: 'all' }}
         >
             <AnimatePresence mode="wait">
                 {!isSettingsOpen ? (
-                    <motion.div
+<motion.div
                         key="main"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="w-full max-w-6xl p-8 flex flex-col md:flex-row gap-16 items-start justify-center"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        onContextMenu={(e) => e.preventDefault()}
+                        onWheel={(e) => e.stopPropagation()}
+                        style={{ pointerEvents: 'all' }}
                     >
                         {/* Title Section */}
                         <div className="flex-1 text-center md:text-left space-y-8 pr-4">
@@ -138,12 +149,18 @@ return (
                         </div>
                     </motion.div>
                 ) : (
-                    <motion.div
+<motion.div
                         key="settings"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         className="w-full max-w-2xl bg-[#1a1c23]/90 border border-white/10 p-10 rounded-[48px] shadow-2xl relative overflow-hidden"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        onContextMenu={(e) => e.preventDefault()}
+                        onWheel={(e) => e.stopPropagation()}
+                        style={{ pointerEvents: 'all' }}
                     >
                         {/* Decorative Background */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[120px] rounded-full -mr-32 -mt-32" />

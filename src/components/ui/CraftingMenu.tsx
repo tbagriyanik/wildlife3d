@@ -85,7 +85,12 @@ return (
              onMouseDown={(e) => e.stopPropagation()}
              onMouseUp={(e) => e.stopPropagation()}
              onClick={(e) => e.stopPropagation()}
-             onContextMenu={(e) => e.preventDefault()}>
+             onContextMenu={(e) => e.preventDefault()}
+             onWheel={(e) => e.stopPropagation()}
+             onTouchStart={(e) => e.stopPropagation()}
+             onTouchMove={(e) => e.stopPropagation()}
+             onTouchEnd={(e) => e.stopPropagation()}
+             style={{ pointerEvents: 'all' }}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -93,6 +98,9 @@ return (
                 onMouseDown={(e) => e.stopPropagation()}
                 onMouseUp={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
+                onContextMenu={(e) => e.preventDefault()}
+                onWheel={(e) => e.stopPropagation()}
+                style={{ pointerEvents: 'all' }}
                 className="bg-[#1a1c23]/95 border border-white/10 p-8 rounded-[32px] shadow-2xl w-full max-w-4xl relative overflow-hidden"
             >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />

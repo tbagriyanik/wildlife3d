@@ -288,16 +288,26 @@ function App() {
   return (
     <div className={`fixed inset-0 w-full h-full bg-stone-950 overflow-hidden select-none ${isAnyMenuOpen ? 'cursor-auto' : ''}`}>
       <div className="relative w-full h-full">
-        <Canvas shadows camera={{ fov: 75, near: 0.1, far: 1000 }} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-          <Suspense fallback={null}>
-            <Environment preset="forest" />
+        <div className={isAnyMenuOpen ? 'pointer-events-none' : ''}>
+          <Canvas
+            shadows
+            camera={{ fov: 75, near: 0.1, far: 1000 }}
+            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+            onMouseDown={(e) => isAnyMenuOpen && e.stopPropagation()}
+            onMouseUp={(e) => isAnyMenuOpen && e.stopPropagation()}
+            onMouseMove={(e) => isAnyMenuOpen && e.stopPropagation()}
+            onWheel={(e) => isAnyMenuOpen && e.stopPropagation()}
+          >
+            <Suspense fallback={null}>
+              <Environment preset="forest" />
 
-            <Physics gravity={[0, -9.81, 0]}>
-              <World />
-              <Player />
-            </Physics>
-          </Suspense>
-        </Canvas>
+              <Physics gravity={[0, -9.81, 0]}>
+                <World />
+                <Player />
+              </Physics>
+            </Suspense>
+          </Canvas>
+        </div>
         {/* MODERN CROSSHAIR */}
         {!isAnyMenuOpen && (
           <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
