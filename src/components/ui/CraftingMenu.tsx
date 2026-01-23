@@ -203,3 +203,5 @@ return (
         </div>
     );
 };
+
+export default CraftingMenu;
