@@ -1,7 +1,7 @@
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { Vector3, Euler } from 'three';
+import { Vector3 } from 'three';
 import { useGameStore } from '../../store/useGameStore';
 import type { Projectile } from '../../store/useGameStore';
 import * as THREE from 'three';
@@ -81,8 +81,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 state.addItem('meat', meatAmount);
 
                 // Notification
-                const lang = state.language;
-                const t = TRANSLATIONS[lang];
                 const animalName = hitToId.includes('deer') ? 'DEER' : hitToId.includes('rabbit') ? 'RABBIT' : 'BIRD';
                 addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
 

@@ -93,7 +93,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                         useGameStore.setState(state => ({
                             shelters: state.shelters.map(s =>
                                 s.id === nearestShelter!.id
-                                    ? { ...s, level: recipe.level }
+                                    ? { ...s, level: recipe.level as number }
                                     : s
                             )
                         }));

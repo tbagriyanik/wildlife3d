@@ -4,7 +4,7 @@ import { PointerLockControls } from '@react-three/drei';
 import { useSphere } from '@react-three/cannon';
 import * as THREE from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
-import { useGameStore, Resource } from '../../store/useGameStore';
+import { useGameStore, type Resource } from '../../store/useGameStore';
 import { useAudio } from '../../hooks/useAudio';
 import { Fire } from './Fire';
 
@@ -254,35 +254,38 @@ export const Player = () => {
             const playerPos = new THREE.Vector3(...state.playerPosition);
 
             // Find closest wildlife within range
-            let closestAnimal: (Resource & { type: 'deer' | 'rabbit' | 'bird' | 'partridge' }) | null = null;
+            let closestAnimal: Resource | null = null;
             let closestDist = 3.0; // 3 meter range
 
-            state.wildlife.forEach(animal => {
-                const animalPos = new THREE.Vector3(...animal.position);
-                const dist = playerPos.distanceTo(animalPos);
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestAnimal = animal;
+            state.wildlife.forEach((animal) => {
+                if (animal.type && ['deer', 'rabbit', 'bird', 'partridge'].includes(animal.type)) {
+                    const animalPos = new THREE.Vector3(...animal.position);
+                    const dist = playerPos.distanceTo(animalPos);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestAnimal = animal;
+                    }
                 }
             });
 
             if (closestAnimal) {
+                const animal = closestAnimal as Resource & { type: string };
                 // Hunt the animal
-                state.removeWildlife(closestAnimal.id);
-                const meatAmount = closestAnimal.type === 'deer' ? 2 : 1;
+                state.removeWildlife(animal.id);
+                const meatAmount = animal.type === 'deer' ? 2 : 1;
                 state.addItem('meat', meatAmount);
 
                 // Spawn blood
                 for (let i = 0; i < 5; i++) {
                     state.spawnBlood([
-                        closestAnimal.position[0] + (Math.random() - 0.5) * 0.3,
-                        closestAnimal.position[1] + Math.random() * 0.2,
-                        closestAnimal.position[2] + (Math.random() - 0.5) * 0.3
+                        animal.position[0] + (Math.random() - 0.5) * 0.3,
+                        animal.position[1] + Math.random() * 0.2,
+                        animal.position[2] + (Math.random() - 0.5) * 0.3
                     ]);
                 }
 
                 // Notification
-                const animalName = closestAnimal.type === 'deer' ? 'DEER' : closestAnimal.type === 'rabbit' ? 'RABBIT' : 'BIRD';
+                const animalName = animal.type === 'deer' ? 'DEER' : animal.type === 'rabbit' ? 'RABBIT' : 'BIRD';
                 state.addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
 
                 // Play sound
