@@ -83,7 +83,7 @@ const ResourceCard = ({ icon, count, label, iconColor }: { icon: React.ReactNode
 );
 
 function App() {
-  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping, isDead } = useGameStore();
+  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping, isDead, isPaused, setPaused } = useGameStore();
 
   const isAnyMenuOpen = isMenuOpen || isMainMenuOpen;
   const { craft: craftAction } = useKeyboard();
@@ -92,12 +92,12 @@ function App() {
   // Cursor and Menu Handling
   useEffect(() => {
     // Show cursor if ANY menu, craft menu, dead screen, or settings is open
-    if (isAnyMenuOpen || isDead) {
+    if (isAnyMenuOpen || isDead || isPaused) {
       document.body.style.cursor = 'auto';
     } else {
       document.body.style.cursor = 'none';
     }
-  }, [isAnyMenuOpen, isDead]);
+  }, [isAnyMenuOpen, isDead, isPaused]);
 
   // Day Transition Effect
   const [showDayOverlay, setShowDayOverlay] = useState(false);
@@ -148,6 +148,11 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMainMenuOpen, isMenuOpen]);
 
+  // Pause game when menus are open
+  useEffect(() => {
+    setPaused(isAnyMenuOpen);
+  }, [isAnyMenuOpen, setPaused]);
+
   useEffect(() => {
     if (craftAction) setMenuOpen(!isMenuOpen);
   }, [craftAction]);
@@ -158,8 +163,8 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // PAUSE GAME Loop if Main Menu is open
-      if (useGameStore.getState().isMainMenuOpen) return;
+      // PAUSE GAME Loop if Main Menu is open or game is paused
+      if (useGameStore.getState().isMainMenuOpen || useGameStore.getState().isPaused) return;
 
       // 24 minutes = 1440 seconds = 2400 game units
       // 1 second = 1.6666 units

@@ -75,8 +75,8 @@ export interface GameState {
     wildlife: Resource[];
     projectiles: Projectile[];
     day: number;
-    isDead: boolean;
-
+isDead: boolean;
+    isPaused: boolean;
 
     masterVolume: number;
     isHovering: boolean;
@@ -93,11 +93,12 @@ export interface GameState {
     setActiveSlot: (slot: number) => void;
     setBearing: (bearing: number) => void;
     setPlayerPosition: (pos: [number, number, number]) => void;
-    setMenuOpen: (isOpen: boolean) => void;
+setMenuOpen: (isOpen: boolean) => void;
     setMainMenuOpen: (isOpen: boolean) => void;
     setSettingsOpen: (isOpen: boolean) => void;
     setMasterVolume: (volume: number) => void;
     setHovering: (isHovering: boolean) => void;
+    setPaused: (isPaused: boolean) => void;
     updateResourceDurability: (type: keyof WorldResources, id: string, amount: number) => void;
     addNotification: (message: string, type?: 'info' | 'success' | 'warning') => void;
 
@@ -257,8 +258,9 @@ export const useGameStore = create<GameState>()(
             isMainMenuOpen: false,
             isSettingsOpen: false,
             notifications: [],
-            day: 1,
+day: 1,
             isDead: false,
+            isPaused: false,
             masterVolume: 0.5,
             isHovering: false,
             torchFuel: 1.0,
@@ -311,10 +313,11 @@ export const useGameStore = create<GameState>()(
             setBearing: (bearing) => set({ bearing }),
             setPlayerPosition: (playerPosition) => set({ playerPosition }),
             setMenuOpen: (isMenuOpen) => set({ isMenuOpen }),
-            setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
+setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
             setSettingsOpen: (isSettingsOpen) => set({ isSettingsOpen }),
             setMasterVolume: (masterVolume) => set({ masterVolume }),
             setHovering: (isHovering) => set({ isHovering }),
+            setPaused: (isPaused) => set({ isPaused }),
 
 
             setTorchFuel: (torchFuel) => set({ torchFuel }),

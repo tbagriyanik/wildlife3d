@@ -304,7 +304,7 @@ export const Player = () => {
         useGameStore.getState().setPlayerPosition(pos.current as [number, number, number]);
     });
 
-    const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen || state.isDead);
+    const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen || state.isDead || state.isPaused);
 
     const controlsRef = useRef<any>(null); // Ref for PointerLockControls
 

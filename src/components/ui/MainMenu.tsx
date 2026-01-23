@@ -65,12 +65,13 @@ export const MainMenu: React.FC = () => {
         }
     };
 
-    return (
+return (
         <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/95 backdrop-blur-3xl overflow-y-auto"
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
         >
             <AnimatePresence mode="wait">
                 {!isSettingsOpen ? (
