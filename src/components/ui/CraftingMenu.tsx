@@ -31,7 +31,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
         return dist < 5; // 5 unit range for upgrades
     });
 
-    const recipes: Recipe[] = [
+    let recipes: Recipe[] = [
         { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
         { id: 'torch', name: t.torch || 'TORCH', cost: { wood: 2 }, icon: <Flame size={20} /> },
         { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 2, flint_stone: 1 }, icon: <Flame size={20} /> },
@@ -39,13 +39,15 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
 
         // Always allow tent crafting
         { id: 'tent', name: t.tent || 'TENT', cost: { wood: 10, stone: 5 }, icon: <Tent size={20} />, isShelter: true, level: 1 },
+    ];
 
-        // Upgrade options only when near a shelter
-        ...(nearShelter ? [
+    // Add upgrade options only when near a shelter
+    if (nearShelter) {
+        recipes.push(
             { id: 'hut', name: t.hut || 'UPGRADE TO HUT', cost: { wood: 25, stone: 15 }, icon: <Home size={20} />, isShelter: true, level: 2 },
             { id: 'house', name: t.house || 'UPGRADE TO HOUSE', cost: { wood: 50, stone: 40 }, icon: <Landmark size={20} />, isShelter: true, level: 3 }
-        ] : []),
-    ];
+        );
+    }
 
     const canCraft = (cost: Record<string, number>) => {
         return Object.entries(cost).every(([item, amount]) => (inventory[item] || 0) >= amount);
