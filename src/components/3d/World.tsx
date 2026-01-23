@@ -191,7 +191,7 @@ export const World = () => {
                 </group>
 
                 {/* Multi-Shelters */}
-                {useGameStore.getState().shelters.map((s) => (
+                {useGameStore.getState().shelters.filter(s => s.fuel > 0).map((s) => (
                     <Shelter
                         key={s.id}
                         level={s.level}

@@ -113,7 +113,7 @@ setMenuOpen: (isOpen: boolean) => void;
     respawnDaily: () => void;
 
 
-    shelters: { id: string; level: number; position: [number, number, number] }[];
+    shelters: { id: string; level: number; position: [number, number, number]; fuel: number; maxFuel: number }[];
 
     isSleeping: boolean;
     sleep: () => void;
@@ -123,6 +123,7 @@ setMenuOpen: (isOpen: boolean) => void;
     stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number], stuckToId?: string) => void;
     removeProjectile: (id: string) => void;
     addShelter: (level: number, position: [number, number, number]) => void;
+    updateShelters: (delta: number) => void;
     resetGame: () => void;
     spawnBlood: (position: [number, number, number]) => void;
 }
@@ -276,7 +277,7 @@ day: 1,
             ],
             projectiles: [],
             placedItems: [],
-            shelters: [],
+            shelters: [], // Will be populated with fuel when created
             isSleeping: false,
 
 
@@ -466,14 +467,16 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                     return;
                 }
 
+                // Campfire fuel: 10 hours = 36000 seconds
+                const maxFuel = type === 'campfire' ? 36000 : 100;
                 set((state) => ({
                     placedItems: [...state.placedItems, {
                         id: Math.random().toString(36).substring(7),
                         type,
                         position,
                         active: true,
-                        fuel: 100,
-                        maxFuel: 100
+                        fuel: maxFuel,
+                        maxFuel
                     }]
                 }));
             },
@@ -588,6 +591,13 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                 projectiles: state.projectiles.filter(p => p.id !== id)
             })),
 
+            updateShelters: (delta) => set((state) => ({
+                shelters: state.shelters.map(shelter => ({
+                    ...shelter,
+                    fuel: Math.max(0, shelter.fuel - delta)
+                }))
+            })),
+
             addShelter: (level, position) => {
                 const state = useGameStore.getState();
 
@@ -611,8 +621,16 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                     return;
                 }
 
+                // Shelter fuel: 5 hours = 18000 seconds = 18000 game units (assuming 1 sec = 1 unit)
+                const maxFuel = 18000; // 5 hours
                 set((state) => ({
-                    shelters: [...state.shelters, { id: Math.random().toString(36).substring(7), level, position }]
+                    shelters: [...state.shelters, {
+                        id: Math.random().toString(36).substring(7),
+                        level,
+                        position,
+                        fuel: maxFuel,
+                        maxFuel
+                    }]
                 }));
             },
 

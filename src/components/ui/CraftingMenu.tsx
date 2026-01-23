@@ -20,7 +20,16 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
     }
 
     const shelters = useGameStore(state => state.shelters);
-    const maxShelterLevel = shelters.length > 0 ? Math.max(...shelters.map(s => s.level)) : 0;
+    const playerPos = useGameStore(state => state.playerPosition);
+
+    // Check if player is near any shelter for upgrades
+    const nearShelter = shelters.some(shelter => {
+        const dist = Math.sqrt(
+            Math.pow(shelter.position[0] - playerPos[0], 2) +
+            Math.pow(shelter.position[2] - playerPos[2], 2)
+        );
+        return dist < 5; // 5 unit range for upgrades
+    });
 
     const recipes: Recipe[] = [
         { id: 'water', name: t.water || 'CANTEEN', cost: { wood: 2, stone: 1 }, icon: <Hammer size={20} /> },
@@ -28,10 +37,14 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
         { id: 'campfire', name: t.campfire || 'CAMPFIRE', cost: { wood: 4, stone: 2, flint_stone: 1 }, icon: <Flame size={20} /> },
         { id: 'arrow', name: t.arrow || 'ARROW (5x)', cost: { wood: 1, stone: 1 }, output: 5, icon: <Hammer size={20} /> },
 
-        // Filtered Shelters based on progression
-        ...(maxShelterLevel === 0 ? [{ id: 'tent', name: t.tent || 'TENT', cost: { wood: 10, stone: 5 }, icon: <Tent size={20} />, isShelter: true, level: 1 }] : []),
-        ...(maxShelterLevel === 1 ? [{ id: 'hut', name: t.hut || 'HUT', cost: { wood: 25, stone: 15 }, icon: <Home size={20} />, isShelter: true, level: 2 }] : []),
-        ...(maxShelterLevel === 2 ? [{ id: 'house', name: t.house || 'HOUSE', cost: { wood: 50, stone: 40 }, icon: <Landmark size={20} />, isShelter: true, level: 3 }] : []),
+        // Always allow tent crafting
+        { id: 'tent', name: t.tent || 'TENT', cost: { wood: 10, stone: 5 }, icon: <Tent size={20} />, isShelter: true, level: 1 },
+
+        // Upgrade options only when near a shelter
+        ...(nearShelter ? [
+            { id: 'hut', name: t.hut || 'UPGRADE TO HUT', cost: { wood: 25, stone: 15 }, icon: <Home size={20} />, isShelter: true, level: 2 },
+            { id: 'house', name: t.house || 'UPGRADE TO HOUSE', cost: { wood: 50, stone: 40 }, icon: <Landmark size={20} />, isShelter: true, level: 3 }
+        ] : []),
     ];
 
     const canCraft = (cost: Record<string, number>) => {
@@ -49,18 +62,42 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                 const bearing = useGameStore.getState().bearing * (Math.PI / 180);
                 const currentShelters = useGameStore.getState().shelters;
 
-                let spawnPos: [number, number, number];
-
-                // If upgrading (level > 1) and we have an existing shelter, use its position
-                if (recipe.level > 1 && currentShelters.length > 0) {
-                    spawnPos = currentShelters[0].position;
-                } else {
-                    spawnPos = [
+                if (recipe.level === 1) {
+                    // New tent - spawn in front of player
+                    const spawnPos: [number, number, number] = [
                         playerPos[0] + Math.sin(bearing) * 4,
                         0,
                         playerPos[2] + Math.cos(bearing) * 4
                     ];
+                    addShelter(recipe.level, spawnPos);
+                } else {
+                    // Upgrade - find nearest shelter and upgrade it
+                    let nearestShelter = null;
+                    let nearestDist = 5;
+
+                    currentShelters.forEach(shelter => {
+                        const dist = Math.sqrt(
+                            Math.pow(shelter.position[0] - playerPos[0], 2) +
+                            Math.pow(shelter.position[2] - playerPos[2], 2)
+                        );
+                        if (dist < nearestDist) {
+                            nearestDist = dist;
+                            nearestShelter = shelter;
+                        }
+                    });
+
+                    if (nearestShelter) {
+                        // Upgrade the shelter (keep existing fuel)
+                        useGameStore.setState(state => ({
+                            shelters: state.shelters.map(s =>
+                                s.id === nearestShelter.id
+                                    ? { ...s, level: recipe.level }
+                                    : s
+                            )
+                        }));
+                    }
                 }
+            }
 
                 addShelter(recipe.level, spawnPos);
             } else if (recipe.id === 'campfire') {
