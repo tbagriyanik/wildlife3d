@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 
 export const useKeyboard = () => {
+    const isAnyMenuOpen = useGameStore((state) => state.isMenuOpen || state.isMainMenuOpen || state.isDead || state.isPaused);
+
     const [actions, setActions] = useState({
         moveForward: false,
         moveBackward: false,
@@ -22,6 +24,9 @@ export const useKeyboard = () => {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Disable game shortcuts when menus are open
+            if (isAnyMenuOpen) return;
+
             // Movement and action keys
             if (e.code === 'KeyW') setActions((prev) => ({ ...prev, moveForward: true }));
             if (e.code === 'KeyS') setActions((prev) => ({ ...prev, moveBackward: true }));
@@ -30,7 +35,7 @@ export const useKeyboard = () => {
             if (e.code === 'Space' || e.key === ' ') setActions((prev) => ({ ...prev, jump: true }));
             if (e.code === 'ShiftLeft') setActions((prev) => ({ ...prev, sprint: true }));
             if (e.code === 'KeyE') setActions((prev) => ({ ...prev, interact: true }));
-            if (e.code === 'KeyC') setActions((prev) => ({ ...prev, craft: true }));
+            if (e.code === 'KeyC' || e.code === 'Tab') setActions((prev) => ({ ...prev, craft: true }));
 
             // Numeric keys for slots
             if (e.code.startsWith('Digit')) {
@@ -72,6 +77,7 @@ export const useKeyboard = () => {
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
+            // Allow key up even in menus to prevent stuck keys
             switch (e.code) {
                 case 'KeyW': setActions((prev) => ({ ...prev, moveForward: false })); break;
                 case 'KeyS': setActions((prev) => ({ ...prev, moveBackward: false })); break;
@@ -82,15 +88,21 @@ export const useKeyboard = () => {
                     setActions((prev) => ({ ...prev, jump: false })); break;
                 case 'ShiftLeft': setActions((prev) => ({ ...prev, sprint: false })); break;
                 case 'KeyE': setActions((prev) => ({ ...prev, interact: false })); break;
-                case 'KeyC': setActions((prev) => ({ ...prev, craft: false })); break;
+                case 'KeyC':
+                case 'Tab':
+                    setActions((prev) => ({ ...prev, craft: false })); break;
             }
         };
 
         const handleMouseDown = (e: MouseEvent) => {
+            // Disable mouse actions when menus are open
+            if (isAnyMenuOpen) return;
+
             if (e.button === 0) setActions((prev) => ({ ...prev, leftClick: true }));
             if (e.button === 2) setActions((prev) => ({ ...prev, aim: true }));
         };
         const handleMouseUp = (e: MouseEvent) => {
+            // Allow mouse up even in menus to prevent stuck buttons
             if (e.button === 0) setActions((prev) => ({ ...prev, leftClick: false }));
             if (e.button === 2) setActions((prev) => ({ ...prev, aim: false }));
         };

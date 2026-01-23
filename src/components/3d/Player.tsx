@@ -206,10 +206,12 @@ export const Player = () => {
         // --- ARCHERY LOGIC ---
         const now = Date.now();
         if (currentItem === 'bow' && leftClick && !shootBuffer.current && !isAnyMenuOpen && (now - lastShootTime.current > SHOOT_COOLDOWN)) {
+            console.log('Shooting arrow');
             lastShootTime.current = now;
 
             const state = useGameStore.getState();
             if ((state.inventory['arrow'] || 0) > 0) {
+                console.log('Has arrows, shooting');
                 // Direction
                 const direction = new THREE.Vector3();
                 camera.getWorldDirection(direction);
@@ -279,9 +281,9 @@ export const Player = () => {
         const targetVelocity = moveDirection.multiplyScalar(baseSpeed);
 
         // --- JUMP LOGIC ---
-        // Increased tolerance to 0.7 to allow jumping on slight slopes or uneven terrain
-        if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.7) {
-            api.velocity.set(velocity.current[0], 12, velocity.current[2]); // Increased jump height
+        // Allow jumping when jump pressed and not in menu
+        if (jump && !isAnyMenuOpen) {
+            api.velocity.set(velocity.current[0], 20, velocity.current[2]); // High jump
         }
 
         // Apply movement velocity to physics body
