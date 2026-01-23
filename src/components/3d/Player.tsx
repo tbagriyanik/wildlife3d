@@ -281,7 +281,7 @@ export const Player = () => {
         // --- JUMP LOGIC ---
         // Increased tolerance to 0.7 to allow jumping on slight slopes or uneven terrain
         if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.7) {
-            api.velocity.set(velocity.current[0], 7.5, velocity.current[2]);
+            api.velocity.set(velocity.current[0], 12, velocity.current[2]); // Increased jump height
         }
 
         // Apply movement velocity to physics body
