@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import { useSphere } from '@react-three/cannon';
@@ -135,6 +135,9 @@ export const Player = () => {
     const torchFuel = useGameStore((state) => state.torchFuel);
     const setTorchFuel = useGameStore((state) => state.setTorchFuel);
 
+    // Jump state to prevent multiple jumps
+    const [isJumping, setIsJumping] = useState(false);
+
     const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
     const currentItem = slotItems[activeSlot];
 
@@ -149,7 +152,7 @@ export const Player = () => {
         position: savedPos || [0, 2, 0], // Use saved position or default
         args: [0.5], // Reduced Radius to avoid snagging
         fixedRotation: true,
-        linearDamping: 0.4, // Snappier movement
+        linearDamping: 0.3, // Less damping for better movement
         material: { friction: 0, restitution: 0 }
     }));
 
@@ -340,9 +343,13 @@ export const Player = () => {
         const targetVelocity = moveDirection.multiplyScalar(baseSpeed);
 
         // --- JUMP LOGIC ---
-        // Allow jumping when jump pressed and not in menu
-        if (jump && !isAnyMenuOpen) {
-            api.velocity.set(velocity.current[0], 20, velocity.current[2]); // High jump
+        // Allow jumping when jump pressed and not in menu and on ground
+        if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.1 && !isJumping) {
+            api.velocity.set(velocity.current[0], 18, velocity.current[2]); // Increased jump force
+            playSound('jump'); // Play jump sound
+            setIsJumping(true);
+        } else if (!jump && Math.abs(velocity.current[1]) > 0.1) {
+            setIsJumping(false);
         }
 
         // Apply movement velocity to physics body

@@ -34,7 +34,7 @@ if (typeof window !== 'undefined' && !audioContextInitialized) {
 }
 
 export const useAudio = () => {
-    const playSound = useCallback((type: 'gather' | 'craft' | 'eat' | 'walk' | 'wood' | 'stone' | 'water') => {
+    const playSound = useCallback((type: 'gather' | 'craft' | 'eat' | 'walk' | 'wood' | 'stone' | 'water' | 'jump') => {
         const masterVolume = useGameStore.getState().masterVolume;
         if (masterVolume <= 0) return;
 
@@ -77,6 +77,12 @@ export const useAudio = () => {
             oscillator.frequency.setValueAtTime(60, now);
             gainNode.gain.setValueAtTime(0.02 * masterVolume, now);
             gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+        } else if (type === 'jump') {
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(200, now);
+            oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+            gainNode.gain.setValueAtTime(0.08 * masterVolume, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
         }
 
         oscillator.start();
