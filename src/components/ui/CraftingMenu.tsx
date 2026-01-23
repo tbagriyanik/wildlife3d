@@ -74,7 +74,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                     addShelter(recipe.level, spawnPos);
                 } else {
                     // Upgrade - find nearest shelter and upgrade it
-                    let nearestShelter = null;
+                    let nearestShelter: (typeof currentShelters[number]) | null = null;
                     let nearestDist = 5;
 
                     currentShelters.forEach(shelter => {
@@ -92,7 +92,7 @@ export const CraftingMenu = ({ onClose }: { onClose: () => void }) => {
                         // Upgrade the shelter (keep existing fuel)
                         useGameStore.setState(state => ({
                             shelters: state.shelters.map(s =>
-                                s.id === nearestShelter.id
+                                s.id === nearestShelter!.id
                                     ? { ...s, level: recipe.level }
                                     : s
                             )

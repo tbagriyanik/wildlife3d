@@ -604,7 +604,7 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                 // If level > 1, it's an upgrade. Replace the existing shelter(s).
                 if (level > 1 && state.shelters.length > 0) {
                     set({
-                        shelters: [{ id: Math.random().toString(36).substring(7), level, position }]
+                        shelters: [{ id: Math.random().toString(36).substring(7), level, position, fuel: 18000, maxFuel: 18000 }]
                     });
                     return;
                 }

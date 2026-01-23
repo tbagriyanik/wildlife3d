@@ -87,10 +87,10 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
 
                 // Stick arrow
-                stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3), hitToId);
+                stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             } else if (!hitToId?.includes('player') && !hitToId?.includes('arrow')) {
                 // Stick to environment
-                stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3), hitToId);
+                stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             }
         }
     }));

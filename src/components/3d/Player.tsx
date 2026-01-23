@@ -4,7 +4,7 @@ import { PointerLockControls } from '@react-three/drei';
 import { useSphere } from '@react-three/cannon';
 import * as THREE from 'three';
 import { useKeyboard } from '../../hooks/useKeyboard';
-import { useGameStore } from '../../store/useGameStore';
+import { useGameStore, Resource } from '../../store/useGameStore';
 import { useAudio } from '../../hooks/useAudio';
 import { Fire } from './Fire';
 
@@ -254,7 +254,7 @@ export const Player = () => {
             const playerPos = new THREE.Vector3(...state.playerPosition);
 
             // Find closest wildlife within range
-            let closestAnimal: Resource | null = null;
+            let closestAnimal: (Resource & { type: 'deer' | 'rabbit' | 'bird' | 'partridge' }) | null = null;
             let closestDist = 3.0; // 3 meter range
 
             state.wildlife.forEach(animal => {
@@ -282,8 +282,6 @@ export const Player = () => {
                 }
 
                 // Notification
-                const lang = state.language;
-                const t = TRANSLATIONS[lang];
                 const animalName = closestAnimal.type === 'deer' ? 'DEER' : closestAnimal.type === 'rabbit' ? 'RABBIT' : 'BIRD';
                 state.addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
 
