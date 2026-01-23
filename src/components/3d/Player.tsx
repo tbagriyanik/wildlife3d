@@ -313,10 +313,8 @@ export const Player = () => {
 
         if (isAnyMenuOpen) {
             controlsRef.current.unlock();
-        } else {
-            // Try to lock if not mobile, but only if we have focus/click
-            if (!isMobile) controlsRef.current.lock();
         }
+        // Remove automatic lock() - let PointerLockControls handle locking via selector="#root" on user click
     }, [isAnyMenuOpen, isMobile]);
 
     return (
