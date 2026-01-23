@@ -65,7 +65,13 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
                 const actualId = (hitToId === 'animal' || !hitToId.includes('-')) ? hitBody.userData?.id : hitToId;
                 state.removeWildlife(actualId || hitToId);
-                state.addItem('meat', 2);
+
+                // Different meat amounts for different animals
+                let meatAmount = 1;
+                if (hitToId.includes('deer')) meatAmount = 2;
+                else if (hitToId.includes('partridge') || hitToId.includes('bird')) meatAmount = 1;
+
+                state.addItem('meat', meatAmount);
 
                 stickArrow(id, currentPos.toArray() as [number, number, number], currentRot.toArray().slice(0, 3) as [number, number, number], actualId || hitToId);
                 return;
@@ -98,8 +104,8 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         const arrowPos = new Vector3(ref.current?.position.x || position[0], ref.current?.position.y || position[1], ref.current?.position.z || position[2]);
         const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
-        // Auto-pickup
-        if (distToPlayer < 2.5) {
+        // Auto-pickup arrows when close
+        if (distToPlayer < 2.0) {
             useGameStore.getState().addItem('arrow', 1);
             removeProjectile(id);
             return;
