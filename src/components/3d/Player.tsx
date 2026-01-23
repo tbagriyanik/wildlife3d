@@ -76,44 +76,44 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
             <group position={[0.4, -0.5, -0.7]} rotation={[0.2, -1.2, 0.1]}>
                 {/* Bow Riser (Handle) */}
                 <mesh castShadow>
-                    <boxGeometry args={[0.05, 0.4, 0.06]} />
-                    <meshStandardMaterial color="#3e2723" roughness={1} />
+                    <cylinderGeometry args={[0.06, 0.08, 0.1]} />
+                    <meshStandardMaterial color="#654321" roughness={0.8} />
                 </mesh>
 
-                {/* Limbs - Top */}
-                <group position={[0, 0.2, 0]}>
-                    <mesh position={[0, 0.15, -0.05]} rotation={[-0.4, 0, 0]}>
-                        <boxGeometry args={[0.04, 0.35, 0.02]} />
-                        <meshStandardMaterial color="#5d4037" roughness={1} />
+                {/* Limbs - curved */}
+                <group position={[0, 0, 0]}>
+                    {/* Top limb */}
+                    <mesh position={[0, 0.3, -0.1]} rotation={[-0.3, 0, 0]}>
+                        <cylinderGeometry args={[0.03, 0.04, 0.6]} />
+                        <meshStandardMaterial color="#8B4513" roughness={0.9} />
                     </mesh>
-                    <mesh position={[0, 0.4, -0.15]} rotation={[-0.8, 0, 0]}>
-                        <boxGeometry args={[0.035, 0.3, 0.02]} />
-                        <meshStandardMaterial color="#5d4037" roughness={1} />
-                    </mesh>
-                </group>
-
-                {/* Limbs - Bottom */}
-                <group position={[0, -0.2, 0]}>
-                    <mesh position={[0, -0.15, -0.05]} rotation={[0.4, 0, 0]}>
-                        <boxGeometry args={[0.04, 0.35, 0.02]} />
-                        <meshStandardMaterial color="#5d4037" roughness={1} />
-                    </mesh>
-                    <mesh position={[0, -0.4, -0.15]} rotation={[0.8, 0, 0]}>
-                        <boxGeometry args={[0.035, 0.3, 0.02]} />
-                        <meshStandardMaterial color="#5d4037" roughness={1} />
+                    {/* Bottom limb */}
+                    <mesh position={[0, -0.3, -0.1]} rotation={[0.3, 0, 0]}>
+                        <cylinderGeometry args={[0.03, 0.04, 0.6]} />
+                        <meshStandardMaterial color="#8B4513" roughness={0.9} />
                     </mesh>
                 </group>
 
                 {/* Bowstring */}
-                <mesh position={[0, 0, -0.32]}>
-                    <cylinderGeometry args={[0.003, 0.003, 1.4]} />
-                    <meshStandardMaterial color="#ffffff" transparent opacity={0.6} />
+                <mesh position={[0, 0, -0.25]}>
+                    <cylinderGeometry args={[0.002, 0.002, 1.2]} />
+                    <meshStandardMaterial color="#F5F5DC" transparent opacity={0.8} />
                 </mesh>
 
-                {/* Arrow Nock Point (Visual detail) */}
-                <mesh position={[0, 0, -0.32]}>
-                    <boxGeometry args={[0.01, 0.05, 0.01]} />
-                    <meshStandardMaterial color="#ffcc00" />
+                {/* String silencers */}
+                <mesh position={[0, 0.25, -0.25]}>
+                    <sphereGeometry args={[0.02]} />
+                    <meshStandardMaterial color="#654321" />
+                </mesh>
+                <mesh position={[0, -0.25, -0.25]}>
+                    <sphereGeometry args={[0.02]} />
+                    <meshStandardMaterial color="#654321" />
+                </mesh>
+
+                {/* Hand grip detail */}
+                <mesh position={[0, 0, 0.05]}>
+                    <boxGeometry args={[0.02, 0.1, 0.02]} />
+                    <meshStandardMaterial color="#654321" />
                 </mesh>
             </group>
         );
@@ -122,7 +122,7 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
 };
 
 export const Player = () => {
-    const { moveForward, moveBackward, moveLeft, moveRight, sprint, jump, aim, leftClick } = useKeyboard();
+    const { moveForward, moveBackward, moveLeft, moveRight, sprint, jump, aim, leftClick, interact } = useKeyboard();
     const { playSound } = useAudio();
 
     const joystick = useGameStore((state) => state.joystick);
@@ -166,10 +166,10 @@ export const Player = () => {
 
     const setBearing = useGameStore((state) => state.setBearing);
 
-    // Archery shooting buffer & cooldown
+    // Archery system
     const shootBuffer = useRef(false);
     const lastShootTime = useRef(0);
-    const SHOOT_COOLDOWN = 500; // ms
+    const SHOOT_COOLDOWN = 800; // ms - slower for better UX
 
     const itemGroupRef = useRef<THREE.Group>(null);
 
@@ -206,26 +206,29 @@ export const Player = () => {
         // --- ARCHERY LOGIC ---
         const now = Date.now();
         if (currentItem === 'bow' && leftClick && !shootBuffer.current && !isAnyMenuOpen && (now - lastShootTime.current > SHOOT_COOLDOWN)) {
-            console.log('Shooting arrow');
             lastShootTime.current = now;
 
             const state = useGameStore.getState();
             if ((state.inventory['arrow'] || 0) > 0) {
-                console.log('Has arrows, shooting');
-                // Direction
+                // Direction with slight spread for realism
                 const direction = new THREE.Vector3();
                 camera.getWorldDirection(direction);
 
-                // Spawn position (slightly ahead of camera)
-                const spawnPos = new THREE.Vector3()
-                    .copy(camera.position)
-                    .addScaledVector(direction, 1);
+                // Add small random spread
+                const spread = 0.02;
+                direction.x += (Math.random() - 0.5) * spread;
+                direction.y += (Math.random() - 0.5) * spread;
+                direction.z += (Math.random() - 0.5) * spread;
+                direction.normalize();
 
-                // Speed
-                const arrowSpeed = 60;
+                // Spawn position (from camera)
+                const spawnPos = new THREE.Vector3().copy(camera.position);
+
+                // Speed based on aim
+                const arrowSpeed = aim ? 80 : 65; // Faster when aiming
                 const arrowVelocity = direction.clone().multiplyScalar(arrowSpeed);
 
-                // Rotation (Look at direction)
+                // Rotation
                 const rotation = camera.rotation.toArray().slice(0, 3) as [number, number, number];
 
                 state.shootArrow(
@@ -234,17 +237,72 @@ export const Player = () => {
                     rotation
                 );
 
-                playSound('wood'); // Temporary sound
+                // Play sound
+                playSound('wood');
+            } else {
+                // No arrows - play empty sound
+                const lang = useGameStore.getState().language;
+                const t = TRANSLATIONS[lang];
+                state.addNotification(t.out_of_arrows_msg, 'warning');
             }
         }
         shootBuffer.current = leftClick;
 
-        // --- ZOOM LOGIC ---
+        // --- INTERACT LOGIC ---
+        if (interact && !isAnyMenuOpen) {
+            const state = useGameStore.getState();
+            const playerPos = new THREE.Vector3(...state.playerPosition);
 
-        const targetFOV = aim ? 40 : 75;
+            // Find closest wildlife within range
+            let closestAnimal: Resource | null = null;
+            let closestDist = 3.0; // 3 meter range
+
+            state.wildlife.forEach(animal => {
+                const animalPos = new THREE.Vector3(...animal.position);
+                const dist = playerPos.distanceTo(animalPos);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestAnimal = animal;
+                }
+            });
+
+            if (closestAnimal) {
+                // Hunt the animal
+                state.removeWildlife(closestAnimal.id);
+                const meatAmount = closestAnimal.type === 'deer' ? 2 : 1;
+                state.addItem('meat', meatAmount);
+
+                // Spawn blood
+                for (let i = 0; i < 5; i++) {
+                    state.spawnBlood([
+                        closestAnimal.position[0] + (Math.random() - 0.5) * 0.3,
+                        closestAnimal.position[1] + Math.random() * 0.2,
+                        closestAnimal.position[2] + (Math.random() - 0.5) * 0.3
+                    ]);
+                }
+
+                // Notification
+                const lang = state.language;
+                const t = TRANSLATIONS[lang];
+                const animalName = closestAnimal.type === 'deer' ? 'DEER' : closestAnimal.type === 'rabbit' ? 'RABBIT' : 'BIRD';
+                state.addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
+
+                // Play sound
+                playSound('wood'); // Temporary
+            }
+        }
+
+        // --- ZOOM LOGIC ---
+        let targetFOV = 75;
+        if (currentItem === 'bow') {
+            targetFOV = aim ? 35 : 65; // Better zoom for bow
+        } else if (aim) {
+            targetFOV = 40;
+        }
+
         if ((camera as THREE.PerspectiveCamera).isPerspectiveCamera) {
             const perspectiveCamera = camera as THREE.PerspectiveCamera;
-            perspectiveCamera.fov = THREE.MathUtils.lerp(perspectiveCamera.fov, targetFOV, 0.1);
+            perspectiveCamera.fov = THREE.MathUtils.lerp(perspectiveCamera.fov, targetFOV, 0.08);
             perspectiveCamera.updateProjectionMatrix();
         }
 

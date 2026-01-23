@@ -15,6 +15,7 @@ import { useMusic } from './hooks/useAudio';
 import { Environment } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Maximize, Axe, Mountain, Target, Zap, Droplets, RefreshCw } from 'lucide-react';
+import * as THREE from 'three';
 
 
 
@@ -83,7 +84,7 @@ const ResourceCard = ({ icon, count, label, iconColor }: { icon: React.ReactNode
 );
 
 function App() {
-  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping, isDead, isPaused, setPaused } = useGameStore();
+  const { day, gameTime, setGameTime, updateVitals, health, hunger, thirst, language, inventory, temperature, notifications, addNotification, bearing, isMenuOpen, setMenuOpen, isMainMenuOpen, setMainMenuOpen, isHovering, isSleeping, isDead, isPaused, setPaused, activeSlot, playerPosition, wildlife } = useGameStore();
 
   const isAnyMenuOpen = isMenuOpen || isMainMenuOpen;
   const { craft: craftAction } = useKeyboard();
@@ -221,21 +222,27 @@ function App() {
         warmthModifier += 10; // Torch provides steady warmth
       }
 
-      // Warmth from Shelter
-      useGameStore.getState().shelters.forEach(shelter => {
-        const sPos = shelter.position;
-        const distToShelter = Math.sqrt(
-          Math.pow(sPos[0] - playerPos[0], 2) +
-          Math.pow(sPos[2] - playerPos[2], 2)
-        );
-        if (distToShelter < 4) {
-          warmthModifier += 15; // Shelter is warm
-          isResting = true; // Resting in shelter
-        }
-      });
+       // Warmth from Shelter
+       useGameStore.getState().shelters.forEach(shelter => {
+         const sPos = shelter.position;
+         const distToShelter = Math.sqrt(
+           Math.pow(sPos[0] - playerPos[0], 2) +
+           Math.pow(sPos[2] - playerPos[2], 2)
+         );
+         if (distToShelter < 4) {
+           warmthModifier += 15; // Shelter is warm
+           isResting = true; // Resting in shelter
 
-      // Update Campfire Fuel
-      useGameStore.getState().updateCampfires(1); // 1 second delta
+           // Extra healing inside shelter
+           healthDelta += 0.1; // Faster healing when inside shelter
+         }
+       });
+
+       // Update Campfire Fuel
+       useGameStore.getState().updateCampfires(1); // 1 second delta
+
+       // Update Shelter Fuel
+       useGameStore.getState().updateShelters(1); // 1 second delta
 
       const targetTemp = baseTemp + weatherModifier + warmthModifier;
       const tempDelta = (targetTemp - temperature) * 0.1; // Faster adjustment
@@ -312,8 +319,19 @@ function App() {
         {!isAnyMenuOpen && (
           <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center">
             <div className="relative">
-              {/* Center Dot */}
-              <div className={`w-1 h-1 rounded-full transition-all duration-300 ${isHovering ? 'bg-emerald-400 scale-150' : 'bg-white/40'}`} />
+              {/* Center Dot - changes for bow */}
+              <div className={`w-1 h-1 rounded-full transition-all duration-300 ${
+                activeSlot === 0 ? 'bg-amber-400 scale-125' : isHovering ? 'bg-emerald-400 scale-150' : 'bg-white/40'
+              }`} />
+
+              {/* Bow crosshair lines */}
+              {activeSlot === 0 && (
+                <>
+                  <div className="absolute top-1/2 left-1/2 w-8 h-0.5 -translate-x-1/2 -translate-y-1/2 bg-amber-400/60" />
+                  <div className="absolute top-1/2 left-1/2 w-0.5 h-8 -translate-x-1/2 -translate-y-1/2 bg-amber-400/60" />
+                  <div className="absolute top-1/2 left-1/2 w-6 h-6 -translate-x-1/2 -translate-y-1/2 border border-amber-400/40 rounded-full" />
+                </>
+              )}
 
               {/* Dynamic Rings */}
               <motion.div
@@ -325,22 +343,48 @@ function App() {
                 className="absolute -inset-4 border-2 border-white/10 rounded-full"
               />
 
+              {/* Bow ammo indicator */}
+              {activeSlot === 0 && (
+                <div className="absolute top-8 left-1/2 -translate-x-1/2">
+                  <div className="bg-stone-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-amber-500/30">
+                    <span className="text-[8px] font-black text-amber-400 uppercase tracking-[0.3em] whitespace-nowrap">
+                      {inventory.arrow || 0} ARROWS
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Action Preview */}
               <AnimatePresence>
-                {isHovering && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-                  >
-                    <div className="bg-emerald-500/20 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-500/30">
-                      <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.3em] whitespace-nowrap">
-                        {t.interact || 'INTERACT'} [E]
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
+                {(() => {
+                  // Check if animal is nearby for hunting
+                  const playerPos = new THREE.Vector3(...playerPosition);
+                  let hasNearbyAnimal = false;
+                  wildlife.forEach(animal => {
+                    const animalPos = new THREE.Vector3(...animal.position);
+                    if (playerPos.distanceTo(animalPos) < 3.0) {
+                      hasNearbyAnimal = true;
+                    }
+                  });
+
+                  const shouldShowInteract = isHovering && activeSlot !== 0;
+                  const shouldShowHunt = hasNearbyAnimal && !isHovering && activeSlot !== 0;
+
+                  return (shouldShowInteract || shouldShowHunt) ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+                    >
+                      <div className="bg-emerald-500/20 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-500/30">
+                        <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.3em] whitespace-nowrap">
+                          {shouldShowHunt ? 'HUNT [E]' : `${t.interact || 'INTERACT'} [E]`}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ) : null;
+                })()}
               </AnimatePresence>
             </div>
           </div>

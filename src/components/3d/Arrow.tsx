@@ -6,23 +6,26 @@ import { useGameStore } from '../../store/useGameStore';
 import type { Projectile } from '../../store/useGameStore';
 import * as THREE from 'three';
 
-const Blood = ({ position, velocity }: { position: [number, number, number], velocity: [number, number, number] }) => {
+const BloodSplatter = ({ position, velocity }: { position: [number, number, number], velocity: [number, number, number] }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const vel = new Vector3(...velocity);
     const pos = new Vector3(...position);
 
     useFrame((_, delta) => {
         if (!meshRef.current) return;
-        vel.y -= 9.81 * delta; // Gravity
+        vel.y -= 9.81 * delta * 2; // Faster gravity for blood
         pos.add(vel.clone().multiplyScalar(delta));
         meshRef.current.position.copy(pos);
-        meshRef.current.scale.multiplyScalar(0.95); // Fade out
+        meshRef.current.scale.multiplyScalar(0.92); // Fade faster
+        if (meshRef.current.scale.x < 0.1) {
+            // Remove when too small
+        }
     });
 
     return (
         <mesh ref={meshRef} position={position}>
-            <sphereGeometry args={[0.1, 8, 8]} />
-            <meshStandardMaterial color="#880000" emissive="#440000" />
+            <sphereGeometry args={[0.08, 6, 6]} />
+            <meshStandardMaterial color="#8B0000" emissive="#440000" />
         </mesh>
     );
 };
@@ -31,54 +34,64 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const { id, position, velocity, rotation, stuck } = data;
     const stickArrow = useGameStore((state) => state.stickArrow);
     const removeProjectile = useGameStore((state) => state.removeProjectile);
+    const addNotification = useGameStore((state) => state.addNotification);
 
-    // Physics body
+    // Physics body with better collision
     const [ref, api] = useBox(() => ({
-        mass: 0.5,
+        mass: 0.3,
         position,
         rotation,
         velocity,
-        args: [0.1, 0.1, 0.8],
-        linearDamping: 0.05,
-        angularDamping: 1.0,
-        userData: { id },
+        args: [0.05, 0.05, 0.7], // Smaller collision box
+        linearDamping: 0.02,
+        angularDamping: 0.8,
+        userData: { id, type: 'arrow' },
         onCollide: (e: any) => {
             if (stuck) return;
 
             const hitBody = e.body;
             const hitToId = hitBody.userData?.id || hitBody.name;
 
+            // Check for animal hit
             const isAnimal = hitToId && (
                 hitToId.includes('deer') ||
                 hitToId.includes('rabbit') ||
                 hitToId.includes('bird') ||
-                hitToId.includes('partridge') ||
-                hitToId.includes('animal')
+                hitToId.includes('partridge')
             );
 
-            const currentPos = new Vector3(ref.current!.position.x, ref.current!.position.y, ref.current!.position.z);
-            const currentRot = new Euler().setFromQuaternion(ref.current!.quaternion);
+            const currentPos = ref.current!.position;
+            const currentRot = ref.current!.quaternion;
 
             if (isAnimal) {
                 const state = useGameStore.getState();
-                state.spawnBlood([currentPos.x, currentPos.y, currentPos.z]);
 
-                const actualId = (hitToId === 'animal' || !hitToId.includes('-')) ? hitBody.userData?.id : hitToId;
-                state.removeWildlife(actualId || hitToId);
+                // Spawn blood particles
+                for (let i = 0; i < 8; i++) {
+                    state.spawnBlood([
+                        currentPos.x + (Math.random() - 0.5) * 0.5,
+                        currentPos.y + Math.random() * 0.3,
+                        currentPos.z + (Math.random() - 0.5) * 0.5
+                    ]);
+                }
 
-                // Different meat amounts for different animals
-                let meatAmount = 1;
-                if (hitToId.includes('deer')) meatAmount = 2;
-                else if (hitToId.includes('partridge') || hitToId.includes('bird')) meatAmount = 1;
-
+                // Remove wildlife and add meat
+                state.removeWildlife(hitToId);
+                const meatAmount = hitToId.includes('deer') ? 2 : 1;
                 state.addItem('meat', meatAmount);
 
-                stickArrow(id, currentPos.toArray() as [number, number, number], currentRot.toArray().slice(0, 3) as [number, number, number], actualId || hitToId);
-                return;
-            }
+                // Notification
+                const lang = state.language;
+                const t = TRANSLATIONS[lang];
+                const animalName = hitToId.includes('deer') ? 'DEER' : hitToId.includes('rabbit') ? 'RABBIT' : 'BIRD';
+                addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
 
-            // Stick to ground/walls/shelters
-            stickArrow(id, currentPos.toArray() as [number, number, number], currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
+                // Stick arrow
+                stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3), hitToId);
+            } else if (!hitToId?.includes('player') && !hitToId?.includes('arrow')) {
+                // Stick to environment
+                stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3), hitToId);
+            }
         }
     }));
 
@@ -86,64 +99,77 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     useEffect(() => {
         const unsubscribe = api.velocity.subscribe(v => localVel.current = v);
         return () => unsubscribe();
-    }, [api.velocity]);
+    }, [api]);
 
     useEffect(() => {
         if (stuck) {
             api.mass.set(0);
             api.velocity.set(0, 0, 0);
             api.angularVelocity.set(0, 0, 0);
-        } else {
-            api.mass.set(0.5);
         }
     }, [stuck, api]);
 
     useFrame(() => {
         const state = useGameStore.getState();
         const playerPos = state.playerPosition;
-        const arrowPos = new Vector3(ref.current?.position.x || position[0], ref.current?.position.y || position[1], ref.current?.position.z || position[2]);
+        const arrowPos = ref.current?.position || new Vector3(...position);
         const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
-        // Auto-pickup arrows when close
-        if (distToPlayer < 2.0) {
-            useGameStore.getState().addItem('arrow', 1);
+        // Auto-pickup when close
+        if (distToPlayer < 1.8 && stuck) {
+            state.addItem('arrow', 1);
+            removeProjectile(id);
+            addNotification('ARROW RECOVERED', 'info');
+            return;
+        }
+
+        // Remove after timeout if not stuck
+        if (!stuck && Date.now() - data.spawnTime > 10000) {
             removeProjectile(id);
             return;
         }
 
-        if (!stuck) {
-            if (Date.now() - data.spawnTime > 15000) {
-                removeProjectile(id);
-                return;
-            }
-
-            // Low speed drop logic (handled naturally by physics if mass is not 0)
-        } else {
-            if (data.stuckToId) {
-                const wr = state.worldResources;
-                const activeObjects = [...wr.trees, ...wr.rocks, ...wr.bushes, ...state.wildlife, ...state.shelters, ...state.placedItems];
-                if (!activeObjects.some(r => r.id === data.stuckToId)) {
-                    useGameStore.setState(s => ({
-                        projectiles: s.projectiles.map(p => p.id === id ? { ...p, stuck: false, stuckToId: undefined } : p)
-                    }));
-                }
+        // Check if stuck object still exists
+        if (stuck && data.stuckToId) {
+            const wr = state.worldResources;
+            const activeObjects = [...wr.trees, ...wr.rocks, ...wr.bushes, ...state.wildlife, ...state.shelters, ...state.placedItems];
+            if (!activeObjects.some(r => r.id === data.stuckToId)) {
+                // Object disappeared, make arrow fall
+                useGameStore.setState(s => ({
+                    projectiles: s.projectiles.map(p => p.id === id ? { ...p, stuck: false, stuckToId: undefined } : p)
+                }));
             }
         }
     });
 
     return (
-        <mesh ref={ref as any} castShadow name="arrow" userData={{ id }}>
-            <boxGeometry args={[0.08, 0.08, 0.8]} />
-            <meshStandardMaterial color="#4a3728" />
-            <mesh position={[0, 0, -0.4]} rotation={[-Math.PI / 2, 0, 0]}>
-                <coneGeometry args={[0.08, 0.2, 4]} />
-                <meshStandardMaterial color="#666" metalness={0.8} />
+        <group>
+            <mesh ref={ref as any} castShadow name="arrow" userData={{ id, type: 'arrow' }}>
+                {/* Arrow shaft */}
+                <cylinderGeometry args={[0.02, 0.02, 0.6]} />
+                <meshStandardMaterial color="#8B4513" />
+
+                {/* Arrow head */}
+                <mesh position={[0, 0, -0.35]} rotation={[0, 0, Math.PI / 2]}>
+                    <coneGeometry args={[0.04, 0.15, 6]} />
+                    <meshStandardMaterial color="#666666" metalness={0.8} />
+                </mesh>
+
+                {/* Fletching */}
+                <mesh position={[0, 0, 0.25]} rotation={[0, 0, 0]}>
+                    <boxGeometry args={[0.08, 0.02, 0.1]} />
+                    <meshStandardMaterial color="#DC143C" />
+                </mesh>
+                <mesh position={[0, 0, 0.25]} rotation={[0, Math.PI / 3, 0]}>
+                    <boxGeometry args={[0.08, 0.02, 0.1]} />
+                    <meshStandardMaterial color="#DC143C" />
+                </mesh>
+                <mesh position={[0, 0, 0.25]} rotation={[0, -Math.PI / 3, 0]}>
+                    <boxGeometry args={[0.08, 0.02, 0.1]} />
+                    <meshStandardMaterial color="#DC143C" />
+                </mesh>
             </mesh>
-            <mesh position={[0, 0, 0.3]}>
-                <boxGeometry args={[0.01, 0.15, 0.2]} />
-                <meshStandardMaterial color="#fff" />
-            </mesh>
-        </mesh>
+        </group>
     );
 };
 
@@ -152,9 +178,9 @@ export const ArrowManager = () => {
     const removeProjectile = useGameStore((state) => state.removeProjectile);
 
     useFrame(() => {
-        // Automatically remove blood after 1 second
-        projectiles.filter(p => p.type as any === 'blood').forEach(p => {
-            if (Date.now() - p.spawnTime > 1000) {
+        // Auto-remove blood particles
+        projectiles.filter(p => p.type === 'blood').forEach(p => {
+            if (Date.now() - p.spawnTime > 2000) {
                 removeProjectile(p.id);
             }
         });
@@ -164,7 +190,7 @@ export const ArrowManager = () => {
         <>
             {projectiles.map(p => {
                 if (p.type === 'arrow') return <Arrow key={p.id} data={p} />;
-                if (p.type as any === 'blood') return <Blood key={p.id} position={p.position} velocity={p.velocity} />;
+                if (p.type === 'blood') return <BloodSplatter key={p.id} position={p.position} velocity={p.velocity} />;
                 return null;
             })}
         </>
