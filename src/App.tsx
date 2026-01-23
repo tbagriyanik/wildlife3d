@@ -95,7 +95,7 @@ function App() {
     if (isAnyMenuOpen || isDead || isPaused) {
       document.body.style.cursor = 'auto';
     } else {
-      document.body.style.cursor = 'none';
+      document.body.style.cursor = 'auto'; // Always show cursor
     }
   }, [isAnyMenuOpen, isDead, isPaused]);
 
