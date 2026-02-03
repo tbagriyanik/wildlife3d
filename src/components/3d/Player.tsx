@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import { useSphere } from '@react-three/cannon';
@@ -135,8 +135,7 @@ export const Player = () => {
     const torchFuel = useGameStore((state) => state.torchFuel);
     const setTorchFuel = useGameStore((state) => state.setTorchFuel);
 
-    // Jump state to prevent multiple jumps
-    const [isJumping, setIsJumping] = useState(false);
+    const jumpBuffer = useRef(false);
 
     const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
     const currentItem = slotItems[activeSlot];
@@ -344,16 +343,18 @@ export const Player = () => {
 
         // --- JUMP LOGIC ---
         // Allow jumping when jump pressed and not in menu and on ground
-        if (jump && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.1 && !isJumping) {
-            api.velocity.set(velocity.current[0], 18, velocity.current[2]); // Increased jump force
-            playSound('jump'); // Play jump sound
-            setIsJumping(true);
-        } else if (!jump && Math.abs(velocity.current[1]) > 0.1) {
-            setIsJumping(false);
+        let desiredY = velocity.current[1];
+        if (jump && !jumpBuffer.current && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.05) {
+            desiredY = 18; // Jump impulse
+            playSound('jump');
+            jumpBuffer.current = true;
+        }
+        if (!jump) {
+            jumpBuffer.current = false;
         }
 
         // Apply movement velocity to physics body
-        api.velocity.set(targetVelocity.x, velocity.current[1], targetVelocity.z);
+        api.velocity.set(targetVelocity.x, desiredY, targetVelocity.z);
 
         // Sync camera to physics body position
         camera.position.set(pos.current[0], pos.current[1] + 1.2, pos.current[2]);
