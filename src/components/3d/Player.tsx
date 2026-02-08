@@ -342,10 +342,11 @@ export const Player = () => {
         const targetVelocity = moveDirection.multiplyScalar(baseSpeed);
 
         // --- JUMP LOGIC ---
-        // Allow jumping when jump pressed and not in menu and on ground
+        // Allow jumping only when grounded and not in menu
+        const grounded = pos.current[1] <= 0.55 && Math.abs(velocity.current[1]) < 0.1;
         let desiredY = velocity.current[1];
-        if (jump && !jumpBuffer.current && !isAnyMenuOpen && Math.abs(velocity.current[1]) < 0.05) {
-            desiredY = 18; // Jump impulse
+        if (jump && !jumpBuffer.current && !isAnyMenuOpen && grounded) {
+            desiredY = 8.5; // Natural jump impulse
             playSound('jump');
             jumpBuffer.current = true;
         }
