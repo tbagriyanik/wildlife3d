@@ -32,6 +32,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const stickArrow = useGameStore((state) => state.stickArrow);
     const removeProjectile = useGameStore((state) => state.removeProjectile);
     const addNotification = useGameStore((state) => state.addNotification);
+    const stuckRef = useRef(stuck);
 
     const [ref, api] = useBox(() => ({
         mass: 0.3,
@@ -41,9 +42,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         args: [0.05, 0.05, 0.8],
         linearDamping: 0.02,
         angularDamping: 0.8,
+        ccdSpeedThreshold: 1,
+        ccdIterations: 10,
         userData: { id, type: 'arrow' },
         onCollide: (e: any) => {
-            if (stuck) return;
+            if (stuckRef.current) return;
 
             const hitBody = e.body;
             const hitName = hitBody?.name || '';
@@ -59,7 +62,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             );
 
             const currentPos = ref.current!.position;
-            const currentRot = ref.current!.quaternion;
+            const currentRot = ref.current!.rotation;
 
             if (isAnimal) {
                 const state = useGameStore.getState();
@@ -89,15 +92,21 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     useEffect(() => api.velocity.subscribe(v => (localVel.current = v)), [api]);
 
     useEffect(() => {
+        stuckRef.current = stuck;
+    }, [stuck]);
+
+    useEffect(() => {
         if (stuck) {
             api.mass.set(0);
             api.velocity.set(0, 0, 0);
             api.angularVelocity.set(0, 0, 0);
+            api.position.set(position[0], position[1], position[2]);
+            api.rotation.set(rotation[0], rotation[1], rotation[2]);
         } else {
             api.mass.set(0.3);
             api.angularVelocity.set(0, 0, 0);
         }
-    }, [stuck, api]);
+    }, [stuck, api, position, rotation]);
 
     const arrowVisual = useMemo(() => {
         return (
