@@ -13,7 +13,7 @@ import { ArrowManager } from './Arrow';
 import { TRANSLATIONS } from '../../constants/translations';
 
 
-const HeldItem = ({ type, count }: { type: string; count: number }) => {
+const HeldItem = ({ type, count, charge, isDrawing }: { type: string; count: number; charge?: number; isDrawing?: boolean }) => {
     const torchFuel = useGameStore((state) => state.torchFuel);
     const lightRef = useRef<THREE.PointLight>(null);
     const flameRef1 = useRef<THREE.Mesh>(null);
@@ -72,8 +72,9 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
 
 
     if (type === 'bow') {
+        const pull = isDrawing ? (charge || 0) * 0.08 : 0;
         return (
-            <group position={[0.4, -0.5, -0.7]} rotation={[0.2, -1.2, 0.1]}>
+            <group position={[0.4 - pull, -0.5 + pull * 0.5, -0.7]} rotation={[0.2, -1.2 + pull * 0.5, 0.1]}>
                 {/* Bow Riser (Handle) */}
                 <mesh castShadow>
                     <cylinderGeometry args={[0.06, 0.08, 0.1]} />
@@ -95,7 +96,7 @@ const HeldItem = ({ type, count }: { type: string; count: number }) => {
                 </group>
 
                 {/* Bowstring */}
-                <mesh position={[0, 0, -0.25]}>
+                <mesh position={[0, 0, -0.25 - pull * 0.8]}>
                     <cylinderGeometry args={[0.002, 0.002, 1.2]} />
                     <meshStandardMaterial color="#F5F5DC" transparent opacity={0.8} />
                 </mesh>
@@ -171,9 +172,11 @@ export const Player = () => {
     // Archery system
     const shootBuffer = useRef(false);
     const lastShootTime = useRef(0);
-    const SHOOT_COOLDOWN = 800; // ms - slower for better UX
+    const SHOOT_COOLDOWN = 300; // ms
     const chargeStart = useRef<number | null>(null);
     const chargingShot = useRef(false);
+    const firedThisHold = useRef(false);
+    const [chargeT, setChargeT] = useState(0);
 
     const itemGroupRef = useRef<THREE.Group>(null);
 
@@ -216,17 +219,21 @@ export const Player = () => {
             if (leftClick && !chargingShot.current) {
                 chargingShot.current = true;
                 chargeStart.current = now;
+                firedThisHold.current = false;
             }
 
             const isHolding = leftClick && chargingShot.current && chargeStart.current !== null;
             const heldMs = isHolding ? now - (chargeStart.current as number) : 0;
+            const localCharge = Math.min(1, Math.max(0, heldMs / 3000));
+            setChargeT(localCharge);
             const forceShot = isHolding && heldMs >= 3000;
             const releaseShot = !leftClick && chargingShot.current;
 
-            if ((forceShot || releaseShot) && !shootBuffer.current) {
+            if ((forceShot || releaseShot) && !shootBuffer.current && !firedThisHold.current) {
                 lastShootTime.current = now;
                 chargingShot.current = false;
                 shootBuffer.current = true;
+                firedThisHold.current = true;
 
                 if ((state.inventory['arrow'] || 0) > 0) {
                     const direction = new THREE.Vector3();
@@ -261,6 +268,9 @@ export const Player = () => {
             if (!leftClick) {
                 shootBuffer.current = false;
                 chargeStart.current = null;
+                chargingShot.current = false;
+                firedThisHold.current = false;
+                setChargeT(0);
             }
         }
 
@@ -419,7 +429,7 @@ export const Player = () => {
             </mesh>
             {/* Viewport Items */}
             <group ref={itemGroupRef}>
-                {isHoldable && <HeldItem type={currentItem} count={inventory[currentItem] || 0} />}
+                {isHoldable && <HeldItem type={currentItem} count={inventory[currentItem] || 0} charge={chargeT} isDrawing={chargingShot.current} />}
             </group>
 
             {/* Projectiles */}
