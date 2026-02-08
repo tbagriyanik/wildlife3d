@@ -216,11 +216,7 @@ export const Player = () => {
                 const direction = new THREE.Vector3();
                 camera.getWorldDirection(direction);
 
-                // Add small random spread
-                const spread = 0.02;
-                direction.x += (Math.random() - 0.5) * spread;
-                direction.y += (Math.random() - 0.5) * spread;
-                direction.z += (Math.random() - 0.5) * spread;
+                // Straight shot from aim
                 direction.normalize();
 
                 // Spawn position slightly in front of camera to avoid hitting player

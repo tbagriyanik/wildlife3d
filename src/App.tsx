@@ -95,6 +95,9 @@ function App() {
     // Show cursor in menus, hide during gameplay
     if (isAnyMenuOpen || isDead || isPaused) {
       document.body.style.cursor = 'auto';
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
     } else {
       document.body.style.cursor = 'none';
     }

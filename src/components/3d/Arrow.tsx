@@ -125,7 +125,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         if (!stuck && ref.current) {
             const v = new THREE.Vector3(...localVel.current);
             if (v.lengthSq() > 0.01) {
-                const forward = new THREE.Vector3(0, 0, 1);
+                const forward = new THREE.Vector3(0, 1, 0); // cylinder axis
                 const dir = v.normalize();
                 const quat = new THREE.Quaternion().setFromUnitVectors(forward, dir);
                 ref.current.quaternion.slerp(quat, 0.35);
