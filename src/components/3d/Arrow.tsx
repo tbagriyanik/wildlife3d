@@ -31,7 +31,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const { id, position, velocity, rotation, stuck } = data;
     const stickArrow = useGameStore((state) => state.stickArrow);
     const removeProjectile = useGameStore((state) => state.removeProjectile);
-    const addNotification = useGameStore((state) => state.addNotification);
     const stuckRef = useRef(stuck);
     const consumedRef = useRef(false);
 
@@ -144,9 +143,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
     useFrame(() => {
         const state = useGameStore.getState();
-        const playerPos = state.playerPosition;
-        const arrowPos = ref.current?.position || new Vector3(...position);
-        const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
         // Ensure velocity is maintained when not stuck
         if (!stuck && ref.current && !consumedRef.current) {
@@ -188,13 +184,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
 
                 api.position.set(animalPos.x, animalPos.y, animalPos.z);
             }
-        }
-
-        if (distToPlayer < 1.8 && stuck) {
-            state.addItem('arrow', 1);
-            removeProjectile(id);
-            addNotification('ARROW RECOVERED', 'info');
-            return;
         }
 
         if (!stuck && Date.now() - data.spawnTime > 12000) {
