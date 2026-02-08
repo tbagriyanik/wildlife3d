@@ -90,12 +90,25 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
                 <meshStandardMaterial transparent opacity={0} />
             </mesh>
             {children}
-            <mesh castShadow>
-                <boxGeometry args={[0.3, 0.3, 0.5]} />
-                <meshStandardMaterial color="#795548" />
+        </group>
+    );
+};
+
+export const Deer = ({ position, id }: { position: [number, number, number], id: string }) => (
+    <AnimalAI position={position} fleeDistance={15} speed={1.4} id={id} name="deer">
+        <group scale={1.3}>
+            {/* Body */}
+            <mesh castShadow position={[0, 0.2, 0]}>
+                <sphereGeometry args={[0.4, 12, 12]} />
+                <meshStandardMaterial color="#8b6f47" />
+            </mesh>
+            {/* Head */}
+            <mesh castShadow position={[0, 0.4, 0.3]}>
+                <sphereGeometry args={[0.25, 12, 12]} />
+                <meshStandardMaterial color="#8b6f47" />
             </mesh>
             {/* Antlers */}
-            <group position={[0, 0.2, -0.1]}>
+            <group position={[0, 0.6, 0.25]}>
                 <mesh position={[0.2, 0.3, 0]} rotation={[0, 0, -0.5]}>
                     <boxGeometry args={[0.05, 0.6, 0.05]} />
                     <meshStandardMaterial color="#d7ccc8" />
@@ -105,9 +118,14 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
                     <meshStandardMaterial color="#d7ccc8" />
                 </mesh>
             </group>
+            {/* Tail */}
+            <mesh position={[0, 0.2, -0.35]}>
+                <sphereGeometry args={[0.08, 8, 8]} />
+                <meshStandardMaterial color="#fff" />
+            </mesh>
         </group>
-    );
-}
+    </AnimalAI>
+);
 
 export const Rabbit = ({ position, id }: { position: [number, number, number], id: string }) => (
     <AnimalAI position={position} fleeDistance={12} speed={1.2} id={id} name="rabbit">
