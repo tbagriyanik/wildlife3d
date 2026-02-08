@@ -101,7 +101,13 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     }));
 
     const localVel = useRef([0, 0, 0]);
-    const spawnTime = useRef(data.spawnTime);
+    const spawnTime = useRef(0);
+    const initializedRef = useRef(false);
+    
+    useEffect(() => {
+        spawnTime.current = data.spawnTime;
+    }, [data.spawnTime]);
+    
     useEffect(() => api.velocity.subscribe(v => (localVel.current = v)), [api]);
 
     useEffect(() => {
@@ -109,15 +115,18 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     }, [stuck]);
 
     useEffect(() => {
+        if (!initializedRef.current) {
+            initializedRef.current = true;
+            api.mass.set(0.15);
+            api.velocity.set(velocity[0], velocity[1], velocity[2]);
+            api.position.set(position[0], position[1], position[2]);
+            api.rotation.set(rotation[0], rotation[1], rotation[2]);
+        }
+        
         if (stuck) {
             api.mass.set(0);
             api.velocity.set(0, 0, 0);
             api.angularVelocity.set(0, 0, 0);
-            api.position.set(position[0], position[1], position[2]);
-            api.rotation.set(rotation[0], rotation[1], rotation[2]);
-        } else {
-            api.mass.set(0.15);
-            api.velocity.set(velocity[0], velocity[1], velocity[2]);
             api.position.set(position[0], position[1], position[2]);
             api.rotation.set(rotation[0], rotation[1], rotation[2]);
         }
@@ -145,11 +154,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     useFrame(() => {
         const state = useGameStore.getState();
 
-        // Only maintain velocity in first 300ms after spawn (prevent it from slowing down)
-        if (!stuck && !consumedRef.current && Date.now() - spawnTime.current < 300) {
+        // Only maintain velocity in first 500ms after spawn (prevent slowing down)
+        if (!stuck && !consumedRef.current && Date.now() - spawnTime.current < 500) {
             const currentVel = localVel.current;
             const speed = Math.sqrt(currentVel[0]**2 + currentVel[1]**2 + currentVel[2]**2);
-            if (speed < 70) {
+            if (speed < 60) {
                 // Restore velocity only in spawn phase
                 const dir = new THREE.Vector3(velocity[0], velocity[1], velocity[2]).normalize();
                 const minSpeed = 85;

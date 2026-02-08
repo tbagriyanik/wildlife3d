@@ -139,10 +139,10 @@ export const Player = () => {
     const jumpBuffer = useRef(false);
 
     const slotItems = ['bow', 'torch', 'water', 'meat', 'cooked_meat', 'apple', 'baked_apple'];
-    const currentItem = slotItems[activeSlot];
+    const currentItem = activeSlot >= 0 ? slotItems[activeSlot] : null;
 
     // Ensure we only try to "hold" actual tools/weapons
-    const isHoldable = ['bow', 'torch'].includes(currentItem);
+    const isHoldable = currentItem && ['bow', 'torch'].includes(currentItem);
 
     // Physics Sphere
     const savedPos = useGameStore.getState().playerPosition; // Get saved pos
@@ -242,7 +242,7 @@ export const Player = () => {
 
                     // Spawn position from camera, offset forward to avoid collision with player
                     const spawnPos = new THREE.Vector3().copy(camera.position);
-                    spawnPos.addScaledVector(direction, 2); // 2 units ahead
+                    spawnPos.addScaledVector(direction, 5); // 5 units ahead to clear player body
 
                     const chargeT = Math.min(1, Math.max(0, heldMs / 3000));
                     const minSpeed = aim ? 95 : 75;
