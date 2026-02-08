@@ -36,15 +36,15 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const consumedRef = useRef(false);
 
     const [ref, api] = useBox(() => ({
-        mass: 0.3,
+        mass: 0.15,
         position,
         rotation,
         velocity,
-        args: [0.08, 0.08, 0.95],
-        linearDamping: 0.01,
-        angularDamping: 0.6,
-        ccdSpeedThreshold: 0.1,
-        ccdIterations: 20,
+        args: [0.06, 0.06, 0.9],
+        linearDamping: 0.0,
+        angularDamping: 0.5,
+        ccdSpeedThreshold: 7,
+        ccdIterations: 30,
         userData: { id, type: 'arrow' },
         onCollide: (e: any) => {
             if (stuckRef.current) return;
@@ -204,12 +204,8 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     });
 
     return (
-        <group>
-            <mesh ref={ref as any} castShadow name="arrow" userData={{ id, type: 'arrow' }}>
-                <boxGeometry args={[0.05, 0.8, 0.05]} />
-                <meshStandardMaterial transparent opacity={0} />
-                <primitive object={arrowVisual} />
-            </mesh>
+        <group ref={ref as any} castShadow name="arrow" userData={{ id, type: 'arrow' }}>
+            {arrowVisual}
         </group>
     );
 };
