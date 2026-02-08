@@ -101,6 +101,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     }));
 
     const localVel = useRef([0, 0, 0]);
+    const spawnTime = useRef(data.spawnTime);
     useEffect(() => api.velocity.subscribe(v => (localVel.current = v)), [api]);
 
     useEffect(() => {
@@ -144,13 +145,12 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     useFrame(() => {
         const state = useGameStore.getState();
 
-        // Ensure velocity is maintained when not stuck
-        if (!stuck && ref.current && !consumedRef.current) {
-            // Enforce velocity to prevent deceleration
+        // Only maintain velocity in first 300ms after spawn (prevent it from slowing down)
+        if (!stuck && !consumedRef.current && Date.now() - spawnTime.current < 300) {
             const currentVel = localVel.current;
             const speed = Math.sqrt(currentVel[0]**2 + currentVel[1]**2 + currentVel[2]**2);
-            if (speed < 30) {
-                // If velocity dropped below minimum, restore it
+            if (speed < 70) {
+                // Restore velocity only in spawn phase
                 const dir = new THREE.Vector3(velocity[0], velocity[1], velocity[2]).normalize();
                 const minSpeed = 85;
                 api.velocity.set(dir.x * minSpeed, dir.y * minSpeed, dir.z * minSpeed);
