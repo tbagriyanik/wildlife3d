@@ -38,6 +38,7 @@ export interface Projectile {
     stuckAt?: number;
     stuckToId?: string;
     spawnTime: number;
+    consumed?: boolean;
 }
 
 export interface DroppedItem {
@@ -619,8 +620,7 @@ export const useGameStore = create<GameState>()(
                 if ((state.inventory['arrow'] || 0) > 0) {
                     const id = Math.random().toString(36).substring(7);
                     set((state) => ({
-                        projectiles: [...state.projectiles, { id, type: 'arrow', position, velocity, rotation, spawnTime: Date.now() }],
-                        inventory: { ...state.inventory, arrow: state.inventory['arrow'] - 1 }
+                        projectiles: [...state.projectiles, { id, type: 'arrow', position, velocity, rotation, spawnTime: Date.now(), consumed: false }]
                     }));
                 } else {
                     const lang = state.language;

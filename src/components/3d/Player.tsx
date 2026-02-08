@@ -240,8 +240,8 @@ export const Player = () => {
                     camera.getWorldDirection(direction);
                     direction.normalize();
 
-                    // Spawn position slightly in front of camera to avoid hitting player
-                    const spawnPos = new THREE.Vector3().copy(camera.position).add(direction.clone().multiplyScalar(1.2));
+                    // Spawn position from camera (crosshair center)
+                    const spawnPos = new THREE.Vector3().copy(camera.position);
 
                     const chargeT = Math.min(1, Math.max(0, heldMs / 3000));
                     const minSpeed = aim ? 70 : 55;

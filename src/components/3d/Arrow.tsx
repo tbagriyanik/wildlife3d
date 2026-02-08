@@ -33,6 +33,7 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const removeProjectile = useGameStore((state) => state.removeProjectile);
     const addNotification = useGameStore((state) => state.addNotification);
     const stuckRef = useRef(stuck);
+    const consumedRef = useRef(false);
 
     const [ref, api] = useBox(() => ({
         mass: 0.3,
@@ -79,9 +80,21 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 // Damage the animal (1 damage per arrow)
                 state.damageWildlife(hitToId, 1);
 
+                // Consume arrow from inventory when it sticks
+                if (!consumedRef.current) {
+                    consumedRef.current = true;
+                    state.removeItem('arrow', 1);
+                }
+
                 // Stick arrow to animal
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             } else if (!hitToId?.includes('arrow')) {
+                // Consume arrow from inventory when it sticks to environment
+                if (!consumedRef.current) {
+                    consumedRef.current = true;
+                    state.removeItem('arrow', 1);
+                }
+
                 // Stick arrow to environment objects (rocks, trees, etc)
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             }
@@ -170,6 +183,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         }
 
         if (!stuck && Date.now() - data.spawnTime > 12000) {
+            // Consume arrow if not already consumed when it disappears
+            if (!consumedRef.current && (state.inventory['arrow'] || 0) > 0) {
+                consumedRef.current = true;
+                state.removeItem('arrow', 1);
+            }
             removeProjectile(id);
             return;
         }
