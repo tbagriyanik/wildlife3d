@@ -260,6 +260,8 @@ export const Player = () => {
                         [arrowVelocity.x, arrowVelocity.y, arrowVelocity.z],
                         rotation
                     );
+                    // Remove one arrow from inventory when shot
+                    state.removeItem('arrow', 1);
 
                     playSound('wood');
                 } else {

@@ -32,7 +32,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     const stickArrow = useGameStore((state) => state.stickArrow);
     const removeProjectile = useGameStore((state) => state.removeProjectile);
     const stuckRef = useRef(stuck);
-    const consumedRef = useRef(false);
 
     const [ref, api] = useBox(() => ({
         mass: 0.15,
@@ -79,21 +78,9 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 // Damage the animal (1 damage per arrow)
                 state.damageWildlife(hitToId, 1);
 
-                // Consume arrow from inventory when it sticks
-                if (!consumedRef.current) {
-                    consumedRef.current = true;
-                    state.removeItem('arrow', 1);
-                }
-
-                // Stick arrow to animal
+                // Stick arrow to animal (do not modify inventory here)
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             } else if (!hitToId?.includes('arrow')) {
-                // Consume arrow from inventory when it sticks to environment
-                if (!consumedRef.current) {
-                    consumedRef.current = true;
-                    state.removeItem('arrow', 1);
-                }
-
                 // Stick arrow to environment objects (rocks, trees, etc)
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             }
@@ -154,18 +141,6 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     useFrame(() => {
         const state = useGameStore.getState();
 
-        // Only maintain velocity in first 500ms after spawn (prevent slowing down)
-        if (!stuck && !consumedRef.current && Date.now() - spawnTime.current < 500) {
-            const currentVel = localVel.current;
-            const speed = Math.sqrt(currentVel[0]**2 + currentVel[1]**2 + currentVel[2]**2);
-            if (speed < 60) {
-                // Restore velocity only in spawn phase
-                const dir = new THREE.Vector3(velocity[0], velocity[1], velocity[2]).normalize();
-                const minSpeed = 85;
-                api.velocity.set(dir.x * minSpeed, dir.y * minSpeed, dir.z * minSpeed);
-            }
-        }
-
         if (!stuck && ref.current) {
             const v = new THREE.Vector3(...localVel.current);
             if (v.lengthSq() > 0.01) {
@@ -195,12 +170,28 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             }
         }
 
-        if (!stuck && Date.now() - data.spawnTime > 12000) {
-            // Consume arrow if not already consumed when it disappears
-            if (!consumedRef.current && (state.inventory['arrow'] || 0) > 0) {
-                consumedRef.current = true;
-                state.removeItem('arrow', 1);
+        // Automatic pickup: when stuck and player is near, add arrow to inventory and remove projectile
+        if (stuck && ref.current) {
+            const pickCooldown = 300; // ms after stuck before it can be picked
+            const stuckAt = (data.stuckAt || data.spawnTime || 0);
+            const timeSinceStuck = Date.now() - stuckAt;
+            const playerPos = new Vector3(...state.playerPosition);
+            const arrowPos = new Vector3();
+            ref.current.getWorldPosition(arrowPos);
+            const dist = playerPos.distanceTo(arrowPos);
+            const PICK_RADIUS = 2.0;
+
+            if (timeSinceStuck > pickCooldown && dist <= PICK_RADIUS) {
+                // Try to add arrow to inventory; only remove projectile if addItem succeeds
+                if (state.addItem('arrow', 1)) {
+                    removeProjectile(id);
+                    return;
+                }
             }
+        }
+
+        // If arrow exists too long (wasn't picked), just remove it after lifetime
+        if (!stuck && Date.now() - data.spawnTime > 12000) {
             removeProjectile(id);
             return;
         }
