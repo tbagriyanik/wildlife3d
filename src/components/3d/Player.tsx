@@ -223,8 +223,8 @@ export const Player = () => {
                 direction.z += (Math.random() - 0.5) * spread;
                 direction.normalize();
 
-                // Spawn position (from camera)
-                const spawnPos = new THREE.Vector3().copy(camera.position);
+                // Spawn position slightly in front of camera to avoid hitting player
+                const spawnPos = new THREE.Vector3().copy(camera.position).add(direction.clone().multiplyScalar(1.2));
 
                 // Speed based on aim
                 const arrowSpeed = aim ? 80 : 65; // Faster when aiming

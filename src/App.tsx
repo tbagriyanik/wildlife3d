@@ -92,11 +92,11 @@ function App() {
 
   // Cursor and Menu Handling
   useEffect(() => {
-    // Show cursor if ANY menu, craft menu, dead screen, or settings is open
+    // Show cursor in menus, hide during gameplay
     if (isAnyMenuOpen || isDead || isPaused) {
       document.body.style.cursor = 'auto';
     } else {
-      document.body.style.cursor = 'auto'; // Always show cursor
+      document.body.style.cursor = 'none';
     }
   }, [isAnyMenuOpen, isDead, isPaused]);
 

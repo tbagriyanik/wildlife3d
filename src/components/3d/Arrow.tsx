@@ -50,7 +50,10 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             if (stuck) return;
 
             const hitBody = e.body;
-            const hitToId = hitBody.userData?.id || hitBody.name;
+            const hitName = hitBody?.name || '';
+            const hitToId = hitBody?.userData?.id || hitBody?.name;
+
+            if (hitName.includes('player') || hitBody?.userData?.type === 'player') return;
 
             // Check for animal hit
             const isAnimal = hitToId && (
@@ -159,31 +162,9 @@ export const Arrow = ({ data }: { data: Projectile }) => {
     return (
         <group>
             <mesh ref={ref as any} castShadow name="arrow" userData={{ id, type: 'arrow' }}>
-                {/* Arrow shaft (aligned forward on +Z) */}
-                <mesh position={[0, 0, 0.0]}>
-                    <cylinderGeometry args={[0.018, 0.022, 0.68]} />
-                    <meshStandardMaterial color="#8B4513" />
-                </mesh>
-
-                {/* Arrow head (front) */}
-                <mesh position={[0, 0, 0.42]} rotation={[Math.PI / 2, 0, 0]}>
-                    <coneGeometry args={[0.035, 0.18, 8]} />
-                    <meshStandardMaterial color="#666666" metalness={0.7} roughness={0.3} />
-                </mesh>
-
-                {/* Fletching (rear) */}
-                <mesh position={[0, 0, -0.38]} rotation={[0, 0, 0]}>
-                    <boxGeometry args={[0.075, 0.015, 0.1]} />
-                    <meshStandardMaterial color="#DC143C" />
-                </mesh>
-                <mesh position={[0, 0, -0.38]} rotation={[0, Math.PI / 3, 0]}>
-                    <boxGeometry args={[0.075, 0.015, 0.1]} />
-                    <meshStandardMaterial color="#DC143C" />
-                </mesh>
-                <mesh position={[0, 0, -0.38]} rotation={[0, -Math.PI / 3, 0]}>
-                    <boxGeometry args={[0.075, 0.015, 0.1]} />
-                    <meshStandardMaterial color="#DC143C" />
-                </mesh>
+                {/* Arrow shaft only (aligned forward on +Z) */}
+                <cylinderGeometry args={[0.02, 0.02, 0.8]} />
+                <meshStandardMaterial color="#8B4513" />
             </mesh>
         </group>
     );
