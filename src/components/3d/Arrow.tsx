@@ -40,11 +40,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         position,
         rotation,
         velocity,
-        args: [0.05, 0.05, 0.8],
-        linearDamping: 0.02,
-        angularDamping: 0.8,
-        ccdSpeedThreshold: 1,
-        ccdIterations: 10,
+        args: [0.08, 0.08, 0.95],
+        linearDamping: 0.01,
+        angularDamping: 0.6,
+        ccdSpeedThreshold: 0.1,
+        ccdIterations: 20,
         userData: { id, type: 'arrow' },
         onCollide: (e: any) => {
             if (stuckRef.current) return;

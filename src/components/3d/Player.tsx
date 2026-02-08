@@ -240,12 +240,13 @@ export const Player = () => {
                     camera.getWorldDirection(direction);
                     direction.normalize();
 
-                    // Spawn position from camera (crosshair center)
+                    // Spawn position from camera, offset forward to avoid collision with player
                     const spawnPos = new THREE.Vector3().copy(camera.position);
+                    spawnPos.addScaledVector(direction, 2); // 2 units ahead
 
                     const chargeT = Math.min(1, Math.max(0, heldMs / 3000));
-                    const minSpeed = aim ? 70 : 55;
-                    const maxSpeed = aim ? 95 : 80;
+                    const minSpeed = aim ? 95 : 75;
+                    const maxSpeed = aim ? 130 : 110;
                     const arrowSpeed = minSpeed + (maxSpeed - minSpeed) * chargeT;
                     const arrowVelocity = direction.clone().multiplyScalar(arrowSpeed);
 
