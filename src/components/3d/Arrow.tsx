@@ -160,25 +160,27 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         <group>
             <mesh ref={ref as any} castShadow name="arrow" userData={{ id, type: 'arrow' }}>
                 {/* Arrow shaft (aligned forward on +Z) */}
-                <cylinderGeometry args={[0.02, 0.02, 0.6]} />
-                <meshStandardMaterial color="#8B4513" />
+                <mesh position={[0, 0, 0.0]}>
+                    <cylinderGeometry args={[0.02, 0.02, 0.62]} />
+                    <meshStandardMaterial color="#8B4513" />
+                </mesh>
 
-                {/* Arrow head */}
-                <mesh position={[0, 0, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
-                    <coneGeometry args={[0.04, 0.15, 6]} />
+                {/* Arrow head (front) */}
+                <mesh position={[0, 0, 0.36]} rotation={[Math.PI / 2, 0, 0]}>
+                    <coneGeometry args={[0.04, 0.16, 6]} />
                     <meshStandardMaterial color="#666666" metalness={0.8} />
                 </mesh>
 
-                {/* Fletching */}
-                <mesh position={[0, 0, -0.25]} rotation={[0, 0, 0]}>
+                {/* Fletching (rear) */}
+                <mesh position={[0, 0, -0.34]} rotation={[0, 0, 0]}>
                     <boxGeometry args={[0.08, 0.02, 0.1]} />
                     <meshStandardMaterial color="#DC143C" />
                 </mesh>
-                <mesh position={[0, 0, -0.25]} rotation={[0, Math.PI / 3, 0]}>
+                <mesh position={[0, 0, -0.34]} rotation={[0, Math.PI / 3, 0]}>
                     <boxGeometry args={[0.08, 0.02, 0.1]} />
                     <meshStandardMaterial color="#DC143C" />
                 </mesh>
-                <mesh position={[0, 0, -0.25]} rotation={[0, -Math.PI / 3, 0]}>
+                <mesh position={[0, 0, -0.34]} rotation={[0, -Math.PI / 3, 0]}>
                     <boxGeometry args={[0.08, 0.02, 0.1]} />
                     <meshStandardMaterial color="#DC143C" />
                 </mesh>
