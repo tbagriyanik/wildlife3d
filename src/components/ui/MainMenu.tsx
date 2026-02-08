@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../store/useGameStore';
-import { Settings, Play, RefreshCw, X, Volume2, Globe, ArrowRight } from 'lucide-react';
+import { Settings, Play, RefreshCw, X, Volume2, Globe, ArrowRight, TreePine, Mountain } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants/translations';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,16 +16,16 @@ const MenuButton = ({ icon, label, onClick, primary = false, subtext }: { icon: 
         whileHover={{ x: 10, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
-        className={`w-full group flex items-center justify-between p-6 rounded-[32px] transition-all duration-300 relative overflow-hidden ${primary
-            ? 'bg-orange-500 text-stone-950 shadow-[0_20px_40px_-15px_rgba(249,115,22,0.4)]'
+        className={`w-full group flex items-center justify-between p-4 rounded-[24px] transition-all duration-300 relative overflow-hidden ${primary
+            ? 'bg-orange-500 text-stone-950 shadow-[0_16px_32px_-16px_rgba(249,115,22,0.4)]'
             : 'bg-white/5 border border-white/5 text-white hover:bg-white/10 hover:border-white/10'
             }`}
     >
         <div className="flex items-center gap-6 relative z-10">
-            <div className={`p-4 rounded-2xl flex items-center justify-center ${primary ? 'bg-stone-950/20' : 'bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-white transition-all'}`}>
+            <div className={`p-3 rounded-2xl flex items-center justify-center ${primary ? 'bg-stone-950/20' : 'bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-white transition-all'}`}>
                 {icon}
             </div>
-            <span className="text-xl font-black uppercase tracking-tight">{label}</span>
+            <span className="text-lg font-black uppercase tracking-tight">{label}</span>
         </div>
         {subtext ? (
             <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black border transition-all ${primary ? 'border-stone-950/20 text-stone-950/40' : 'border-white/10 text-white/20'}`}>
@@ -65,7 +65,7 @@ export const MainMenu: React.FC = () => {
         }
     };
 
-return (
+    return (
         <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/95 backdrop-blur-3xl overflow-y-auto"
             onMouseDown={(e) => e.stopPropagation()}
@@ -78,9 +78,40 @@ return (
             onTouchEnd={(e) => e.stopPropagation()}
             style={{ pointerEvents: 'all' }}
         >
+            {/* Floating background icons */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <motion.div
+                    className="absolute left-[8%] top-[18%] text-white/8"
+                    animate={{ y: [0, -10, 0], opacity: [0.25, 0.5, 0.25] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                    <TreePine size={72} />
+                </motion.div>
+                <motion.div
+                    className="absolute right-[12%] top-[22%] text-white/6"
+                    animate={{ y: [0, 12, 0], opacity: [0.2, 0.45, 0.2] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                >
+                    <Mountain size={90} />
+                </motion.div>
+                <motion.div
+                    className="absolute left-[14%] bottom-[16%] text-white/6"
+                    animate={{ y: [0, 14, 0], opacity: [0.2, 0.4, 0.2] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                >
+                    <Mountain size={64} />
+                </motion.div>
+                <motion.div
+                    className="absolute right-[20%] bottom-[18%] text-white/7"
+                    animate={{ y: [0, -8, 0], opacity: [0.25, 0.5, 0.25] }}
+                    transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+                >
+                    <TreePine size={56} />
+                </motion.div>
+            </div>
             <AnimatePresence mode="wait">
                 {!isSettingsOpen ? (
-<motion.div
+                    <motion.div
                         key="main"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -100,7 +131,7 @@ return (
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                <h1 className="inline-block text-[72px] sm:text-[96px] lg:text-[120px] font-black tracking-[-0.06em] uppercase italic leading-[0.9] mb-6 pr-8 overflow-visible">
+                                <h1 className="inline-block text-[72px] sm:text-[96px] lg:text-[120px] font-black tracking-[-0.06em] uppercase leading-[0.9] mb-6 pr-8 overflow-visible">
                                     <span className="bg-gradient-to-br from-orange-300 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-[0_12px_36px_rgba(249,115,22,0.35)]">WILD</span>
                                     <br />
                                     <span className="bg-gradient-to-br from-white via-white to-white/30 bg-clip-text text-transparent drop-shadow-[0_10px_28px_rgba(255,255,255,0.15)]">LANDS</span>
@@ -149,7 +180,7 @@ return (
                         </div>
                     </motion.div>
                 ) : (
-<motion.div
+                    <motion.div
                         key="settings"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
