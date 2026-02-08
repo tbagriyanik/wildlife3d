@@ -39,6 +39,12 @@ export interface Projectile {
     spawnTime: number;
 }
 
+export interface DroppedItem {
+    id: string;
+    type: 'meat';
+    amount: number;
+    position: [number, number, number];
+}
 
 export interface PlacedItem {
     id: string;
@@ -74,6 +80,7 @@ export interface GameState {
     notifications: Notification[];
     wildlife: Resource[];
     projectiles: Projectile[];
+    droppedItems: DroppedItem[];
     day: number;
 isDead: boolean;
     isPaused: boolean;
@@ -122,6 +129,8 @@ setMenuOpen: (isOpen: boolean) => void;
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
     stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number], stuckToId?: string) => void;
     removeProjectile: (id: string) => void;
+    addDroppedItem: (type: 'meat', amount: number, position: [number, number, number]) => void;
+    removeDroppedItem: (id: string) => void;
     addShelter: (level: number, position: [number, number, number]) => void;
     updateShelters: (delta: number) => void;
     resetGame: () => void;
@@ -276,6 +285,7 @@ day: 1,
                 { id: 'rabbit-2', type: 'normal', position: [-12, 0, -20], durability: 100 },
             ],
             projectiles: [],
+            droppedItems: [],
             placedItems: [],
             shelters: [], // Will be populated with fuel when created
             isSleeping: false,
@@ -590,6 +600,17 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
             removeProjectile: (id) => set((state) => ({
                 projectiles: state.projectiles.filter(p => p.id !== id)
             })),
+            addDroppedItem: (type, amount, position) => set((state) => ({
+                droppedItems: [...state.droppedItems, {
+                    id: `drop-${Math.random().toString(36).substring(7)}`,
+                    type,
+                    amount,
+                    position
+                }]
+            })),
+            removeDroppedItem: (id) => set((state) => ({
+                droppedItems: state.droppedItems.filter(d => d.id !== id)
+            })),
 
             updateShelters: (delta) => set((state) => ({
                 shelters: state.shelters.map(shelter => ({
@@ -655,6 +676,7 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                 worldResources: generateResources(),
                 placedItems: [],
                 projectiles: [],
+                droppedItems: [],
                 playerPosition: [0, 2, 0],
                 shelters: []
             }),
@@ -691,7 +713,8 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                 placedItems: state.placedItems,
                 wildlife: state.wildlife,
                 torchFuel: state.torchFuel,
-                shelters: state.shelters
+                shelters: state.shelters,
+                droppedItems: state.droppedItems
             })
 
 

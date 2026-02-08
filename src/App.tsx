@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Physics } from '@react-three/cannon';
 import { World } from './components/3d/World';
 import { Player } from './components/3d/Player';
@@ -129,7 +129,29 @@ function App() {
     const rightIdx = (idx + 1) % 8;
     return [allDirs[leftIdx], allDirs[idx], allDirs[rightIdx]];
   };
-  const [dirLeft, dirCenter, dirRight] = getDisplayDirections(bearing);
+  const [smoothedBearing, setSmoothedBearing] = useState(bearing);
+  const smoothedRef = useRef(bearing);
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const target = bearing;
+      const current = smoothedRef.current;
+      // Shortest-arc interpolation on a circle (0-360)
+      let delta = ((target - current + 540) % 360) - 180;
+      const speed = 8; // higher = snappier
+      const next = (current + delta * (1 - Math.exp(-speed * dt)) + 360) % 360;
+      smoothedRef.current = next;
+      setSmoothedBearing(next);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [bearing]);
+
+  const [dirLeft, dirCenter, dirRight] = getDisplayDirections(smoothedBearing);
 
 
   useMusic();

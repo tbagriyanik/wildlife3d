@@ -75,14 +75,14 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                     ]);
                 }
 
-                // Remove wildlife and add meat
+                // Remove wildlife and drop meat
                 state.removeWildlife(hitToId);
                 const meatAmount = hitToId.includes('deer') ? 2 : 1;
-                state.addItem('meat', meatAmount);
+                state.addDroppedItem('meat', meatAmount, [currentPos.x, currentPos.y + 0.2, currentPos.z]);
 
                 // Notification
                 const animalName = hitToId.includes('deer') ? 'DEER' : hitToId.includes('rabbit') ? 'RABBIT' : 'BIRD';
-                addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
+                addNotification(`${animalName} HUNTED! MEAT DROPPED`, 'success');
 
                 // Stick arrow
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
@@ -104,6 +104,11 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             api.mass.set(0);
             api.velocity.set(0, 0, 0);
             api.angularVelocity.set(0, 0, 0);
+        } else {
+            api.mass.set(0.3);
+            // Give a tiny downward nudge so dropped arrows fall reliably
+            api.velocity.set(0, -0.5, 0);
+            api.angularVelocity.set(0, 0, 0);
         }
     }, [stuck, api]);
 
@@ -113,8 +118,9 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         const arrowPos = ref.current?.position || new Vector3(...position);
         const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
-        // Auto-pickup when close
-        if (distToPlayer < 1.8 && stuck) {
+        // Auto-pickup when close (stuck or resting on ground)
+        const speed = Math.hypot(localVel.current[0], localVel.current[1], localVel.current[2]);
+        if (distToPlayer < 1.8 && (stuck || speed < 0.5)) {
             state.addItem('arrow', 1);
             removeProjectile(id);
             addNotification('ARROW RECOVERED', 'info');

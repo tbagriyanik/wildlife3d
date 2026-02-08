@@ -272,10 +272,10 @@ export const Player = () => {
 
             if (closestAnimal) {
                 const animal = closestAnimal as Resource & { type: string };
-                // Hunt the animal
+                // Hunt the animal (drop meat on ground)
                 state.removeWildlife(animal.id);
                 const meatAmount = animal.type === 'deer' ? 2 : 1;
-                state.addItem('meat', meatAmount);
+                state.addDroppedItem('meat', meatAmount, [animal.position[0], animal.position[1] + 0.2, animal.position[2]]);
 
                 // Spawn blood
                 for (let i = 0; i < 5; i++) {
@@ -288,7 +288,7 @@ export const Player = () => {
 
                 // Notification
                 const animalName = animal.type === 'deer' ? 'DEER' : animal.type === 'rabbit' ? 'RABBIT' : 'BIRD';
-                state.addNotification(`${animalName} HUNTED! +${meatAmount} MEAT`, 'success');
+                state.addNotification(`${animalName} HUNTED! MEAT DROPPED`, 'success');
 
                 // Play sound
                 playSound('wood'); // Temporary

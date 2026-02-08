@@ -100,7 +100,7 @@ return (
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                <h1 className="text-9xl font-black tracking-tighter uppercase italic leading-[0.85] mb-6">
+                                <h1 className="inline-block text-9xl font-black tracking-tighter uppercase italic leading-[0.85] mb-6 pr-6 overflow-visible">
                                     <span className="bg-gradient-to-br from-orange-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-[0_10px_30px_rgba(249,115,22,0.3)]">WILD</span>
                                     <br />
                                     <span className="bg-gradient-to-br from-white via-white to-white/20 bg-clip-text text-transparent">LANDS</span>

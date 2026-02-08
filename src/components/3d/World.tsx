@@ -22,6 +22,7 @@ export const World = () => {
     const gameTime = useGameStore((state) => state.gameTime);
     const weather = useGameStore((state) => state.weather);
     const resources = useGameStore((state) => state.worldResources);
+    const droppedItems = useGameStore((state) => state.droppedItems);
 
     const smoothTime = useRef(gameTime);
 
@@ -244,6 +245,16 @@ export const World = () => {
                                 )}
                             </group>
                         )}
+                    </group>
+                ))}
+
+                {/* Dropped items (meat) */}
+                {droppedItems.map((d) => (
+                    <group key={d.id} position={d.position} name="meat" userData={{ id: d.id }}>
+                        <mesh castShadow>
+                            <boxGeometry args={[0.25, 0.12, 0.18]} />
+                            <meshStandardMaterial color="#a11b1b" roughness={0.6} />
+                        </mesh>
                     </group>
                 ))}
             </group>

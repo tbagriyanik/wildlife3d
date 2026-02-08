@@ -51,7 +51,7 @@ export const InteractionSystem = () => {
                         const name = obj.name || '';
 
                         // Priority: Objects with names we recognize
-                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter_fire', 'shelter', 'deer', 'rabbit', 'bird', 'partridge', 'arrow'];
+                        const interactiveNames = ['tree', 'rock', 'bush', 'water', 'campfire', 'animal', 'shelter_fire', 'shelter', 'deer', 'rabbit', 'bird', 'partridge', 'arrow', 'meat'];
                         const foundName = interactiveNames.find(n => name.includes(n)) || null;
 
                         if (id && foundName) return { id, name: foundName };
@@ -80,6 +80,17 @@ export const InteractionSystem = () => {
         }
 
         const state = useGameStore.getState();
+        // Auto-pickup nearby dropped meat
+        const playerPos = new THREE.Vector3(...state.playerPosition);
+        state.droppedItems.forEach((drop) => {
+            const dPos = new THREE.Vector3(...drop.position);
+            if (playerPos.distanceTo(dPos) < 1.8) {
+                if (addItem('meat', drop.amount)) {
+                    state.removeDroppedItem(drop.id);
+                    playSound('gather');
+                }
+            }
+        });
         const isBowActive = state.activeSlot === 0;
         const now = Date.now();
         const isTriggered = ((interact && !interactBuffer.current) || (leftClick && !mouseBuffer.current && !isBowActive)) && (now - lastInteractTime.current > INTERACT_COOLDOWN);
@@ -122,9 +133,18 @@ export const InteractionSystem = () => {
             } else if (name.includes('animal')) {
                 if (id) {
                     const state = useGameStore.getState();
-                    if (addItem('meat', 2)) {
-                        state.spawnBlood([targetObject.object.position.x, targetObject.object.position.y + 0.5, targetObject.object.position.z]);
-                        state.removeWildlife(id);
+                    const amount = id.includes('deer') ? 2 : 1;
+                    state.spawnBlood([targetObject.object.position.x, targetObject.object.position.y + 0.5, targetObject.object.position.z]);
+                    state.removeWildlife(id);
+                    state.addDroppedItem('meat', amount, [targetObject.object.position.x, targetObject.object.position.y + 0.2, targetObject.object.position.z]);
+                    playSound('gather');
+                }
+            } else if (name.includes('meat')) {
+                if (id) {
+                    const state = useGameStore.getState();
+                    const drop = state.droppedItems.find(d => d.id === id);
+                    if (drop && addItem('meat', drop.amount)) {
+                        state.removeDroppedItem(id);
                         playSound('gather');
                     }
                 }
