@@ -7,6 +7,7 @@ export interface Resource {
     position: [number, number, number];
     durability: number; // 0 to 100
     type?: 'normal' | 'pine' | 'deer' | 'rabbit' | 'bird' | 'partridge';
+    health?: number; // For animals: health points (arrows needed to kill)
     variation?: {
         height?: number;
         leafSize?: number;
@@ -82,7 +83,7 @@ export interface GameState {
     projectiles: Projectile[];
     droppedItems: DroppedItem[];
     day: number;
-isDead: boolean;
+    isDead: boolean;
     isPaused: boolean;
 
     masterVolume: number;
@@ -100,7 +101,7 @@ isDead: boolean;
     setActiveSlot: (slot: number) => void;
     setBearing: (bearing: number) => void;
     setPlayerPosition: (pos: [number, number, number]) => void;
-setMenuOpen: (isOpen: boolean) => void;
+    setMenuOpen: (isOpen: boolean) => void;
     setMainMenuOpen: (isOpen: boolean) => void;
     setSettingsOpen: (isOpen: boolean) => void;
     setMasterVolume: (volume: number) => void;
@@ -126,6 +127,7 @@ setMenuOpen: (isOpen: boolean) => void;
     sleep: () => void;
 
     removeWildlife: (id: string) => void;
+    damageWildlife: (id: string, damage: number) => void;
     shootArrow: (position: [number, number, number], velocity: [number, number, number], rotation: [number, number, number]) => void;
     stickArrow: (id: string, position: [number, number, number], rotation: [number, number, number], stuckToId?: string) => void;
     removeProjectile: (id: string) => void;
@@ -268,7 +270,7 @@ export const useGameStore = create<GameState>()(
             isMainMenuOpen: false,
             isSettingsOpen: false,
             notifications: [],
-day: 1,
+            day: 1,
             isDead: false,
             isPaused: false,
             masterVolume: 0.5,
@@ -279,10 +281,10 @@ day: 1,
 
             worldResources: initialResources,
             wildlife: [
-                { id: 'deer-1', type: 'normal', position: [15, 0, -15], durability: 100 },
-                { id: 'deer-2', type: 'normal', position: [-25, 0, 35], durability: 100 },
-                { id: 'rabbit-1', type: 'normal', position: [8, 0, 10], durability: 100 },
-                { id: 'rabbit-2', type: 'normal', position: [-12, 0, -20], durability: 100 },
+                { id: 'deer-1', type: 'normal', position: [15, 0, -15], durability: 100, health: 3 },
+                { id: 'deer-2', type: 'normal', position: [-25, 0, 35], durability: 100, health: 3 },
+                { id: 'rabbit-1', type: 'normal', position: [8, 0, 10], durability: 100, health: 2 },
+                { id: 'rabbit-2', type: 'normal', position: [-12, 0, -20], durability: 100, health: 2 },
             ],
             projectiles: [],
             droppedItems: [],
@@ -324,7 +326,7 @@ day: 1,
             setBearing: (bearing) => set({ bearing }),
             setPlayerPosition: (playerPosition) => set({ playerPosition }),
             setMenuOpen: (isMenuOpen) => set({ isMenuOpen }),
-setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
+            setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
             setSettingsOpen: (isSettingsOpen) => set({ isSettingsOpen }),
             setMasterVolume: (masterVolume) => set({ masterVolume }),
             setHovering: (isHovering) => set({ isHovering }),
@@ -535,7 +537,7 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                 // Ensure at least 3 Deers
                 const deerCount = newWildlife.filter(w => w.id.includes('deer')).length;
                 if (deerCount < 3) {
-                    newWildlife.push({ id: `deer-respawn-${state.day}`, type: 'deer', position: [(Math.random() - 0.5) * 100, 0, (Math.random() - 0.5) * 100], durability: 100 });
+                    newWildlife.push({ id: `deer-respawn-${state.day}`, type: 'deer', position: [(Math.random() - 0.5) * 100, 0, (Math.random() - 0.5) * 100], durability: 100, health: 3 });
                 }
 
                 // Ensure at least 4 Birds (Circling overhead)
@@ -546,7 +548,8 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                             id: `bird-respawn-${state.day}-${i}`,
                             type: 'bird',
                             position: [(Math.random() - 0.5) * 100, 15 + Math.random() * 10, (Math.random() - 0.5) * 100],
-                            durability: 100
+                            durability: 100,
+                            health: 1
                         });
                     }
                 }
@@ -559,7 +562,8 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
                             id: `partridge-respawn-${state.day}-${i}`,
                             type: 'partridge',
                             position: [(Math.random() - 0.5) * 100, 0, (Math.random() - 0.5) * 100],
-                            durability: 100
+                            durability: 100,
+                            health: 2
                         });
                     }
                 }
@@ -573,6 +577,42 @@ setMainMenuOpen: (isMainMenuOpen) => set({ isMainMenuOpen }),
             removeWildlife: (id) => set((state) => ({
                 wildlife: state.wildlife.filter(w => w.id !== id)
             })),
+
+            damageWildlife: (id, damage) => {
+                const state = useGameStore.getState();
+                const animalIndex = state.wildlife.findIndex(w => w.id === id);
+                if (animalIndex === -1) return;
+
+                const animal = state.wildlife[animalIndex];
+                const newHealth = (animal.health || 1) - damage;
+
+                if (newHealth <= 0) {
+                    // Animal dies - remove it and drop meat
+                    set((state) => ({
+                        wildlife: state.wildlife.filter(w => w.id !== id)
+                    }));
+
+                    // Amount of meat depends on animal type
+                    let meatAmount = 1;
+                    if (id.includes('deer')) meatAmount = 2;
+                    else if (id.includes('rabbit')) meatAmount = 1;
+                    else if (id.includes('partridge')) meatAmount = 1;
+                    else if (id.includes('bird')) meatAmount = 0; // Birds don't drop meat
+
+                    // Drop meat at animal position
+                    state.addDroppedItem('meat', meatAmount, [animal.position[0], animal.position[1] + 0.2, animal.position[2]]);
+
+                    const animalName = id.includes('deer') ? 'DEER' : id.includes('rabbit') ? 'RABBIT' : id.includes('partridge') ? 'PARTRIDGE' : 'BIRD';
+                    state.addNotification(`${animalName} HUNTED! MEAT DROPPED`, 'success');
+                } else {
+                    // Animal takes damage but survives
+                    set((state) => ({
+                        wildlife: state.wildlife.map(w =>
+                            w.id === id ? { ...w, health: newHealth } : w
+                        )
+                    }));
+                }
+            },
 
             shootArrow: (position, velocity, rotation) => {
                 const state = useGameStore.getState();

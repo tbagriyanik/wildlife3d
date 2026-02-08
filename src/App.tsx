@@ -371,9 +371,19 @@ function App() {
               {/* Bow ammo indicator */}
               {activeSlot === 0 && (
                 <div className="absolute top-8 left-1/2 -translate-x-1/2">
-                  <div className="bg-stone-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-amber-500/30">
-                    <span className="text-[8px] font-black text-amber-400 uppercase tracking-[0.3em] whitespace-nowrap">
-                      {inventory.arrow || 0} ARROWS
+                  <div
+                    className={`backdrop-blur-md px-3 py-1 rounded-full border ${
+                      (inventory.arrow || 0) > 0
+                        ? 'bg-stone-900/80 border-amber-500/30'
+                        : 'bg-rose-900/80 border-rose-500/40 animate-pulse'
+                    }`}
+                  >
+                    <span
+                      className={`text-[8px] font-black uppercase tracking-[0.3em] whitespace-nowrap ${
+                        (inventory.arrow || 0) > 0 ? 'text-amber-400' : 'text-rose-200'
+                      }`}
+                    >
+                      {(inventory.arrow || 0) > 0 ? `${inventory.arrow} ARROWS` : 'NO ARROWS'}
                     </span>
                   </div>
                 </div>

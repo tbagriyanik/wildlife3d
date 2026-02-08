@@ -7,8 +7,13 @@ import { useGameStore } from '../../store/useGameStore';
 const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id }: { children: React.ReactNode, position: [number, number, number], fleeDistance: number, speed: number, name?: string, id: string }) => {
     const groupRef = useRef<THREE.Group>(null);
     const playerPos = useGameStore((state) => state.playerPosition);
+    const wildlife = useGameStore((state) => state.wildlife);
+    const animal = wildlife.find(w => w.id === id);
+    const currentHealth = animal?.health || 1;
+
     const [targetPos, setTargetPos] = useState(new THREE.Vector3(...position));
     const currentPos = useRef(new THREE.Vector3(...position));
+    const lastHealthRef = useRef(currentHealth);
 
     // Kinematic physics body for arrow collisions
     const [physicsRef, api] = useSphere(() => ({
@@ -23,6 +28,18 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
 
         const pPos = new THREE.Vector3(...playerPos);
         const dist = currentPos.current.distanceTo(pPos);
+
+        // If animal was just hit (health decreased), force aggressive fleeing
+        if (currentHealth < lastHealthRef.current) {
+            lastHealthRef.current = currentHealth;
+            // Force fleeing when hit
+            const fleeDir = currentPos.current.clone().sub(pPos).normalize();
+            fleeDir.y = 0;
+            const newTarget = currentPos.current.clone().add(fleeDir.multiplyScalar(15)); // Flee further
+            setTargetPos(newTarget);
+        } else {
+            lastHealthRef.current = currentHealth;
+        }
 
         if (dist < fleeDistance) {
             // Flee: Away from player
@@ -73,49 +90,24 @@ const AnimalAI = ({ children, position, fleeDistance, speed, name = "animal", id
                 <meshStandardMaterial transparent opacity={0} />
             </mesh>
             {children}
-        </group>
-    );
-};
-
-export const Deer = ({ position, id }: { position: [number, number, number], id: string }) => (
-    <AnimalAI position={position} fleeDistance={20} speed={0.4} id={id} name="deer">
-        {/* Body */}
-        <mesh castShadow position={[0, 0.7, 0]}>
-            <boxGeometry args={[0.5, 0.8, 1.4]} />
-            <meshStandardMaterial color="#795548" roughness={1} />
-        </mesh>
-        {/* Legs */}
-        {[[-0.2, 0.35, 0.5], [0.2, 0.35, 0.5], [-0.2, 0.35, -0.5], [0.2, 0.35, -0.5]].map((pos, i) => (
-            <mesh key={i} position={pos as [number, number, number]} castShadow>
-                <boxGeometry args={[0.12, 0.7, 0.12]} />
-                <meshStandardMaterial color="#4e342e" />
-            </mesh>
-        ))}
-        {/* Neck & Head */}
-        <group position={[0, 1.3, 0.6]}>
-            <mesh castShadow rotation={[0.4, 0, 0]}>
-                <boxGeometry args={[0.25, 0.7, 0.25]} />
+            <mesh castShadow>
+                <boxGeometry args={[0.3, 0.3, 0.5]} />
                 <meshStandardMaterial color="#795548" />
             </mesh>
-            <group position={[0, 0.35, 0.2]}>
-                <mesh castShadow>
-                    <boxGeometry args={[0.3, 0.3, 0.5]} />
-                    <meshStandardMaterial color="#795548" />
+            {/* Antlers */}
+            <group position={[0, 0.2, -0.1]}>
+                <mesh position={[0.2, 0.3, 0]} rotation={[0, 0, -0.5]}>
+                    <boxGeometry args={[0.05, 0.6, 0.05]} />
+                    <meshStandardMaterial color="#d7ccc8" />
                 </mesh>
-                {/* Antlers */}
-                <group position={[0, 0.2, -0.1]}>
-                    <mesh position={[0.2, 0.3, 0]} rotation={[0, 0, -0.5]}>
-                        <boxGeometry args={[0.05, 0.6, 0.05]} />
-                        <meshStandardMaterial color="#d7ccc8" />
-                    </mesh>
-                    <mesh position={[-0.2, 0.3, 0]} rotation={[0, 0, 0.5]}>
-                        <boxGeometry args={[0.05, 0.6, 0.05]} />
-                        <meshStandardMaterial color="#d7ccc8" />
-                    </mesh>
-                </group>
+                <mesh position={[-0.2, 0.3, 0]} rotation={[0, 0, 0.5]}>
+                    <boxGeometry args={[0.05, 0.6, 0.05]} />
+                    <meshStandardMaterial color="#d7ccc8" />
+                </mesh>
             </group>
         </group>
-    </AnimalAI>
+        </group >
+    </AnimalAI >
 );
 
 export const Rabbit = ({ position, id }: { position: [number, number, number], id: string }) => (

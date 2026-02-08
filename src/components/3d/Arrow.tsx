@@ -64,8 +64,10 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             const currentPos = ref.current!.position;
             const currentRot = ref.current!.rotation;
 
+            const state = useGameStore.getState();
+
             if (isAnimal) {
-                const state = useGameStore.getState();
+                // Spawn blood particles on animal hit
                 for (let i = 0; i < 8; i++) {
                     state.spawnBlood([
                         currentPos.x + (Math.random() - 0.5) * 0.5,
@@ -74,15 +76,13 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                     ]);
                 }
 
-                state.removeWildlife(hitToId);
-                const meatAmount = hitToId.includes('deer') ? 2 : 1;
-                state.addDroppedItem('meat', meatAmount, [currentPos.x, currentPos.y + 0.2, currentPos.z]);
+                // Damage the animal (1 damage per arrow)
+                state.damageWildlife(hitToId, 1);
 
-                const animalName = hitToId.includes('deer') ? 'DEER' : hitToId.includes('rabbit') ? 'RABBIT' : 'BIRD';
-                addNotification(`${animalName} HUNTED! MEAT DROPPED`, 'success');
-
+                // Stick arrow to animal
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             } else if (!hitToId?.includes('arrow')) {
+                // Stick arrow to environment objects (rocks, trees, etc)
                 stickArrow(id, currentPos.toArray(), currentRot.toArray().slice(0, 3) as [number, number, number], hitToId);
             }
         }
@@ -140,6 +140,25 @@ export const Arrow = ({ data }: { data: Projectile }) => {
                 const dir = v.normalize();
                 const quat = new THREE.Quaternion().setFromUnitVectors(forward, dir);
                 ref.current.quaternion.slerp(quat, 0.35);
+            }
+        }
+
+        // If arrow is stuck to an animal, follow the animal's position
+        if (stuck && data.stuckToId && ref.current) {
+            const animalIndex = state.wildlife.findIndex(w => w.id === data.stuckToId);
+            if (animalIndex !== -1) {
+                const animal = state.wildlife[animalIndex];
+                const animalPos = new Vector3(...animal.position);
+
+                // Add slight offset so arrow appears embedded in body
+                const offsetDir = new Vector3(...localVel.current).normalize();
+                if (offsetDir.lengthSq() > 0) {
+                    animalPos.add(offsetDir.multiplyScalar(0.5));
+                } else {
+                    animalPos.y += 0.5; // Default upward offset if no velocity data
+                }
+
+                api.position.set(animalPos.x, animalPos.y, animalPos.z);
             }
         }
 
