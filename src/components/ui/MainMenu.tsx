@@ -100,10 +100,10 @@ return (
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                <h1 className="inline-block text-9xl font-black tracking-tighter uppercase italic leading-[0.85] mb-6 pr-6 overflow-visible">
-                                    <span className="bg-gradient-to-br from-orange-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-[0_10px_30px_rgba(249,115,22,0.3)]">WILD</span>
+                                <h1 className="inline-block text-[72px] sm:text-[96px] lg:text-[120px] font-black tracking-[-0.06em] uppercase italic leading-[0.9] mb-6 pr-8 overflow-visible">
+                                    <span className="bg-gradient-to-br from-orange-300 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-[0_12px_36px_rgba(249,115,22,0.35)]">WILD</span>
                                     <br />
-                                    <span className="bg-gradient-to-br from-white via-white to-white/20 bg-clip-text text-transparent">LANDS</span>
+                                    <span className="bg-gradient-to-br from-white via-white to-white/30 bg-clip-text text-transparent drop-shadow-[0_10px_28px_rgba(255,255,255,0.15)]">LANDS</span>
                                 </h1>
                                 <p className="text-white/40 text-base font-black uppercase tracking-[0.5em] ml-2 mb-12">
                                     THE ULTIMATE SURVIVAL

@@ -118,9 +118,8 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         const arrowPos = ref.current?.position || new Vector3(...position);
         const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
-        // Auto-pickup when close (stuck or resting on ground)
-        const speed = Math.hypot(localVel.current[0], localVel.current[1], localVel.current[2]);
-        if (distToPlayer < 1.8 && (stuck || speed < 0.5)) {
+        // Auto-pickup only when stuck
+        if (distToPlayer < 1.8 && stuck) {
             state.addItem('arrow', 1);
             removeProjectile(id);
             addNotification('ARROW RECOVERED', 'info');
