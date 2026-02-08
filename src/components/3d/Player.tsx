@@ -250,7 +250,11 @@ export const Player = () => {
                     const arrowSpeed = minSpeed + (maxSpeed - minSpeed) * chargeT;
                     const arrowVelocity = direction.clone().multiplyScalar(arrowSpeed);
 
-                    const rotation = camera.rotation.toArray().slice(0, 3) as [number, number, number];
+                    // Calculate rotation from direction vector
+                    const forward = new THREE.Vector3(0, 0, 1);
+                    const quat = new THREE.Quaternion().setFromUnitVectors(forward, direction);
+                    const rotation = new THREE.Euler().setFromQuaternion(quat).toArray().slice(0, 3) as [number, number, number];
+                    
                     state.shootArrow(
                         [spawnPos.x, spawnPos.y, spawnPos.z],
                         [arrowVelocity.x, arrowVelocity.y, arrowVelocity.z],

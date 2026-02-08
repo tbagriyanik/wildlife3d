@@ -116,10 +116,12 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             api.position.set(position[0], position[1], position[2]);
             api.rotation.set(rotation[0], rotation[1], rotation[2]);
         } else {
-            api.mass.set(0.3);
-            api.angularVelocity.set(0, 0, 0);
+            api.mass.set(0.15);
+            api.velocity.set(velocity[0], velocity[1], velocity[2]);
+            api.position.set(position[0], position[1], position[2]);
+            api.rotation.set(rotation[0], rotation[1], rotation[2]);
         }
-    }, [stuck, api, position, rotation]);
+    }, [stuck, api, position, rotation, velocity]);
 
     const arrowVisual = useMemo(() => {
         return (
@@ -146,13 +148,26 @@ export const Arrow = ({ data }: { data: Projectile }) => {
         const arrowPos = ref.current?.position || new Vector3(...position);
         const distToPlayer = arrowPos.distanceTo(new Vector3(...playerPos));
 
+        // Ensure velocity is maintained when not stuck
+        if (!stuck && ref.current && !consumedRef.current) {
+            // Enforce velocity to prevent deceleration
+            const currentVel = localVel.current;
+            const speed = Math.sqrt(currentVel[0]**2 + currentVel[1]**2 + currentVel[2]**2);
+            if (speed < 30) {
+                // If velocity dropped below minimum, restore it
+                const dir = new THREE.Vector3(velocity[0], velocity[1], velocity[2]).normalize();
+                const minSpeed = 85;
+                api.velocity.set(dir.x * minSpeed, dir.y * minSpeed, dir.z * minSpeed);
+            }
+        }
+
         if (!stuck && ref.current) {
             const v = new THREE.Vector3(...localVel.current);
             if (v.lengthSq() > 0.01) {
-                const forward = new THREE.Vector3(0, 1, 0);
+                const forward = new THREE.Vector3(0, 0, 1);
                 const dir = v.normalize();
                 const quat = new THREE.Quaternion().setFromUnitVectors(forward, dir);
-                ref.current.quaternion.slerp(quat, 0.35);
+                ref.current.quaternion.slerp(quat, 0.3);
             }
         }
 
