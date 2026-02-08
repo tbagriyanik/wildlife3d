@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import { useSphere } from '@react-three/cannon';
