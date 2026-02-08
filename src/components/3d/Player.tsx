@@ -346,7 +346,7 @@ export const Player = () => {
         const grounded = pos.current[1] <= 0.55 && Math.abs(velocity.current[1]) < 0.1;
         let desiredY = velocity.current[1];
         if (jump && !jumpBuffer.current && !isAnyMenuOpen && grounded) {
-            desiredY = 8.5; // Natural jump impulse
+            desiredY = 6.5; // Lower jump impulse
             playSound('jump');
             jumpBuffer.current = true;
         }

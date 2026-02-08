@@ -94,8 +94,14 @@ export const useAudio = () => {
 
 export const useMusic = () => {
     const masterVolume = useGameStore((state: GameState) => state.masterVolume);
+    const isMenuOpen = useGameStore((state: GameState) => state.isMenuOpen);
+    const isMainMenuOpen = useGameStore((state: GameState) => state.isMainMenuOpen);
+    const isPaused = useGameStore((state: GameState) => state.isPaused);
 
     useEffect(() => {
+        const isAnyMenuOpen = isMenuOpen || isMainMenuOpen || isPaused;
+        if (isAnyMenuOpen || masterVolume <= 0) return;
+
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
         // Master Gain for ambient
@@ -288,7 +294,7 @@ export const useMusic = () => {
             window.removeEventListener('click', startAudio);
             window.removeEventListener('keydown', startAudio);
         };
-    }, [masterVolume]); // Re-run effect or update masterGain when volume changes
+    }, [masterVolume, isMenuOpen, isMainMenuOpen, isPaused]); // Re-run effect or update masterGain when state changes
 };
 
 

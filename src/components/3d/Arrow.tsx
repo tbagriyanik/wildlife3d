@@ -161,27 +161,27 @@ export const Arrow = ({ data }: { data: Projectile }) => {
             <mesh ref={ref as any} castShadow name="arrow" userData={{ id, type: 'arrow' }}>
                 {/* Arrow shaft (aligned forward on +Z) */}
                 <mesh position={[0, 0, 0.0]}>
-                    <cylinderGeometry args={[0.02, 0.02, 0.62]} />
+                    <cylinderGeometry args={[0.018, 0.022, 0.68]} />
                     <meshStandardMaterial color="#8B4513" />
                 </mesh>
 
                 {/* Arrow head (front) */}
-                <mesh position={[0, 0, 0.36]} rotation={[Math.PI / 2, 0, 0]}>
-                    <coneGeometry args={[0.04, 0.16, 6]} />
-                    <meshStandardMaterial color="#666666" metalness={0.8} />
+                <mesh position={[0, 0, 0.42]} rotation={[Math.PI / 2, 0, 0]}>
+                    <coneGeometry args={[0.035, 0.18, 8]} />
+                    <meshStandardMaterial color="#666666" metalness={0.7} roughness={0.3} />
                 </mesh>
 
                 {/* Fletching (rear) */}
-                <mesh position={[0, 0, -0.34]} rotation={[0, 0, 0]}>
-                    <boxGeometry args={[0.08, 0.02, 0.1]} />
+                <mesh position={[0, 0, -0.38]} rotation={[0, 0, 0]}>
+                    <boxGeometry args={[0.075, 0.015, 0.1]} />
                     <meshStandardMaterial color="#DC143C" />
                 </mesh>
-                <mesh position={[0, 0, -0.34]} rotation={[0, Math.PI / 3, 0]}>
-                    <boxGeometry args={[0.08, 0.02, 0.1]} />
+                <mesh position={[0, 0, -0.38]} rotation={[0, Math.PI / 3, 0]}>
+                    <boxGeometry args={[0.075, 0.015, 0.1]} />
                     <meshStandardMaterial color="#DC143C" />
                 </mesh>
-                <mesh position={[0, 0, -0.34]} rotation={[0, -Math.PI / 3, 0]}>
-                    <boxGeometry args={[0.08, 0.02, 0.1]} />
+                <mesh position={[0, 0, -0.38]} rotation={[0, -Math.PI / 3, 0]}>
+                    <boxGeometry args={[0.075, 0.015, 0.1]} />
                     <meshStandardMaterial color="#DC143C" />
                 </mesh>
             </mesh>
