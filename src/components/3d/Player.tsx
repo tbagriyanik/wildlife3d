@@ -172,6 +172,8 @@ export const Player = () => {
     const shootBuffer = useRef(false);
     const lastShootTime = useRef(0);
     const SHOOT_COOLDOWN = 800; // ms - slower for better UX
+    const chargeStart = useRef<number | null>(null);
+    const chargingShot = useRef(false);
 
     const itemGroupRef = useRef<THREE.Group>(null);
 
@@ -207,44 +209,60 @@ export const Player = () => {
 
         // --- ARCHERY LOGIC ---
         const now = Date.now();
-        if (currentItem === 'bow' && leftClick && !shootBuffer.current && !isAnyMenuOpen && (now - lastShootTime.current > SHOOT_COOLDOWN)) {
-            lastShootTime.current = now;
-
+        if (currentItem === 'bow' && !isAnyMenuOpen && (now - lastShootTime.current > SHOOT_COOLDOWN)) {
             const state = useGameStore.getState();
-            if ((state.inventory['arrow'] || 0) > 0) {
-                // Direction with slight spread for realism
-                const direction = new THREE.Vector3();
-                camera.getWorldDirection(direction);
 
-                // Straight shot from aim
-                direction.normalize();
+            // Start charging on mouse down
+            if (leftClick && !chargingShot.current) {
+                chargingShot.current = true;
+                chargeStart.current = now;
+            }
 
-                // Spawn position slightly in front of camera to avoid hitting player
-                const spawnPos = new THREE.Vector3().copy(camera.position).add(direction.clone().multiplyScalar(1.2));
+            const isHolding = leftClick && chargingShot.current && chargeStart.current !== null;
+            const heldMs = isHolding ? now - (chargeStart.current as number) : 0;
+            const forceShot = isHolding && heldMs >= 3000;
+            const releaseShot = !leftClick && chargingShot.current;
 
-                // Speed based on aim
-                const arrowSpeed = aim ? 80 : 65; // Faster when aiming
-                const arrowVelocity = direction.clone().multiplyScalar(arrowSpeed);
+            if ((forceShot || releaseShot) && !shootBuffer.current) {
+                lastShootTime.current = now;
+                chargingShot.current = false;
+                shootBuffer.current = true;
 
-                // Rotation
-                const rotation = camera.rotation.toArray().slice(0, 3) as [number, number, number];
+                if ((state.inventory['arrow'] || 0) > 0) {
+                    const direction = new THREE.Vector3();
+                    camera.getWorldDirection(direction);
+                    direction.normalize();
 
-                state.shootArrow(
-                    [spawnPos.x, spawnPos.y, spawnPos.z],
-                    [arrowVelocity.x, arrowVelocity.y, arrowVelocity.z],
-                    rotation
-                );
+                    // Spawn position slightly in front of camera to avoid hitting player
+                    const spawnPos = new THREE.Vector3().copy(camera.position).add(direction.clone().multiplyScalar(1.2));
 
-                // Play sound
-                playSound('wood');
-            } else {
-                // No arrows - play empty sound
-                const lang = useGameStore.getState().language;
-                const t = TRANSLATIONS[lang];
-                state.addNotification(t.out_of_arrows_msg, 'warning');
+                    const chargeT = Math.min(1, Math.max(0, heldMs / 3000));
+                    const minSpeed = aim ? 70 : 55;
+                    const maxSpeed = aim ? 95 : 80;
+                    const arrowSpeed = minSpeed + (maxSpeed - minSpeed) * chargeT;
+                    const arrowVelocity = direction.clone().multiplyScalar(arrowSpeed);
+
+                    const rotation = camera.rotation.toArray().slice(0, 3) as [number, number, number];
+                    state.shootArrow(
+                        [spawnPos.x, spawnPos.y, spawnPos.z],
+                        [arrowVelocity.x, arrowVelocity.y, arrowVelocity.z],
+                        rotation
+                    );
+
+                    playSound('wood');
+                } else {
+                    const lang = useGameStore.getState().language;
+                    const t = TRANSLATIONS[lang];
+                    state.addNotification(t.out_of_arrows_msg, 'warning');
+                }
+            }
+
+            // Reset buffer when mouse released
+            if (!leftClick) {
+                shootBuffer.current = false;
+                chargeStart.current = null;
             }
         }
-        shootBuffer.current = leftClick;
 
         // --- INTERACT LOGIC ---
         if (interact && !isAnyMenuOpen) {
